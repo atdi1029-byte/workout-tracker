@@ -220,6 +220,22 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--iron);color:#fff;padding:10px 24px;border-radius:var(--radius);font-size:0.85rem;font-weight:700;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;box-shadow:0 4px 16px rgba(0,0,0,0.5)}
 .toast.show{opacity:1}
 
+/* PROGRAMS VIEW */
+.prog-overview{background:rgba(20,24,32,0.8);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:border-color 0.2s}
+.prog-overview:hover{border-color:var(--border-light)}
+.prog-overview.current{border-color:var(--iron);box-shadow:0 0 12px rgba(128,144,168,0.15)}
+.prog-overview .prog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.prog-overview .prog-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--text-bright);text-transform:uppercase;letter-spacing:1px}
+.prog-overview .prog-badge{font-size:0.6rem;padding:3px 8px;border-radius:10px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px}
+.prog-overview .prog-badge.phase{background:rgba(128,144,168,0.15);color:var(--iron);border:1px solid rgba(128,144,168,0.25)}
+.prog-overview .prog-badge.active-badge{background:rgba(106,136,112,0.2);color:var(--green);border:1px solid rgba(106,136,112,0.3)}
+.prog-overview .prog-split{font-size:0.7rem;color:var(--text-dim);margin-bottom:10px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px}
+.prog-overview .prog-days-list{display:flex;flex-direction:column;gap:4px}
+.prog-overview .prog-day-row{display:flex;gap:8px;align-items:baseline;padding:3px 0}
+.prog-overview .prog-day-letter{font-family:'Oswald',sans-serif;font-weight:700;font-size:0.8rem;color:var(--iron);min-width:20px}
+.prog-overview .prog-day-label{font-size:0.78rem;color:var(--text);flex:1}
+.prog-overview .prog-day-count{font-size:0.65rem;color:var(--text-dim);font-family:'Oswald',sans-serif}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:var(--bg-deep)}
@@ -292,12 +308,18 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
   <div class="modal" id="modalContent"></div>
 </div>
 
+<!-- VIEW: PROGRAMS -->
+<div id="view-programs" class="view">
+  <div id="programsList"></div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="showView('workout',this)"><span class="nav-icon">&#128170;</span><span>Workout</span></button>
   <button class="nav-btn" onclick="showView('progress',this)"><span class="nav-icon">&#128200;</span><span>Progress</span></button>
   <button class="nav-btn" onclick="showView('prs',this)"><span class="nav-icon">&#127942;</span><span>PRs</span></button>
   <button class="nav-btn" onclick="showView('library',this)"><span class="nav-icon">&#128214;</span><span>Library</span></button>
+  <button class="nav-btn" onclick="showView('programs',this)"><span class="nav-icon">&#128203;</span><span>Programs</span></button>
 </nav>
 
 <script>
@@ -1288,6 +1310,7 @@ function showView(name,btn){
   if(name==='progress')renderProgress();
   if(name==='prs')renderPRBoard();
   if(name==='library')renderLibrary();
+  if(name==='programs')renderPrograms();
 }
 
 function getNextDay(){
@@ -1307,8 +1330,39 @@ function getNextDay(){
 function selectProgram(pid){
   data.activeProgram=pid;saveData();
   currentDay=getNextDay();
-  renderWorkout();
+  showView('workout',document.querySelectorAll('.nav-btn')[0]);
   toast('Switched to '+pid);
+}
+
+// ── PROGRAMS VIEW ──
+function renderPrograms(){
+  let html='';
+  for(const pid in PROGRAMS){
+    const p=getProgram(pid);
+    const isActive=pid===data.activeProgram;
+    const phase=PHASES[p.phase]||p.phase;
+    const days=Object.keys(p.days).filter(d=>d!=='ABS');
+    html+=`<div class="prog-overview${isActive?' current':''}" onclick="selectProgram('${pid}')">
+      <div class="prog-head">
+        <span class="prog-title">${pid}</span>
+        <span>${isActive?'<span class="prog-badge active-badge">Active</span> ':''}
+        <span class="prog-badge phase">${phase}</span></span>
+      </div>
+      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'}</div>
+      <div class="prog-days-list">
+        ${days.map(d=>{
+          const day=p.days[d];
+          const exCount=day.ex.length;
+          return `<div class="prog-day-row">
+            <span class="prog-day-letter">${d}</span>
+            <span class="prog-day-label">${day.labelEn||day.label}</span>
+            <span class="prog-day-count">${exCount} ex</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('programsList').innerHTML=html;
 }
 
 // ── WORKOUT VIEW ──
