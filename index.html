@@ -1907,7 +1907,7 @@ function getSuggestion(lastLog, targetReps, exName){
   const step=maxWeight>=100?5:maxWeight>=50?2.5:1;
   const repsStr=working.map(s=>s.reps).join('/');
 
-  const history=exName?getLastNLogs(exName,5):[];
+  const history=exName?getLastNLogs(exName,8):[];
 
   // Count consecutive sessions hitting all target reps
   let streak=0;
@@ -1925,21 +1925,24 @@ function getSuggestion(lastLog, targetReps, exName){
 
   // Weight advice
   let weightTip='',type='stay';
-  if(streak>=2&&allHitTarget){
-    weightTip='Increase to '+fmt(maxWeight+step)+' lbs';
+  if(streak>=4&&allHitTarget){
+    weightTip='Increase to '+fmt(maxWeight+step)+' lbs — hit target '+streak+'x in a row';
     type='up';
   } else if(allHitTarget){
-    weightTip='Go up to '+fmt(maxWeight+step)+' lbs — hit all '+target+' reps';
+    weightTip='Hit all '+target+' reps — keep building ('+streak+'/4 sessions)';
     type='up';
   } else if(avgReps>=target*0.7&&someHitTarget){
     weightTip='Stay at '+fmt(maxWeight)+' lbs — got '+repsStr+' (target: '+target+')';
     type='stay';
-  } else if(failStreak>=2){
+  } else if(failStreak>=4){
     weightTip='Pull back to '+fmt(maxWeight-step)+' lbs — struggling '+failStreak+' sessions';
     type='down';
-  } else {
-    weightTip='Drop to '+fmt(maxWeight-step)+' lbs — got '+repsStr;
+  } else if(avgReps<target*0.7){
+    weightTip='Tough session — got '+repsStr+' ('+failStreak+'/4 before pullback)';
     type='down';
+  } else {
+    weightTip='Stay at '+fmt(maxWeight)+' lbs — got '+repsStr;
+    type='stay';
   }
 
   // Trend (3+ sessions)
