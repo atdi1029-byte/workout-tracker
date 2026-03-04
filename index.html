@@ -2421,14 +2421,9 @@ function importATH(){
 loadData();
 initCustomABCD14();
 // Ensure every program has an ABS day
-const defaultAbs=[
-  ['Abdominal Infra','Lower Abs','abs','S','4x15-20',45],
-  ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
-  ['Prancha','Plank','abs','S','3x60s',45]
-];
 for(const pid in PROGRAMS){
   if(pid.startsWith('_'))continue;
-  if(!PROGRAMS[pid].days.ABS)PROGRAMS[pid].days.ABS={label:'Abdominais',labelEn:'Abs',ex:defaultAbs};
+  if(!PROGRAMS[pid].days.ABS)PROGRAMS[pid].days.ABS={label:'Abdominais',labelEn:'Abs',ex:[]};
 }
 // Load custom exercises into hidden program
 if(data.customExercises&&data.customExercises.length){
