@@ -259,6 +259,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .prog-detail-name{color:var(--text);flex:1}
 .prog-detail-reps{color:var(--iron);font-family:'Oswald',sans-serif;font-weight:600;white-space:nowrap}
 .prog-detail-tech{font-size:0.6rem;padding:1px 5px;border-radius:8px;background:rgba(160,148,106,0.15);color:var(--gold);border:1px solid rgba(160,148,106,0.25);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px;vertical-align:middle}
+.prog-detail-weights{font-size:0.7rem;color:var(--gold);opacity:0.7;padding:0 0 4px 28px;font-family:'Oswald',sans-serif}
 
 /* ADD PR / ADD EXERCISE BUTTON */
 .add-pr-btn{background:rgba(128,144,168,0.15);border:1px solid rgba(128,144,168,0.25);border-radius:var(--radius-sm);padding:6px 14px;color:var(--iron);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
@@ -298,6 +299,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: PROGRESS -->
 <div id="view-progress" class="view">
+  <input type="text" class="view-select" id="progressSearch" placeholder="Search exercises..." oninput="filterProgressExercises()" style="margin-bottom:6px">
   <select class="view-select" id="progressExSelect" onchange="renderProgressChart()"></select>
   <div class="range-tabs" id="rangeTabs">
     <button class="range-tab active" onclick="setRange(4,this)">4W</button>
@@ -632,6 +634,49 @@ ABC05:{name:'ABC05',phase:'acc',type:'ABC',days:{
     ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45],
     ['Abdominal Obliquo','Oblique Crunch','abs','BS','4x10 each Bi-Set',0],
     ['Abdominal Crunch','Crunch','abs','BS','4x15-20 Bi-Set',45]
+  ]}
+}},
+ABCD01:{name:'Treino ABCD 1',phase:'int',type:'ABCD',dates:'Dec 16 – Jan 27',days:{
+  A:{label:'Peito + Ombros',labelEn:'Push (Chest + Shoulders)',ex:[
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Crucifixo na Maquina','Pec Deck','chest','DS','3x8-12+drop',60,'St.140 → 135,140,145 (drop 95,80,75)'],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','5x5-8',120,'St.60 → 60x5'],
+    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60,'St.25 → 25x3,23'],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x8-12+drop',60,'St.105 → 105x3 (drop 55F)'],
+    ['Elevacao Frontal com Halteres','DB Front Raise','shoulders','BS','4x10 each Bi-Set',0,'St.15 → 17.5,15x3'],
+    ['Remada Alta','Upright Row','shoulders','BS','4x10-15 Bi-Set',60,'St.34 → 32,34,36x2']
+  ]},
+  B:{label:'Costas + Ombros',labelEn:'Pull (Back + Shoulders)',ex:[
+    ['Abdominal na Polia Alta','Cable Crunch','abs','S','6x10',45,'St.30 → 32x2,30,28,26,24'],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Remada Curvada','Bent Over Row','back','RP','12-15/10/5/10/12-15',120,'St.127.5 → 122.5/125/127.5/125/120'],
+    ['Remada Baixa Triangulo','Seated Row (Triangle)','back','DS','3x8-12+drop',80,'St.125 → 125x3 (drop 115+70+45)'],
+    ['Puxada Aberta Neutra','Lat Pulldown (Wide Neutral)','back','S','5x5-8',120,'St.157.5 → 160x2,157.5,155,152.5'],
+    ['Remada Baixa Pegada Aberta','Wide Seated Row Machine','back','S','4x8-12',80,'St.105 → 105x4'],
+    ['Elevacao Lateral com Halteres','DB Lateral Raise','shoulders','DS','3x10-15+drop',60,'St.20 → 17.5x3 (drop 7.5F)'],
+    ['Crucifixo Inverso Maquina','Reverse Fly Machine','shoulders','S','4x10-15',60,'St.90 → 90x4']
+  ]},
+  C:{label:'Bracos + Abdominais',labelEn:'Arms + Abs',ex:[
+    ['Abdominal Crunch','Crunch','abs','TS','3x20-30 Tri-Set',0],
+    ['Abdominal Infra no Solo','Lower Abs Floor','abs','TS','3x20-30 Tri-Set',0],
+    ['Prancha','Plank','abs','TS','3x60s Tri-Set',60],
+    ['Rosca Direta','EZ Bar Curl','biceps','P','15/12/5-10/5-10',60,'St.45 → 45/50/55x2'],
+    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x8 each',60,'St.30 → 30,27.5x3'],
+    ['Biceps Polia Corda','Cable Rope Curl','biceps','DS','4x8-12+drop',60,'St.38 → 40,38x3 (drop 17F)'],
+    ['Triceps Corda','Rope Pushdown','triceps','P','15/12/5-10/5-10',60,'St.57.5 → 57.5/58/58x2'],
+    ['Triceps Testa','EZ Skull Crusher','triceps','S','4x8-12',60,'St.25 → 25x4'],
+    ['Triceps Coice','Kickback','triceps','RestP','3xF+rest-pause',60,'St.17.5 → 17.5x3 (RP 17+10)']
+  ]},
+  D:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','S','2x10wu+3x8',90,'Aq.15 St.65'],
+    ['Afundo com Halteres','DB Lunge','quads','S','4x12 each',60,'St.7.5 → 0,5,7.5x2'],
+    ['Cadeira Extensora','Leg Extension','quads','S','4x10-15',60,'St.110 → 115x2,110x2'],
+    ['Passada com Halteres','DB Walking Lunge','quads','S','4x20 steps',60,'St.0 → 0x4'],
+    ['Leg Press 45','Leg Press','quads','S','3x10-15',90,'St.115 → 135x2,130,115'],
+    ['Cadeira Flexora','Leg Curl','hamstrings','DS','4x8-12+drop',60,'St.120 → 120,125x2 (drop 70F)'],
+    ['Panturrilha Press','Calf on Press','calves','S','3x20-30',45,'St.245 → 255,250,245']
   ]}
 }},
 ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',days:{
@@ -1140,7 +1185,7 @@ const ATH_DATA = {
 'Rotacao Interna Ombro':8,'Rotacao Externa Ombro':6,
 // Chest
 'Crucifixo Adutor na Polia':44,'Crucifixo Halter Flat':30,'Crucifixo Halter Inclinado':20,
-'Crucifixo Voador':140,'Hex Press Smith':105,'Incline Seated Cable Fly':32,
+'Crucifixo Voador':140,'Hex Press Smith':105,'Incline Seated Cable Fly (37°)':32,
 'Low To High Cable Fly':19,'Paralela':55,'Reverse Grip Smith Bench':135,
 'Supino Inclinado':80,'Supino Inclinado Smith':125,'Supino Inclinado com Halteres':80,
 'Supino Maquina':160,'Supino Maquina Hammer':245,'Supino Reto':130,
@@ -1324,6 +1369,52 @@ function initCustomABCD14(){
     ],duration:0}
   );
   }
+  // Seed ABCD01 (Treino ABCD 1) final weights - Jan 27
+  if(!data.logs.some(l=>l.id&&l.id.startsWith('abcd01_'))){
+  data.logs.push(
+    {id:'abcd01_a',date:'2026-01-27',program:'ABCD01',day:'A',exercises:[
+      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Crucifixo na Maquina',sets:[{weight:135,reps:10,type:'working'},{weight:140,reps:10,type:'working'},{weight:145,reps:10,type:'working'},{weight:95,reps:8,type:'working'},{weight:80,reps:10,type:'working'},{weight:75,reps:12,type:'working'}]},
+      {name:'Supino Inclinado com Halteres',sets:[{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'}]},
+      {name:'Crucifixo Adutor na Polia',sets:[{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:23,reps:10,type:'working'}]},
+      {name:'Desenvolvimento Maquina',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
+      {name:'Elevacao Frontal com Halteres',sets:[{weight:17.5,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:15,reps:10,type:'working'}]},
+      {name:'Remada Alta',sets:[{weight:32,reps:12,type:'working'},{weight:34,reps:12,type:'working'},{weight:36,reps:12,type:'working'},{weight:36,reps:12,type:'working'}]}
+    ],duration:0},
+    {id:'abcd01_b',date:'2026-01-27',program:'ABCD01',day:'B',exercises:[
+      {name:'Abdominal na Polia Alta',sets:[{weight:32,reps:10,type:'working'},{weight:32,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:28,reps:10,type:'working'},{weight:26,reps:10,type:'working'},{weight:24,reps:10,type:'working'}]},
+      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Remada Curvada',sets:[{weight:122.5,reps:15,type:'working'},{weight:125,reps:10,type:'working'},{weight:127.5,reps:5,type:'working'},{weight:125,reps:10,type:'working'},{weight:120,reps:15,type:'working'}]},
+      {name:'Remada Baixa Triangulo',sets:[{weight:125,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:115,reps:8,type:'working'},{weight:70,reps:10,type:'working'},{weight:45,reps:12,type:'working'}]},
+      {name:'Puxada Aberta Neutra',sets:[{weight:160,reps:6,type:'working'},{weight:160,reps:6,type:'working'},{weight:157.5,reps:6,type:'working'},{weight:155,reps:6,type:'working'},{weight:152.5,reps:6,type:'working'}]},
+      {name:'Remada Baixa Pegada Aberta',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'}]},
+      {name:'Elevacao Lateral com Halteres',sets:[{weight:17.5,reps:12,type:'working'},{weight:17.5,reps:12,type:'working'},{weight:17.5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'}]},
+      {name:'Crucifixo Inverso Maquina',sets:[{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'}]}
+    ],duration:0},
+    {id:'abcd01_c',date:'2026-01-27',program:'ABCD01',day:'C',exercises:[
+      {name:'Abdominal Crunch',sets:[{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'}]},
+      {name:'Abdominal Infra no Solo',sets:[{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'}]},
+      {name:'Prancha',sets:[{weight:0,reps:60,type:'working'},{weight:0,reps:60,type:'working'},{weight:0,reps:60,type:'working'}]},
+      {name:'Rosca Direta',sets:[{weight:45,reps:15,type:'working'},{weight:50,reps:12,type:'working'},{weight:55,reps:8,type:'working'},{weight:55,reps:8,type:'working'}]},
+      {name:'Rosca Alternada',sets:[{weight:30,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'}]},
+      {name:'Biceps Polia Corda',sets:[{weight:40,reps:10,type:'working'},{weight:38,reps:10,type:'working'},{weight:38,reps:10,type:'working'},{weight:38,reps:10,type:'working'},{weight:17,reps:10,type:'working'}]},
+      {name:'Triceps Corda',sets:[{weight:57.5,reps:15,type:'working'},{weight:58,reps:12,type:'working'},{weight:58,reps:8,type:'working'},{weight:58,reps:8,type:'working'}]},
+      {name:'Triceps Testa',sets:[{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'}]},
+      {name:'Triceps Coice',sets:[{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17,reps:10,type:'working'}]}
+    ],duration:0},
+    {id:'abcd01_d',date:'2026-01-27',program:'ABCD01',day:'D',exercises:[
+      {name:'Agachamento Hack',sets:[{weight:15,reps:10,type:'warmup'},{weight:15,reps:10,type:'warmup'},{weight:65,reps:8,type:'working'},{weight:65,reps:8,type:'working'},{weight:65,reps:8,type:'working'}]},
+      {name:'Afundo com Halteres',sets:[{weight:0,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'}]},
+      {name:'Cadeira Extensora',sets:[{weight:115,reps:12,type:'working'},{weight:115,reps:12,type:'working'},{weight:110,reps:12,type:'working'},{weight:110,reps:12,type:'working'}]},
+      {name:'Passada com Halteres',sets:[{weight:0,reps:20,type:'working'},{weight:0,reps:20,type:'working'},{weight:0,reps:20,type:'working'},{weight:0,reps:20,type:'working'}]},
+      {name:'Leg Press 45',sets:[{weight:135,reps:12,type:'working'},{weight:135,reps:12,type:'working'},{weight:130,reps:12,type:'working'},{weight:115,reps:12,type:'working'}]},
+      {name:'Cadeira Flexora',sets:[{weight:120,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:70,reps:10,type:'working'}]},
+      {name:'Panturrilha Press',sets:[{weight:255,reps:25,type:'working'},{weight:250,reps:25,type:'working'},{weight:245,reps:25,type:'working'}]}
+    ],duration:0}
+  );
+  }
   if(data.customPrograms.ABCD14){saveData();return;}
   data.customPrograms.ABCD14={days:{
     A:{ex:[
@@ -1490,7 +1581,7 @@ function renderPrograms(){
         <span>${isActive?'<span class="prog-badge active-badge">Active</span> ':''}
         <span class="prog-badge phase">${phase}</span></span>
       </div>
-      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'} &middot; tap to expand</div>
+      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'}${p.dates?' &middot; '+p.dates:''} &middot; tap to expand</div>
       <div class="prog-days-list">
         ${days.map(d=>{
           const day=p.days[d];
@@ -1516,7 +1607,7 @@ function renderPrograms(){
               <span class="prog-detail-num">${i+1}.</span>
               <span class="prog-detail-name">${e[1]||e[0]}${tech?` <span class="prog-detail-tech" onclick="showTechPopup('${e[3]}',event)">${tech}</span>`:''}</span>
               <span class="prog-detail-reps">${reps}</span>
-            </div>`;}).join('')}
+            </div>${e[6]?`<div class="prog-detail-weights">${e[6]}</div>`:''}`;}).join('')}
           </div>`;
         }).join('')}
       </div>
@@ -1999,12 +2090,24 @@ function finishWorkout(){
 }
 
 // ── PROGRESS VIEW ──
+function getLoggedExerciseNames(){
+  const names=new Set();
+  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>names.add(ex.name)));
+  return[...names].sort();
+}
+var _progressNames=[];
 function renderProgress(){
-  // Populate exercise selector
   const sel=document.getElementById('progressExSelect');
-  const names=getAllExerciseNames();
-  sel.innerHTML='<option value="">Select exercise...</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+  _progressNames=getLoggedExerciseNames();
+  sel.innerHTML='<option value="">Select exercise...</option>'+_progressNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+  document.getElementById('progressSearch').value='';
   renderProgressChart();
+}
+function filterProgressExercises(){
+  const q=document.getElementById('progressSearch').value.toLowerCase();
+  const sel=document.getElementById('progressExSelect');
+  const filtered=q?_progressNames.filter(n=>n.toLowerCase().includes(q)):_progressNames;
+  sel.innerHTML='<option value="">Select exercise...</option>'+filtered.map(n=>`<option value="${n}">${n}</option>`).join('');
 }
 
 function setRange(w,btn){
