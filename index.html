@@ -160,20 +160,26 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .pr-table .crown{color:var(--gold)}
 .pr-table .recent{color:var(--green)}
 
-/* PROGRESS CARDS (merged PR + chart) */
-.progress-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:border-color 0.2s}
-.progress-card:active{border-color:var(--iron)}
-.progress-card.expanded{border-color:rgba(128,144,168,0.3);cursor:default}
-.progress-card .pc-header{display:flex;justify-content:space-between;align-items:flex-start}
-.progress-card .pc-name{font-size:0.95rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
-.progress-card .pc-name-en{font-size:0.7rem;color:var(--iron);margin-left:6px}
-.progress-card .pc-stats{text-align:right;font-size:0.72rem}
-.progress-card .pc-1rm{color:var(--gold);font-weight:600}
-.progress-card .pc-ath{color:var(--gold);opacity:0.7}
-.progress-card .pc-compact{font-size:0.75rem;color:var(--green-bright);margin-top:6px}
+/* PROGRESS GRID */
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pc-equip-label{grid-column:1/-1;color:var(--iron);font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;margin:10px 0 2px;font-family:'Oswald',sans-serif}
+
+/* PROGRESS TILES (collapsed) */
+.progress-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:90px;justify-content:center}
+.progress-card:active{border-color:var(--iron);transform:scale(0.97)}
+.progress-card .pc-name{font-size:0.8rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2}
+.progress-card .pc-name-en{display:block;font-size:0.6rem;color:var(--iron);margin-top:2px}
+.progress-card .pc-1rm{color:var(--gold);font-weight:600;font-size:0.7rem;margin-top:6px}
+.progress-card .pc-ath{color:var(--text-dim);font-size:0.6rem;margin-top:1px}
+.progress-card .pc-compact{font-size:0.65rem;color:var(--green-bright);margin-top:4px}
 .progress-card .pc-compact .pc-crown{color:var(--gold)}
-.progress-card .pc-expand-icon{color:var(--text-dim);font-size:0.7rem;margin-left:4px;transition:transform 0.2s}
-.progress-card.expanded .pc-expand-icon{transform:rotate(90deg)}
+
+/* EXPANDED CARD (full width overlay) */
+.progress-card.expanded{grid-column:1/-1;border-color:var(--iron);cursor:default;text-align:left;align-items:stretch;min-height:auto;padding:14px}
+.progress-card.expanded .pc-name{font-size:0.95rem}
+.progress-card.expanded .pc-name-en{display:inline;margin-left:6px}
+.progress-card.expanded .pc-1rm{margin-top:0}
+.progress-card.expanded .pc-header{display:flex;justify-content:space-between;align-items:flex-start}
 .pc-detail{display:none;padding-top:12px;border-top:1px solid var(--border);margin-top:10px}
 .progress-card.expanded .pc-detail{display:block}
 .pc-detail .range-tabs{margin-bottom:8px}
@@ -2294,10 +2300,10 @@ function renderProgress(){
     equipGroups[ex.equip].push(ex);
   });
 
-  let html='';
+  let html='<div class="pc-grid">';
   const equipOrder=Object.keys(equipGroups).sort();
   equipOrder.forEach(equip=>{
-    html+=`<div class="card-sub" style="margin:14px 0 8px;color:var(--iron);font-size:0.7rem;letter-spacing:2px">${equip.toUpperCase()}</div>`;
+    html+=`<div class="pc-equip-label">${equip}</div>`;
     equipGroups[equip].forEach(ex=>{
       const{name,idx,prs,athVal,repCounts,best1rm}=ex;
       const isExpanded=expandedExercise===name;
@@ -2305,54 +2311,65 @@ function renderProgress(){
       const esc=name.replace(/'/g,"\\'");
 
       // Compact PR summary
-      const compactPrs=repCounts.map(r=>{
+      const compactPrs=repCounts.slice(-3).map(r=>{
         const isBest=repCounts.length>1&&calcE1RM(prs[r].weight,r)===best1rm;
         return(isBest?'<span class="pc-crown">&#x1f451;</span>':'')+r+'&times;'+fmt(prs[r].weight);
-      }).join('&nbsp;&nbsp;');
+      }).join(' ');
 
-      html+=`<div class="progress-card${isExpanded?' expanded':''}" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
-        <div class="pc-header">
-          <div>
-            <span class="pc-name">${name}</span>
-            ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
-          </div>
-          <div class="pc-stats">
-            ${best1rm?`<div class="pc-1rm">1RM: ${fmt(best1rm)} lbs</div>`:''}
-            ${athVal?`<div class="pc-ath">ATH: ${athVal} lbs</div>`:''}
-          </div>
-        </div>
-        <div class="pc-compact">${compactPrs}</div>
-
-        <div class="pc-detail" onclick="event.stopPropagation()">
-          <table class="pr-table">`;
-
-      repCounts.forEach(r=>{
-        const pr=prs[r];
-        const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
-        const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
-        html+=`<tr>
-          <td class="rep-col">${r} reps</td>
-          <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
-          <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
-        </tr>`;
-      });
-
-      html+=`</table>
-          <div style="margin-top:12px">
-            <div class="range-tabs">
-              <button class="range-tab${(cardRanges[name]||4)===4?' active':''}" onclick="setCardRange('${esc}',4,this)">4W</button>
-              <button class="range-tab${(cardRanges[name]||4)===8?' active':''}" onclick="setCardRange('${esc}',8,this)">8W</button>
-              <button class="range-tab${(cardRanges[name]||4)===12?' active':''}" onclick="setCardRange('${esc}',12,this)">12W</button>
-              <button class="range-tab${(cardRanges[name]||4)===0?' active':''}" onclick="setCardRange('${esc}',0,this)">All</button>
+      if(isExpanded){
+        // Full-width expanded card
+        html+=`<div class="progress-card expanded" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
+          <div class="pc-header">
+            <div>
+              <span class="pc-name">${name}</span>
+              ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
             </div>
-            <div class="chart-container" style="margin-top:0"><canvas id="chart-${idx}" width="600" height="200"></canvas></div>
+            <div style="text-align:right;font-size:0.72rem">
+              ${best1rm?`<div class="pc-1rm">1RM: ${fmt(best1rm)} lbs</div>`:''}
+              ${athVal?`<div class="pc-ath">ATH: ${athVal} lbs</div>`:''}
+            </div>
           </div>
-          <div class="card-sub" style="margin:8px 0 6px">Session History</div>
-          <div id="history-${idx}"></div>
-        </div>
-      </div>`;
+
+          <div class="pc-detail" onclick="event.stopPropagation()">
+            <table class="pr-table">`;
+
+        repCounts.forEach(r=>{
+          const pr=prs[r];
+          const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
+          const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
+          html+=`<tr>
+            <td class="rep-col">${r} reps</td>
+            <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
+            <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
+          </tr>`;
+        });
+
+        html+=`</table>
+            <div style="margin-top:12px">
+              <div class="range-tabs">
+                <button class="range-tab${(cardRanges[name]||4)===4?' active':''}" onclick="setCardRange('${esc}',4,this)">4W</button>
+                <button class="range-tab${(cardRanges[name]||4)===8?' active':''}" onclick="setCardRange('${esc}',8,this)">8W</button>
+                <button class="range-tab${(cardRanges[name]||4)===12?' active':''}" onclick="setCardRange('${esc}',12,this)">12W</button>
+                <button class="range-tab${(cardRanges[name]||4)===0?' active':''}" onclick="setCardRange('${esc}',0,this)">All</button>
+              </div>
+              <div class="chart-container" style="margin-top:0"><canvas id="chart-${idx}" width="600" height="200"></canvas></div>
+            </div>
+            <div class="card-sub" style="margin:8px 0 6px">Session History</div>
+            <div id="history-${idx}"></div>
+          </div>
+        </div>`;
+      } else {
+        // Compact tile
+        html+=`<div class="progress-card" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
+          <span class="pc-name">${name}</span>
+          ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
+          ${best1rm?`<div class="pc-1rm">1RM: ${fmt(best1rm)}</div>`:''}
+          <div class="pc-compact">${compactPrs}</div>
+        </div>`;
+      }
     });
   });
+  html+='</div>';
 
   document.getElementById('progressCards').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises logged yet. Start a workout!</div>';
 
