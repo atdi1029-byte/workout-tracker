@@ -771,13 +771,18 @@ function loadFromCloud(){
         if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
       }
     }
-    // Merge config
+    // Merge config — preserve local ABCD09 custom program
+    const localCustom=data.customPrograms.ABCD09?JSON.parse(JSON.stringify(data.customPrograms.ABCD09)):null;
     if(config.activeProgram&&PROGRAMS[config.activeProgram])data.activeProgram=config.activeProgram;
+    else data.activeProgram='ABCD09';
     if(config.customPrograms){
-      data.customPrograms=config.customPrograms;
-      // Strip programs that no longer exist in PROGRAMS
-      Object.keys(data.customPrograms).forEach(k=>{if(!PROGRAMS[k])delete data.customPrograms[k]});
+      // Only keep programs that exist in PROGRAMS
+      const cleaned={};
+      for(const k in config.customPrograms){if(PROGRAMS[k])cleaned[k]=config.customPrograms[k]}
+      data.customPrograms=cleaned;
     }
+    // Restore local ABCD09 custom if cloud didn't have it
+    if(localCustom&&!data.customPrograms.ABCD09)data.customPrograms.ABCD09=localCustom;
     if(config.customSubs)data.customSubs=config.customSubs;
     if(config.customExercises)data.customExercises=config.customExercises;
     if(config.settings)data.settings=config.settings;
@@ -793,13 +798,15 @@ function loadFromCloud(){
     }
     // Merge extra (holds, notes, starts)
     const extra=resp.extra||{};
-    if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!h[k])h[k]=extra.holds[k];}saveHolds(h);}
-    if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!n[k])n[k]=extra.notes[k];}saveExNotes(n);}
-    if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!s[k])s[k]=extra.starts[k];}saveStartWeights(s);}
-    if(extra.favs){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
-    saveData();
-    syncConfigToCloud(); // Push cleaned config back to cloud
-    if(currentView==='workout')renderWorkout();
+    try{
+      if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!h[k])h[k]=extra.holds[k];}saveHolds(h);}
+      if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!n[k])n[k]=extra.notes[k];}saveExNotes(n);}
+      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!s[k])s[k]=extra.starts[k];}saveStartWeights(s);}
+      if(extra.favs){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
+    }catch(e){console.warn('Extra merge error',e)}
+    try{saveData()}catch(e){console.warn('Save error after sync',e)}
+    syncConfigToCloud();
+    try{if(currentView==='workout')renderWorkout()}catch(e){console.warn('Render error after sync',e)}
     toast('Synced from cloud');
   }).catch(()=>{});
 }
