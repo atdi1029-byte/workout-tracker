@@ -2280,9 +2280,14 @@ function renderProgress(){
   const query=(document.getElementById('progressSearch').value||'').toLowerCase();
   const allNames=getAllExerciseNames();
 
+  // Only include exercises that appear in actual workout logs
+  const loggedNames=new Set();
+  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>loggedNames.add(ex.name)));
+
   // Build exercise data
   const exerciseData=[];
   allNames.forEach((name,idx)=>{
+    if(!loggedNames.has(name))return;
     if(query&&!name.toLowerCase().includes(query)&&!(getExerciseEnglish(name)||'').toLowerCase().includes(query))return;
     const id=exId(name);
     const prs=data.prs[id]||{};
