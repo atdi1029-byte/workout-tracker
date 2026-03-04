@@ -2864,8 +2864,16 @@ function resetProgram(pid){
 function openModal(html){
   document.getElementById('modalContent').innerHTML=html;
   document.getElementById('modalOverlay').classList.add('show');
+  history.pushState({modal:true},'');
 }
-function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('show');
+  if(history.state&&history.state.modal)history.back();
+}
+window.addEventListener('popstate',function(){
+  const overlay=document.getElementById('modalOverlay');
+  if(overlay&&overlay.classList.contains('show'))overlay.classList.remove('show');
+});
 
 // ── SETTINGS ──
 function openSettings(){
