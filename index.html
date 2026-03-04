@@ -2143,7 +2143,8 @@ function renderExerciseCards(){
         html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
       }
       if(isHeld(ex.name)){
-        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs</div></div>`;
+        const s1w=workingSets[0]?workingSets[0].weight:'?';
+        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
       } else {
         const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
         const sug=getSuggestion(lastLog,targetReps,ex.name);
