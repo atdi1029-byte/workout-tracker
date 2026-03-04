@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4a90d9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Iron Log">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Iron Log</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg-deep:#0f1114;--bg-card:#1a1d22;--bg-card-hover:#22262d;--bg-input:#14171c;
+--border:#2d3238;--border-light:#3a4048;
+--text:#c8cdd4;--text-dim:#6b7280;--text-bright:#e8ecf0;
+--iron:#4a90d9;--iron-glow:#6aabf0;--iron-deep:#3670b0;
+--green:#4aaa6a;--green-bright:#5cc87a;
+--red:#d45a5a;--red-bright:#e87070;
+--gold:#e8b84a;--gold-glow:#f0d060;
+--yellow:#e8c84a;
+--radius:10px;--radius-sm:6px;
+}
+html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+body{padding-bottom:70px}
+
+/* HEADER */
+.app-header{position:sticky;top:0;z-index:100;background:linear-gradient(180deg,var(--bg-deep) 0%,rgba(15,17,20,0.95) 100%);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.app-header h1{font-size:1.4rem;font-weight:700;color:var(--text-bright);letter-spacing:1px}
+.app-header h1 span{color:var(--iron)}
+.header-actions{display:flex;gap:10px;align-items:center}
+.header-btn{background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:6px}
+.header-btn:hover{color:var(--text-bright)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+.sync-dot.offline{background:var(--red)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg-card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px);backdrop-filter:blur(10px)}
+.nav-btn{background:none;border:none;color:var(--text-dim);font-size:0.65rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;transition:color 0.2s}
+.nav-btn .nav-icon{font-size:1.3rem}
+.nav-btn.active{color:var(--iron)}
+.nav-btn.active .nav-icon{filter:drop-shadow(0 0 4px rgba(74,144,217,0.4))}
+
+/* VIEWS */
+.view{display:none;padding:12px 16px;max-width:600px;margin:0 auto}
+.view.active{display:block}
+
+/* CARDS */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.card:hover{border-color:var(--border-light)}
+.card-title{font-size:0.95rem;font-weight:600;color:var(--text-bright);margin-bottom:6px}
+.card-sub{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+
+/* PROGRAM GRID */
+.program-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.prog-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;cursor:pointer;transition:all 0.2s;text-align:center}
+.prog-card:hover{border-color:var(--iron);background:var(--bg-card-hover)}
+.prog-card.active{border-color:var(--iron);box-shadow:0 0 8px rgba(74,144,217,0.2)}
+.prog-card .prog-name{font-size:0.85rem;font-weight:700;color:var(--text-bright)}
+.prog-card .prog-phase{font-size:0.65rem;color:var(--text-dim);margin-top:2px}
+.prog-card .prog-days{font-size:0.7rem;color:var(--iron);margin-top:4px}
+
+/* ACTIVE PROGRAM BANNER */
+.active-banner{background:linear-gradient(135deg,rgba(74,144,217,0.12),rgba(74,144,217,0.05));border:1px solid rgba(74,144,217,0.3);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.active-banner .banner-label{font-size:0.7rem;color:var(--iron);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.active-banner .banner-name{font-size:1.3rem;font-weight:700;color:var(--text-bright)}
+.active-banner .banner-phase{font-size:0.8rem;color:var(--text-dim);margin-top:2px}
+.start-btn{display:block;width:100%;background:var(--iron);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:12px;transition:background 0.2s}
+.start-btn:hover{background:var(--iron-glow)}
+
+/* WEEK CALENDAR */
+.week-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0}
+.week-day{text-align:center;padding:8px 4px;border-radius:var(--radius-sm);background:var(--bg-card);border:1px solid var(--border)}
+.week-day .day-label{font-size:0.6rem;color:var(--text-dim);text-transform:uppercase}
+.week-day .day-letter{font-size:0.85rem;font-weight:600;color:var(--text-dim);margin-top:2px}
+.week-day.done{background:rgba(74,170,106,0.1);border-color:rgba(74,170,106,0.3)}
+.week-day.done .day-letter{color:var(--green)}
+.week-day.today{border-color:var(--iron)}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stat-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.stat-val{font-size:1.3rem;font-weight:700;color:var(--text-bright)}
+.stat-label{font-size:0.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* DAY TABS */
+.day-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+.day-tab{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;font-size:0.85rem;font-weight:600;color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.day-tab.active{background:var(--iron);border-color:var(--iron);color:#fff}
+
+/* EXERCISE CARD (WORKOUT) */
+.ex-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.ex-card.all-done{border-color:rgba(74,170,106,0.3)}
+.ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.ex-name{font-size:0.9rem;font-weight:600;color:var(--text-bright)}
+.ex-name-en{font-size:0.7rem;color:var(--text-dim)}
+.ex-meta{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.ex-tag{font-size:0.65rem;padding:2px 8px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--iron);border:1px solid rgba(74,144,217,0.2)}
+.ex-tag.tech{background:rgba(232,184,74,0.1);color:var(--gold);border-color:rgba(232,184,74,0.2)}
+.ex-tag.pattern{background:rgba(74,170,106,0.1);color:var(--green);border-color:rgba(74,170,106,0.2)}
+
+/* SET ROWS */
+.set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
+.set-label{font-size:0.75rem;color:var(--text-dim);min-width:36px}
+.set-label.warmup{color:var(--yellow)}
+.set-input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.9rem;width:100%;text-align:center}
+.set-input:focus{outline:none;border-color:var(--iron)}
+.set-input::placeholder{color:var(--text-dim)}
+.set-done-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s}
+.set-done-btn.done{background:var(--green);border-color:var(--green);color:#fff}
+.set-input-group{position:relative}
+.set-unit{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:0.65rem;color:var(--text-dim)}
+
+/* PR FLASH */
+.pr-flash{display:none;background:linear-gradient(135deg,rgba(232,184,74,0.15),rgba(232,184,74,0.05));border:1px solid rgba(232,184,74,0.4);border-radius:var(--radius-sm);padding:6px 10px;margin-top:6px;font-size:0.75rem;color:var(--gold);font-weight:600;animation:prPulse 0.6s ease}
+.pr-flash.show{display:block}
+@keyframes prPulse{0%{transform:scale(0.95);opacity:0}50%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+
+/* LAST TIME ROW */
+.ex-last{font-size:0.7rem;color:var(--text-dim);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.ex-last .pr-badge{color:var(--gold);font-weight:600}
+
+/* EX ACTIONS */
+.ex-actions{display:flex;gap:8px;margin-top:8px}
+.ex-action-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 10px;font-size:0.7rem;color:var(--text-dim);cursor:pointer}
+.ex-action-btn:hover{border-color:var(--iron);color:var(--iron)}
+
+/* ADD SET */
+.add-set-btn{background:none;border:1px dashed var(--border);border-radius:var(--radius-sm);padding:6px;width:100%;color:var(--text-dim);font-size:0.75rem;cursor:pointer;margin-top:4px}
+.add-set-btn:hover{border-color:var(--iron);color:var(--iron)}
+
+/* REST TIMER */
+.rest-timer{position:fixed;bottom:70px;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);padding:12px 16px;display:none;z-index:90;text-align:center}
+.rest-timer.active{display:block}
+.rest-time{font-size:2rem;font-weight:700;color:var(--text-bright);font-variant-numeric:tabular-nums}
+.rest-time.warning{color:var(--gold)}
+.rest-time.done{color:var(--green)}
+.rest-btns{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.rest-btn{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 16px;color:var(--text);font-size:0.8rem;cursor:pointer}
+.rest-btn.skip{background:var(--iron);border-color:var(--iron);color:#fff}
+
+/* FINISH BTN */
+.finish-btn{display:block;width:100%;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:16px}
+.finish-btn:hover{background:var(--green-bright)}
+
+/* PROGRESS VIEW */
+.chart-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin:12px 0}
+.chart-container canvas{width:100%;height:200px}
+.range-tabs{display:flex;gap:4px;margin:8px 0}
+.range-tab{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;font-size:0.75rem;color:var(--text-dim);cursor:pointer}
+.range-tab.active{background:var(--iron);border-color:var(--iron);color:#fff}
+select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;color:var(--text-bright);font-size:0.9rem;margin-bottom:8px;-webkit-appearance:none}
+
+/* SESSION HISTORY */
+.session-item{padding:10px;border-bottom:1px solid var(--border);font-size:0.8rem}
+.session-date{color:var(--iron);font-weight:600}
+.session-weights{color:var(--text);margin-top:2px}
+.session-trend{display:inline-block;padding:1px 6px;border-radius:8px;font-size:0.65rem;font-weight:600}
+.session-trend.up{background:rgba(74,170,106,0.15);color:var(--green)}
+.session-trend.down{background:rgba(212,90,90,0.15);color:var(--red)}
+.session-trend.flat{background:rgba(232,200,74,0.15);color:var(--yellow)}
+
+/* PR BOARD */
+.pr-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.pr-card .pr-exercise{font-size:0.95rem;font-weight:700;color:var(--text-bright)}
+.pr-card .pr-1rm{font-size:0.75rem;color:var(--gold);float:right}
+.pr-table{width:100%;margin-top:8px;font-size:0.8rem}
+.pr-table td{padding:4px 8px}
+.pr-table .rep-col{color:var(--text-dim);width:60px}
+.pr-table .weight-col{color:var(--text-bright);font-weight:600}
+.pr-table .date-col{color:var(--text-dim);font-size:0.7rem;text-align:right}
+.pr-table .crown{color:var(--gold)}
+.pr-table .recent{color:var(--green)}
+
+/* MUSCLE TABS */
+.muscle-tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.muscle-tab{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 14px;font-size:0.75rem;color:var(--text-dim);cursor:pointer;white-space:nowrap}
+.muscle-tab.active{background:var(--iron);border-color:var(--iron);color:#fff}
+
+/* SEARCH */
+.search-bar{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-bright);font-size:0.9rem;margin-bottom:12px}
+.search-bar:focus{outline:none;border-color:var(--iron)}
+
+/* LIB CARD */
+.lib-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px}
+.lib-card .lib-name{font-size:0.9rem;font-weight:600;color:var(--text-bright)}
+.lib-card .lib-name-en{font-size:0.75rem;color:var(--text-dim)}
+.lib-card .lib-equip{font-size:0.65rem;color:var(--iron);margin-top:2px}
+.lib-card .lib-ath{font-size:0.8rem;color:var(--gold);font-weight:600;float:right}
+.lib-subs{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.lib-subs-title{font-size:0.7rem;color:var(--text-dim);margin-bottom:4px}
+.lib-sub-item{font-size:0.75rem;color:var(--text);padding:3px 0;display:flex;justify-content:space-between;align-items:center}
+.lib-sub-item a{color:var(--iron);text-decoration:none;font-size:0.7rem}
+.lib-programs{font-size:0.65rem;color:var(--text-dim);margin-top:6px}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;display:none;justify-content:center;align-items:flex-end}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg-deep);border-top:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;padding:16px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.modal-title{font-size:1.1rem;font-weight:700;color:var(--text-bright)}
+.modal-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer}
+
+/* EDITOR */
+.edit-ex-item{display:flex;align-items:center;gap:6px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap}
+.edit-ex-item .edit-num{color:var(--text-dim);font-size:0.8rem;min-width:20px}
+.edit-ex-item .edit-name-input{flex:1;min-width:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text-bright);font-size:0.8rem}
+.edit-ex-item .edit-name-input:focus{outline:none;border-color:var(--iron)}
+.edit-ex-item .edit-field{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text);font-size:0.75rem;width:80px}
+.edit-ex-item .edit-field:focus{outline:none;border-color:var(--iron)}
+.edit-ex-item .edit-field.narrow{width:50px}
+.edit-ex-item .edit-del{background:none;border:none;color:var(--red);font-size:1.1rem;cursor:pointer;padding:4px 6px}
+.edit-ex-item .edit-move{background:none;border:none;color:var(--text-dim);font-size:0.9rem;cursor:pointer;padding:2px 4px}
+.edit-ex-item .edit-move:hover{color:var(--iron)}
+.edit-row2{display:flex;gap:6px;width:100%;padding-left:26px;margin-top:4px;align-items:center}
+.edit-row2 label{font-size:0.65rem;color:var(--text-dim)}
+.edit-save-btn{display:block;width:100%;background:var(--iron);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:12px}
+.edit-reset-btn{display:block;width:100%;background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:10px;font-size:0.85rem;cursor:pointer;margin-top:8px}
+.edit-add-btn{display:block;width:100%;background:none;border:1px dashed var(--border);border-radius:var(--radius-sm);padding:8px;color:var(--text-dim);font-size:0.8rem;cursor:pointer;margin-top:6px}
+.edit-add-btn:hover{border-color:var(--iron);color:var(--iron)}
+.base-badge{display:inline-block;font-size:0.6rem;padding:2px 6px;border-radius:8px;background:rgba(74,170,106,0.1);color:var(--green);border:1px solid rgba(74,170,106,0.2);margin-left:6px}
+.custom-badge{display:inline-block;font-size:0.6rem;padding:2px 6px;border-radius:8px;background:rgba(232,184,74,0.1);color:var(--gold);border:1px solid rgba(232,184,74,0.2);margin-left:6px}
+
+/* SWAP MODAL */
+.swap-item{padding:10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s}
+.swap-item:hover{background:var(--bg-card-hover)}
+.swap-item .swap-name{font-size:0.85rem;color:var(--text-bright)}
+.swap-item .swap-ath{font-size:0.75rem;color:var(--gold)}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:0.85rem;font-weight:600;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg-deep)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+@media(min-width:768px){
+  .program-grid{grid-template-columns:repeat(4,1fr)}
+  .stats-row{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <h1><span>IRON</span> LOG</h1>
+  <div class="header-actions">
+    <span class="sync-dot" id="syncDot" title="Sync status"></span>
+    <button class="header-btn" onclick="openSettings()" title="Settings">&#9881;</button>
+  </div>
+</header>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- VIEW: HOME -->
+<div id="view-home" class="view active">
+  <div class="active-banner" id="activeBanner"></div>
+  <div class="week-cal" id="weekCal"></div>
+  <div class="stats-row" id="statsRow"></div>
+  <div style="margin-top:16px">
+    <div class="card-sub" style="margin-bottom:8px">All Programs</div>
+    <div class="program-grid" id="programGrid"></div>
+  </div>
+</div>
+
+<!-- VIEW: WORKOUT -->
+<div id="view-workout" class="view">
+  <div class="day-tabs" id="dayTabs"></div>
+  <div id="workoutExercises"></div>
+  <button class="finish-btn" id="finishBtn" onclick="finishWorkout()">Finish Workout</button>
+</div>
+
+<!-- VIEW: PROGRESS -->
+<div id="view-progress" class="view">
+  <select class="view-select" id="progressExSelect" onchange="renderProgressChart()"></select>
+  <div class="range-tabs" id="rangeTabs">
+    <button class="range-tab active" onclick="setRange(4,this)">4W</button>
+    <button class="range-tab" onclick="setRange(8,this)">8W</button>
+    <button class="range-tab" onclick="setRange(12,this)">12W</button>
+    <button class="range-tab" onclick="setRange(0,this)">All</button>
+  </div>
+  <div class="chart-container"><canvas id="progressChart" width="600" height="200"></canvas></div>
+  <div class="card-sub" style="margin:12px 0 8px">Session History</div>
+  <div id="sessionHistory"></div>
+</div>
+
+<!-- VIEW: PRS -->
+<div id="view-prs" class="view">
+  <div class="muscle-tabs" id="prMuscleTabs"></div>
+  <div id="prBoard"></div>
+</div>
+
+<!-- VIEW: LIBRARY -->
+<div id="view-library" class="view">
+  <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrary()">
+  <div class="muscle-tabs" id="libMuscleTabs"></div>
+  <div id="libList"></div>
+</div>
+
+<!-- REST TIMER -->
+<div class="rest-timer" id="restTimer">
+  <div class="rest-time" id="restTime">1:30</div>
+  <div class="rest-btns">
+    <button class="rest-btn" onclick="addRestTime(30)">+30s</button>
+    <button class="rest-btn skip" onclick="skipRest()">Skip</button>
+  </div>
+</div>
+
+<!-- MODAL (Editor / Swap) -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showView('home',this)"><span class="nav-icon">&#127968;</span><span>Home</span></button>
+  <button class="nav-btn" onclick="showView('workout',this)"><span class="nav-icon">&#128170;</span><span>Workout</span></button>
+  <button class="nav-btn" onclick="showView('progress',this)"><span class="nav-icon">&#128200;</span><span>Progress</span></button>
+  <button class="nav-btn" onclick="showView('prs',this)"><span class="nav-icon">&#127942;</span><span>PRs</span></button>
+  <button class="nav-btn" onclick="showView('library',this)"><span class="nav-icon">&#128214;</span><span>Library</span></button>
+</nav>
+
+<script>
+/* ============================================
+   IRON LOG — Workout Tracker
+   ============================================ */
+
+// ── CONSTANTS ──
+const STORAGE_KEY = 'workout_data_v1';
+const MUSCLE_GROUPS = ['chest','back','shoulders','biceps','triceps','forearms','quads','hamstrings','glutes','calves','abs'];
+const MUSCLE_LABELS = {chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs'};
+const PHASES = {acc:'Accumulation',int:'Intensification',spe:'Specialization',rea:'Realization',peak:'Peak Strength',freq:'Frequency'};
+const TECH_LABELS = {S:'Straight Sets',P:'Pyramid',TP:'Truncated Pyramid',RP:'Reverse Pyramid',DS:'Drop Set',BS:'Bi-Set',TS:'Tri-Set',SS:'Superset',ASS:'Antagonist Superset',RestP:'Rest-Pause',PE:'Pre-Exhaust',Dead:'Dead Stop',BO:'Back-Off',Mob:'Mobility',Fail:'To Failure',Prog:'Progressive'};
+
+// ── MOVEMENT PATTERNS ──
+const MOVEMENT_PATTERNS = {
+  // Chest
+  'Supino Reto':'Horizontal Press','Supino Reto com Halteres':'Horizontal Press','Supino Maquina':'Horizontal Press',
+  'Supino Inclinado':'Incline Press','Supino Inclinado com Halteres':'Incline Press','Supino Inclinado Maquina':'Incline Press',
+  'Crucifixo Inclinado com Halteres':'Chest Fly','Crucifixo Inclinado':'Chest Fly','Crucifixo na Polia':'Chest Fly',
+  'Crucifixo Adutor na Polia':'Chest Fly','Crucifixo Voador':'Chest Fly','Crucifixo na Maquina':'Chest Fly',
+  'Crucifixo Halter Flat':'Chest Fly','Paralela':'Vertical Press / Dip','Flexao':'Horizontal Push','Apoio':'Horizontal Push',
+  'Hex Press Smith':'Horizontal Press',
+  // Back
+  'Puxada Frente':'Vertical Pull','Puxada':'Vertical Pull','Puxada Pegada Neutra':'Vertical Pull',
+  'Puxada Pegada Inversa':'Vertical Pull','Puxada Frente Triangulo':'Vertical Pull','Pulldown':'Vertical Pull',
+  'Barra Fixa com Peso':'Vertical Pull','Barra Fixa':'Vertical Pull','Barra Fixa Supinada':'Vertical Pull',
+  'Remada Curvada com Barra':'Horizontal Pull','Remada Curvada':'Horizontal Pull','Remada Curvada Pronada':'Horizontal Pull',
+  'Remada Baixa':'Horizontal Pull','Remada Unilateral':'Horizontal Pull','Remada Unilateral com Halter':'Horizontal Pull',
+  'Remada na Polia Alta':'Horizontal Pull','Remada com Kettlebell':'Horizontal Pull','Remada Maquina':'Horizontal Pull',
+  'Remada Baixa Unilateral':'Horizontal Pull','Remada Baixa Pegada Aberta':'Horizontal Pull',
+  'Remada Curvada Tbar':'Horizontal Pull','Remada Alta':'Upright Pull',
+  'Levantamento Terra':'Hip Hinge','Pull Over Dumbell':'Pullover',
+  // Shoulders
+  'Desenvolvimento Maquina':'Vertical Press','Desenvolvimento com Halteres':'Vertical Press','Desenvolvimento Arnold':'Vertical Press',
+  'Elevacao Lateral':'Lateral Raise','Elevacao Lateral com Halteres':'Lateral Raise','Elevacao Unilateral':'Lateral Raise',
+  'Elevacao Frontal':'Front Raise','Elevacao Frontal + Remada Alta':'Front Raise / Upright Pull',
+  'Crucifixo Inverso':'Rear Delt Fly','Cable Reverse Fly':'Rear Delt Fly',
+  'Rotacao Interna':'Prehab / Internal Rotation','Rotacao Externa':'Prehab / External Rotation',
+  'Viking Press':'Vertical Press','Klokov Press':'Vertical Press',
+  // Biceps
+  'Rosca Direta':'Elbow Flexion','Rosca Alternada':'Elbow Flexion','Rosca com Halteres':'Elbow Flexion',
+  'Rosca Scott':'Elbow Flexion (Preacher)','Rosca Scott Maquina':'Elbow Flexion (Preacher)',
+  'Rosca Martelo':'Elbow Flexion (Neutral)','Rosca Concentrada':'Elbow Flexion (Isolation)',
+  'Rosca Zotman':'Elbow Flexion / Pronation','Rosca 45':'Elbow Flexion (Incline)',
+  'Rosca na Polia':'Elbow Flexion (Cable)','Biceps Concentrado':'Elbow Flexion (Isolation)',
+  'Biceps Direto':'Elbow Flexion','Biceps Pulley':'Elbow Flexion (Cable)','Biceps Pulley Corda':'Elbow Flexion (Cable)',
+  'Spider Curls':'Elbow Flexion (Spider)',
+  // Triceps
+  'Triceps Corda':'Elbow Extension (Pushdown)','Triceps Testa':'Elbow Extension (Skull Crusher)',
+  'Triceps Frances':'Elbow Extension (Overhead)','Triceps Frances Unilateral':'Elbow Extension (OH Unilateral)',
+  'Triceps Testa Halteres':'Elbow Extension (Skull Crusher)','Triceps Coice':'Elbow Extension (Kickback)',
+  'Triceps Pulley':'Elbow Extension (Pushdown)','Triceps Kickback':'Elbow Extension (Kickback)',
+  // Legs
+  'Agachamento Livre':'Squat','Agachamento Hack':'Squat (Machine)','Agachamento Bulgaro':'Single Leg Squat',
+  'Agachamento Smith':'Squat (Smith)','Back Squat':'Squat',
+  'Leg Press 45':'Leg Press','Cadeira Extensora':'Knee Extension','Cadeira Extensora Unilateral':'Knee Extension (Unilateral)',
+  'Cadeira Flexora':'Knee Flexion (Seated)','Mesa Flexora':'Knee Flexion (Lying)',
+  'Stiff':'Hip Hinge','Levantamento Terra':'Hip Hinge','Afundo':'Lunge','Afundo com Halteres':'Lunge',
+  'Passada com Halteres':'Walking Lunge','Avanço Smith':'Lunge (Smith)',
+  'Panturrilha Press':'Calf Raise (Press)','Panturrilha':'Calf Raise','Panturrilha Smith':'Calf Raise (Smith)',
+  'Cadeira Abdutora':'Hip Abduction','Cossack Squats':'Mobility / Squat','Jefferson Curl':'Mobility / Hamstring',
+  // Abs
+  'Abdominal Infra':'Trunk Flexion (Lower)','Abdominal Infra no Solo':'Trunk Flexion (Lower)',
+  'Abdominal Infra no Banco':'Trunk Flexion (Decline)','Abdominal Crunch':'Trunk Flexion',
+  'Abdominal Obliquo':'Trunk Rotation','Abdominal Cruzado':'Trunk Rotation',
+  'Abdominal com Carrinho':'Anti-Extension','Abdominal na Polia':'Trunk Flexion (Cable)',
+  'Abdominal na Polia Alta':'Trunk Flexion (Cable)','Abdominal Canivete':'Trunk Flexion',
+  'Abdominal Remador':'Trunk Flexion','Abdominal Supra Bracos Esticados':'Trunk Flexion',
+  'Prancha':'Anti-Extension (Isometric)','Prancha Lateral':'Anti-Lateral Flexion',
+  'Prancha Lateral com Rotacao':'Anti-Lateral Flexion + Rotation','Prancha na Bola':'Anti-Extension (Unstable)',
+  'Dragon Flag':'Anti-Extension (Advanced)','Crunch':'Trunk Flexion',
+  'Escalador Alternado Slide':'Dynamic Core','Abdominal Remador Weighted':'Trunk Flexion'
+};
+function getPattern(name){return MOVEMENT_PATTERNS[name]||''}
+
+// ── PROGRAMS DATA ──
+// Format: [name, nameEn, muscle, technique, setsReps, restSec]
+const PROGRAMS = {
+ABC01:{name:'ABC01',phase:'acc',type:'ABC',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push (Chest + Shoulders + Triceps)',ex:[
+    ['Supino Reto','Bench Press','chest','P','1x12/2x10/2x8',90],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8-12',80],
+    ['Crucifixo Inclinado com Halteres','Incline DB Fly','chest','S','4x8-12',60],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','4x10-12',60],
+    ['Elevacao Lateral com Halteres','DB Lateral Raise','shoulders','S','4x10-12',60],
+    ['Triceps Corda','Rope Pushdown','triceps','S','4x10-12',60],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x10-12',60]
+  ]},
+  B:{label:'Costas + Biceps',labelEn:'Pull (Back + Biceps)',ex:[
+    ['Puxada Frente','Lat Pulldown','back','S','4x8-12',80],
+    ['Remada Curvada com Barra','Bent Over Barbell Row','back','S','4x8-12',80],
+    ['Remada Baixa','Seated Cable Row','back','S','4x8-12',80],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
+    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x10-12',60]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Livre','Barbell Squat','quads','S','4x8-12',90],
+    ['Leg Press 45','Leg Press','quads','S','4x10-12',90],
+    ['Cadeira Extensora','Leg Extension','quads','DS','3x10-12+drop',60],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','S','4x10-12',60],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','S','4x10-12',80],
+    ['Panturrilha Press','Calf on Leg Press','calves','S','4x15-20',45]
+  ]}
+}},
+ABC02:{name:'ABC02',phase:'int',type:'ABC',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Supino Reto','Bench Press','chest','P','Pyramid',90],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8-12',80],
+    ['Crucifixo na Polia','Cable Fly','chest','BS','Bi-Set',60],
+    ['Flexao','Push-ups','chest','Fail','To failure',0],
+    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x10-12',60],
+    ['Elevacao Lateral','Lateral Raise','shoulders','P','Pyramid',60],
+    ['Triceps Corda','Rope Pushdown','triceps','P','Pyramid',60],
+    ['Triceps Frances','French Press','triceps','S','4x10-12',60]
+  ]},
+  B:{label:'Costas + Biceps',labelEn:'Pull',ex:[
+    ['Puxada Pegada Neutra','Neutral Grip Pulldown','back','Fail','4x failure',80],
+    ['Remada Curvada','Bent Over Row','back','P','Pyramid',90],
+    ['Remada Baixa','Seated Cable Row','back','RestP','Rest-Pause',80],
+    ['Puxada Frente','Lat Pulldown','back','S','4x8-12',80],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
+    ['Rosca Scott','Preacher Curl','biceps','P','Pyramid',60]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','P','Pyramid',90],
+    ['Leg Press 45','Leg Press','quads','S','4x10-12',90],
+    ['Cadeira Extensora','Leg Extension','quads','BS','Bi-Set',60],
+    ['Afundo','Lunges','quads','BS','Bi-Set',0],
+    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10-12',60],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','S','4x10-12',80],
+    ['Panturrilha','Calf Raise','calves','S','4x12-15',45]
+  ]},
+  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
+    ['Abdominal Infra','Lower Abs','abs','S','4x15-20',45],
+    ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
+    ['Prancha','Plank','abs','S','3x60s',45]
+  ]}
+}},
+ABC03:{name:'ABC03',phase:'spe',type:'ABC',days:{
+  A:{label:'Peito (ALL INCLINE) + Ombros + Triceps',labelEn:'Push (All Incline)',ex:[
+    ['Supino Inclinado','Incline Barbell Bench','chest','S','4x8-10',90],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8-10',80],
+    ['Crucifixo Inclinado','Incline Fly','chest','TP','Truncated Pyramid',60],
+    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x10-12',60],
+    ['Elevacao Frontal','Front Raise','shoulders','BS','Bi-Set',60],
+    ['Elevacao Lateral','Lateral Raise','shoulders','BS','Bi-Set',0],
+    ['Triceps Corda','Rope Pushdown','triceps','DS','Drop-Set last set',60],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x10-12',60]
+  ]},
+  B:{label:'Costas + Biceps',labelEn:'Pull',ex:[
+    ['Barra Fixa com Peso','Weighted Pull-ups','back','Prog','Progressive loading',120],
+    ['Puxada Pegada Neutra','Neutral Grip Pulldown','back','S','4x8-10',80],
+    ['Remada Curvada','Bent Over Row','back','P','Pyramid',90],
+    ['Remada Unilateral','Single Arm Row','back','S','4x10-12',60],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','RestP','Rest-Pause',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-10',60],
+    ['Rosca Martelo','Hammer Curl','biceps','P','Pyramid',60],
+    ['Rosca Concentrada','Concentration Curl','biceps','S','4x10-12',60]
+  ]},
+  C:{label:'Pernas + Deadlift',labelEn:'Legs (with Deadlift)',ex:[
+    ['Jefferson Curl','Jefferson Curl','hamstrings','Mob','Mobility',60],
+    ['Cossack Squats','Cossack Squats','quads','Mob','Mobility',60],
+    ['Levantamento Terra','Deadlift','back','S','4x8-10',120],
+    ['Leg Press 45','Leg Press','quads','S','4x8-12',90],
+    ['Cadeira Extensora','Leg Extension','quads','TP','Truncated Pyramid',60],
+    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10-12',60],
+    ['Panturrilha','Calf Raise','calves','S','4x12-15',45]
+  ]},
+  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
+    ['Abdominal Infra','Lower Abs','abs','S','4x15-20',45],
+    ['Abdominal Obliquo','Oblique Crunch','abs','S','4x10 each',45],
+    ['Prancha Lateral','Side Plank','abs','S','3x30s each',45],
+    ['Crunch','Crunch','abs','S','4x15-20',45]
+  ]}
+}},
+ABC04:{name:'ABC04',phase:'rea',type:'ABC',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Supino Reto','Flat Bench Press','chest','S','4x6-8',90],
+    ['Supino Inclinado','Incline Bench','chest','S','4x6-8',90],
+    ['Crucifixo na Polia','Cable Fly','chest','DS','Drop-Set',60],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','4x8-10',60],
+    ['Triceps Corda','Rope Pushdown','triceps','S','4x8-10',60],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x8-10',60]
+  ]},
+  B:{label:'Costas + Biceps',labelEn:'Pull',ex:[
+    ['Abdominal Infra','Lower Abs','abs','S','5x12-15',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Barra Fixa Supinada','Chin-ups','back','Fail','4x failure',90],
+    ['Puxada Frente','Lat Pulldown','back','S','4x6-8',90],
+    ['Remada Curvada','Bent Over Row','back','S','4x6-8',90],
+    ['Remada Baixa','Seated Row','back','S','4x8-10',80],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-10',60],
+    ['Rosca Scott','Preacher Curl','biceps','S','4x8-10',60]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','S','4x6-8',90],
+    ['Leg Press 45','Leg Press','quads','S','4x8-10',90],
+    ['Cadeira Extensora','Leg Extension','quads','S','4x10-12',60],
+    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10-12',60],
+    ['Panturrilha','Calf Raise','calves','P','20/15/10',45]
+  ]},
+  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
+    ['Abdominal Crunch','Crunch','abs','S','4x20-30',45],
+    ['Prancha','Plank','abs','S','4x60s',45],
+    ['Abdominal Obliquo','Oblique','abs','S','4x10 each',45]
+  ]}
+}},
+ABC05:{name:'ABC05',phase:'acc',type:'ABC',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push (Pre-Exhaust)',ex:[
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Crucifixo Adutor na Polia','Cable Fly','chest','PE','2x10-12wu+6x10-12',60],
+    ['Supino Reto com Halteres','DB Flat Bench','chest','S','4x8-12',80],
+    ['Supino Inclinado','Incline Bench','chest','S','4x8-12',80],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','4x10-12',60],
+    ['Elevacao Lateral','Lateral Raise','shoulders','S','4x10-12',60],
+    ['Triceps Corda','Rope Pushdown','triceps','S','4x10-12',60],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x10-12',60]
+  ]},
+  B:{label:'Costas + Biceps',labelEn:'Pull (Pre-Exhaust)',ex:[
+    ['Remada Baixa','Seated Row','back','PE','2x10-12wu+6x10-12',80],
+    ['Puxada Frente','Lat Pulldown','back','S','4x8-12',80],
+    ['Remada Curvada','Bent Over Row','back','S','4x8-12',90],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-15',60],
+    ['Rosca Scott','Preacher Curl','biceps','S','4x8-12',60],
+    ['Rosca Martelo','Hammer Curl','biceps','S','4x8-12',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
+    ['Rosca Concentrada','Concentration Curl','biceps','S','4x10-12',60],
+    ['Rosca Zotman','Zotman Curl','biceps','S','3x10-12',60]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','S','4x8-12',90],
+    ['Leg Press 45','Leg Press','quads','S','4x10-12',90],
+    ['Cadeira Extensora','Leg Extension','quads','S','4x10-12',60],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','BS','4x10-12 Bi-Set',60],
+    ['Cadeira Flexora','Leg Curl','hamstrings','BS','4x10-12 Bi-Set',0],
+    ['Panturrilha','Calf Raise','calves','S','4x15-20',45]
+  ]},
+  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
+    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','4x15-20',45],
+    ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45],
+    ['Abdominal Obliquo','Oblique Crunch','abs','BS','4x10 each Bi-Set',0],
+    ['Abdominal Crunch','Crunch','abs','BS','4x15-20 Bi-Set',45]
+  ]}
+}},
+ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',days:{
+  A:{label:'Peito + Ombros',labelEn:'Push (Chest + Shoulders)',ex:[
+    ['Crucifixo na Maquina','Pec Deck','chest','DS','3x8-12+triple drop',60],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','5x5-8',120],
+    ['Crucifixo na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','Drop-Set',60],
+    ['Elevacao Frontal + Remada Alta','Front Raise + Upright Row','shoulders','BS','Bi-Set',60]
+  ]},
+  B:{label:'Costas',labelEn:'Pull (Back)',ex:[
+    ['Abdominal na Polia','Cable Crunch','abs','S','6x10',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Remada Curvada','Bent Over Row','back','RP','12-15/10/5/10/12-15',120],
+    ['Remada Baixa','Seated Row','back','DS','Drop-Set',80],
+    ['Puxada Frente','Lat Pulldown','back','S','5x5-8',120],
+    ['Remada na Polia Alta','Wide Cable Row','back','S','4x8-12',80],
+    ['Elevacao Lateral','Lateral Raise','shoulders','DS','Drop-Set',60],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-15',60]
+  ]},
+  C:{label:'Bracos + Abdominais',labelEn:'Arms + Abs',ex:[
+    ['Abdominal Crunch','Crunch','abs','TS','3x20-30 Tri-Set',0],
+    ['Abdominal Infra','Lower Abs','abs','TS','3x20-30 Tri-Set',0],
+    ['Prancha','Plank','abs','TS','3x60s Tri-Set',60],
+    ['Rosca Direta','Barbell Curl','biceps','P','Pyramid',60],
+    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x8 each',60],
+    ['Rosca na Polia','Cable Curl','biceps','DS','Drop-Set',60],
+    ['Triceps Corda','Rope Pushdown','triceps','P','Pyramid',60],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x8-12',60],
+    ['Triceps Coice','Kickback','triceps','RestP','Rest-Pause',60]
+  ]},
+  D:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','S','2x10wu+3x8',90],
+    ['Afundo com Halteres','DB Lunge','quads','S','4x12 each',60],
+    ['Cadeira Extensora','Leg Extension','quads','BS','Bi-Set',60],
+    ['Afundo','Walking Lunge','quads','BS','Bi-Set',0],
+    ['Leg Press 45','Leg Press','quads','S','3x10-15',90],
+    ['Cadeira Flexora','Leg Curl','hamstrings','DS','Drop-Set',60],
+    ['Panturrilha Press','Calf on Press','calves','S','3x20-30',45]
+  ]}
+}},
+ABCD07:{name:'ABCD07',phase:'spe',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push + Triceps',ex:[
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Crucifixo Adutor na Polia','Cable Fly','chest','PE','1x10-12wu+6x10-12',60],
+    ['Supino Reto com Halteres','DB Flat Bench','chest','P','1x12/2x10/2x8',90],
+    ['Supino Inclinado','Incline Barbell','chest','S','4x8',90],
+    ['Supino Inclinado com Halteres','Incline DB','chest','S','4x8',80],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x10+1x drop',60],
+    ['Triceps Testa Halteres','DB Skull Crusher','triceps','S','4x8 (30° incline)',60]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull + Biceps',ex:[
+    ['Dragon Flag','Dragon Flag','abs','S','4x15',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Remada Baixa','Seated Row','back','PE','2x10-12wu+6x10-12',80],
+    ['Remada Curvada','Bent Over Row','back','P','1x12/2x8-10/2x5-8',90],
+    ['Puxada','Lat Pulldown','back','S','4x8',80],
+    ['Puxada Pegada Inversa','Underhand Pulldown','back','S','4x8',80],
+    ['Elevacao Lateral','Lateral Raise','shoulders','P','2x12-15/3x10',60],
+    ['Rosca com Halteres','DB Curl','biceps','S','4x8',60]
+  ]},
+  C:{label:'Bracos',labelEn:'Arms (Dedicated)',ex:[
+    ['Rosca Scott Maquina','Preacher Machine','biceps','Fail','1x10-12+3x failure',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
+    ['Rosca Alternada','Alternating Curl','biceps','S','4x6-8 each',60],
+    ['Triceps Corda','Rope Pushdown','triceps','Fail','1x10-12+3x failure',60],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x8-12',60],
+    ['Triceps Frances Unilateral','Single Arm OH Extension','triceps','S','4x6-8 each',60]
+  ]},
+  D:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','P','12/10/8',90],
+    ['Leg Press 45','Leg Press','quads','S','2x10-15wu+3x10',90],
+    ['Cadeira Extensora','Leg Extension','quads','DS','3x10+Strip to FFF',60],
+    ['Cadeira Abdutora','Hip Abductor','glutes','S','4x12',60],
+    ['Mesa Flexora','Lying Leg Curl','hamstrings','S','4x10',60],
+    ['Panturrilha Press','Calf on Press','calves','P','20/15/10',45]
+  ]},
+  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
+    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','4x15-20',45],
+    ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45],
+    ['Abdominal Obliquo','Oblique Crunch','abs','BS','4x10 each Bi-Set',0],
+    ['Abdominal Crunch','Crunch','abs','BS','4x15-20 Bi-Set',45]
+  ]}
+}},
+ABCD08:{name:'ABCD08',phase:'rea',type:'ABCD',days:{
+  A:{label:'Peito + Ombros',labelEn:'Push',ex:[
+    ['Abdominal Infra no Banco','Decline Crunch','abs','BS','4x20 Bi-Set',0],
+    ['Prancha','Plank','abs','BS','4x60s Bi-Set',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Supino Reto','Barbell Bench','chest','P','12/10/8/6',120],
+    ['Supino Maquina','Machine Bench','chest','DS','3x10-12+drop',80],
+    ['Supino Inclinado com Halteres','Incline DB','chest','P','12/10/8/6',120],
+    ['Crucifixo na Polia','Cable Fly','chest','RestP','4x8-12',60],
+    ['Apoio','Push-Ups','chest','Fail','4x failure',60],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x10+drop',60],
+    ['Elevacao Frontal','Front Raise','shoulders','S','4x10 each alt',60]
+  ]},
+  B:{label:'Costas + Ombros',labelEn:'Pull',ex:[
+    ['Dragon Flag','Dragon Flag','abs','S','4x20',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Remada Curvada com Barra','Barbell Row','back','P','12/10/8/6',120],
+    ['Remada Curvada','Bent Over Row','back','Fail','3x10-12+fail',90],
+    ['Puxada','Lat Pulldown','back','P','12/10/8/6',120],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','RestP','4x8-12',80],
+    ['Remada com Kettlebell','KB Row Pronated','back','S','4x10-15',60],
+    ['Elevacao Unilateral','Unilateral Lateral Raise','shoulders','S','4x10-12',60]
+  ]},
+  C:{label:'Bracos (Antagonist Supersets)',labelEn:'Arms (Antagonist Supersets)',ex:[
+    ['Rosca Direta','Barbell Curl','biceps','ASS','4x10 SS',0],
+    ['Triceps Testa','Skull Crusher','triceps','ASS','4x10 SS',90],
+    ['Triceps Frances','French Press','triceps','ASS','4x10 SS',0],
+    ['Biceps Direto','Barbell Curl','biceps','ASS','4x10 SS',90],
+    ['Biceps Pulley','Cable Curl','biceps','ASS','12-15/10/8/8 SS',0],
+    ['Triceps Pulley','Cable Pushdown','triceps','ASS','12-15/10/8/8 SS',90],
+    ['Abdominal Crunch','Crunch','abs','S','4x20-30',45],
+    ['Prancha na Bola','Plank on Ball','abs','S','4x45-60s',45]
+  ]},
+  D:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Cadeira Extensora','Leg Extension','quads','PE','6x10-12',60],
+    ['Leg Press 45','Leg Press','quads','S','2xwu+4x10',120],
+    ['Agachamento Hack','Hack Squat','quads','S','4x12',90],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','P','20/15/3x10',60],
+    ['Mesa Flexora','Lying Leg Curl','hamstrings','S','4x6-8',90],
+    ['Panturrilha Press','Calf on Press','calves','P','20/15/10',45]
+  ]},
+  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x12-15',45],
+    ['Abdominal Supra Bracos Esticados','Arms Extended Crunch','abs','S','4x12-15',45],
+    ['Abdominal Cruzado','Cross Crunch','abs','S','4x10 each',45]
+  ]}
+}},
+ABCD09:{name:'ABCD09',phase:'peak',type:'ABCD',days:{
+  A:{label:'Peito + Ombros',labelEn:'Push',ex:[
+    ['Prancha na Bola','Plank on Ball','abs','S','4x90s',45],
+    ['Abdominal Canivete','Jackknife','abs','S','4x15-20',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Supino Reto','Barbell Bench','chest','S','2x8wu+4x8',120],
+    ['Supino Inclinado com Halteres','Incline DB','chest','S','4x8',120],
+    ['Paralela','Dips','chest','S','4x8',120],
+    ['Crucifixo Voador','Pec Deck','chest','S','4x8',60],
+    ['Elevacao Lateral','Lateral Raise','shoulders','S','4x8',60]
+  ]},
+  B:{label:'Costas',labelEn:'Pull',ex:[
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
+    ['Dragon Flag','Dragon Flag','abs','S','4x20+10kg',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Barra Fixa','Pull-Ups','back','S','4x8',120],
+    ['Remada Baixa','Seated Row','back','S','4x8',120],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','S','4x8',120],
+    ['Remada Curvada Pronada','Bent Over Row Pronated','back','S','4x8',120],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','DS','3x8+drop',60]
+  ]},
+  C:{label:'Bracos',labelEn:'Arms',ex:[
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8',120],
+    ['Triceps Testa','Skull Crusher','triceps','S','4x8',120],
+    ['Biceps Concentrado','Concentration Curl','biceps','S','4x8',120],
+    ['Triceps Corda','Rope Pushdown','triceps','S','4x8',120],
+    ['Abdominal Remador','Rower Crunch','abs','S','4x30',45],
+    ['Abdominal na Polia Alta','High Cable Crunch','abs','S','4x',45]
+  ]},
+  D:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat','quads','S','1x8wu+3x8',120],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','S','1x8wu+3x8',120],
+    ['Cadeira Extensora','Leg Extension','quads','Dead','1x8wu+3x8 Dead Stop',120],
+    ['Cadeira Flexora','Leg Curl','hamstrings','S','1x8wu+3x8',120],
+    ['Passada com Halteres','Walking Lunge','quads','S','3x16 steps',120],
+    ['Panturrilha Press','Calf on Press','calves','Dead','4x12 Dead Stop',60]
+  ]}
+}},
+ABCD10:{name:'ABCD10',phase:'freq',type:'ABCD',days:{
+  A:{label:'Peito + Triceps',labelEn:'Push (with Triceps)',ex:[
+    ['Abdominal Cruzado','Bicycle Crunch','abs','S','3x10 each alt',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Supino Inclinado com Halteres','Incline DB','chest','S','2x8wu+4x8',120],
+    ['Supino Reto','Barbell Bench','chest','S','2x8wu+4x8',120],
+    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Elevacao Frontal','Front Raise','shoulders','P','15/12/2x10',60],
+    ['Triceps Frances','French Press','triceps','S','2x8-10light+4x8',90]
+  ]},
+  B:{label:'Costas + Biceps',labelEn:'Pull (with Biceps)',ex:[
+    ['Abdominal Crunch','Crunch','abs','S','3x30',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Remada Curvada Pronada','Bent Over Row Pronated','back','S','2x8wu+4x8',120],
+    ['Remada Baixa','Seated Row','back','S','2x8wu+4x8',120],
+    ['Puxada','Pulldown','back','S','4x8-12',80],
+    ['Elevacao Lateral','Lateral Raise','shoulders','P','12/10/2x8',60],
+    ['Rosca Scott','Preacher Curl','biceps','S','2x8-10light+4x8',90]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Cadeira Extensora','Leg Extension','quads','P','15/12/10/3x8',120],
+    ['Leg Press 45','Leg Press','quads','P','12/10/4x8',120],
+    ['Agachamento Bulgaro','Bulgarian Split Squat','quads','S','4x8',120],
+    ['Cadeira Flexora','Leg Curl','hamstrings','P','12/10/4x8',120],
+    ['Panturrilha Press','Calf on Press','calves','BO','12/10/8/15',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body',ex:[
+    ['Supino Reto com Halteres','DB Bench','chest','P','12/10/3x8',120],
+    ['Supino Inclinado','Incline Barbell','chest','P','12/10/3x8',120],
+    ['Triceps Testa','Skull Crusher','triceps','P','12/10/3x8',120],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','P','12/10/3x8',120],
+    ['Remada Unilateral com Halter','Single Arm DB Row','back','P','12/10/3x8',120],
+    ['Rosca Direta','Barbell Curl','biceps','P','12/10/3x8',120]
+  ]}
+}},
+ABCD11:{name:'ABCD11',phase:'peak',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Supino Reto','Barbell Bench','chest','P','10/8/6/6',180],
+    ['Paralela','Dips','chest','S','2x8BW+4x8 weighted',120],
+    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x8',80],
+    ['Triceps Frances','French Press','triceps','S','2x8-10light+4x8',90],
+    ['Triceps Frances Unilateral','Single Arm OH Extension','triceps','S','4x6-8',60]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
+    ['Abdominal Infra no Solo','Lower Abs','abs','S','4x15-20',45],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Remada Unilateral com Halter','Single Arm DB Row','back','P','10/8/6/6',180],
+    ['Remada Baixa','Seated Row','back','S','2x8wu+4x8',120],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','DS','12/2x10/1x8+fail',60],
+    ['Elevacao Unilateral','Unilateral Lateral Raise','shoulders','S','4x10-12',60],
+    ['Biceps Concentrado','Concentration Curl','biceps','S','4x6-8',60]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Leg Press 45','Leg Press','quads','P','12/10/4x8-12',120],
+    ['Back Squat','Back Squat','quads','S','2x12wu+4x8-12',120],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','S','2x12wu+4x8-12',120],
+    ['Cadeira Extensora Unilateral','Unilateral Leg Extension','quads','S','3x8',60],
+    ['Cadeira Flexora','Leg Curl','hamstrings','DS','3x8+drop to fail',120],
+    ['Panturrilha Press','Calf on Press','calves','BO','12/10/8/15',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body',ex:[
+    ['Supino Inclinado com Halteres','Incline DB','chest','P','12/10/8/3x6',120],
+    ['Crucifixo Voador','Pec Deck','chest','DS','3x6-8+drop to fail',120],
+    ['Triceps Testa Halteres','DB Skull Crusher','triceps','P','12/10/3x6-8',120],
+    ['Puxada','Lat Pulldown','back','P','12/10/8/3x6',120],
+    ['Remada Baixa Unilateral','Unilateral Seated Row','back','S','4x8',120],
+    ['Rosca com Halteres','DB Curl','biceps','P','12/10/3x6-8',120]
+  ]}
+}},
+ABCD12:{name:'ABCD12',phase:'int',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','3x8',120],
+    ['Supino Reto','Flat Bench','chest','P','Pyramid',180],
+    ['Crucifixo na Polia','Cable Fly','chest','S','3x8',80],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','3x8',80],
+    ['Triceps Testa','Skull Crusher','triceps','S','3x8',80]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Abdominal Crunch','200 Crunch AFAP','abs','S','200 AFAP',0],
+    ['Puxada','Lat Pulldown','back','S','3x8',120],
+    ['Remada Baixa','Seated Row','back','S','3x8',120],
+    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x8',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','3x8',80]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Avanço Smith','Smith Machine Lunge','quads','S','3x8',120],
+    ['Agachamento Smith','Smith Machine Squat','quads','S','3x8',120],
+    ['Cadeira Extensora','Leg Extension','quads','P','Pyramid',90],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','RestP','5x3/10s Rest-Pause',90],
+    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+back-off 15',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body',ex:[
+    ['Supino Reto com Halteres','DB Bench','chest','S','3x8',120],
+    ['Supino Inclinado','Incline Barbell','chest','S','3x8',120],
+    ['Triceps Frances','French Press','triceps','S','3x8',80],
+    ['Remada Unilateral com Halter','Single Arm DB Row','back','S','3x8',120],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','S','3x8',120],
+    ['Rosca Martelo','Hammer Curl','biceps','S','3x8',80]
+  ]}
+}},
+ABCD13:{name:'ABCD13',phase:'rea',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Supino Reto','Flat Bench','chest','P','3x6 Pyramid',180],
+    ['Paralela','Weighted Dips','chest','S','4x8 weighted',120],
+    ['Crucifixo na Polia','Cable Fly','chest','S','3x6',80],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','3x6',80],
+    ['Triceps Testa','Skull Crusher','triceps','S','3x6',80]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Abdominal Crunch','300 Crunch AFAP','abs','S','300 AFAP',0],
+    ['Puxada','Lat Pulldown','back','S','3x6',120],
+    ['Remada Maquina','Machine Row','back','S','3x6',120],
+    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x6',60],
+    ['Rosca Scott Maquina','Machine Preacher Curl','biceps','S','3x6',80]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Leg Press 45','Leg Press','quads','S','3x6',120],
+    ['Cadeira Extensora','Leg Extension','quads','S','3x6',90],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','RestP','Rest-Pause',90],
+    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+back-off 15',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body',ex:[
+    ['Supino Reto com Halteres','DB Bench','chest','S','3x6',120],
+    ['Supino Inclinado','Incline Barbell','chest','S','3x6',120],
+    ['Triceps Frances','French Press','triceps','S','3x6',80],
+    ['Remada Unilateral com Halter','Single Arm DB Row','back','S','3x6',120],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','S','3x6',120],
+    ['Rosca Direta','Barbell Curl','biceps','S','3x6',80]
+  ]}
+}},
+ABCD14:{name:'ABCD14',phase:'acc',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
+    ['Supino Reto','Flat Bench Press','chest','PC','2x8wu+3x10',180],
+    ['Paralela','Weighted Dips','chest','S','1x8wu+3x10',120],
+    ['Crucifixo (Voador) Máquina','Machine Chest Fly','chest','S','1x8wu+3x10',90],
+    ['Desenvolvimento Arnold','Arnold Press','shoulders','S','1x8wu+3x10',90],
+    ['Tricep Francês Unilateral (Polia)','Single Arm Cable French Press','triceps','S','1x8wu+3x10',80],
+    ['Triceps Pulley (Barra)','Tricep Pushdown Bar','triceps','S','1x8wu+3x10',80],
+    ['Lying Chest Supported Dumbbell Wrist Curl','Lying DB Wrist Curl','forearms','S','3x8-12',60],
+    ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
+    ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
+    ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
+    ['Puxada Frente Triângulo','Close Grip Lat Pulldown','back','S','2x8wu+3x10',120],
+    ['Remada Baixa','Seated Row','back','S','2x8wu+3x10',120],
+    ['Remada Curvada Com Barra (Pronada)','Pronated Bent Over Row','back','S','2x8wu+3x10',120],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','2x8wu+3x10',80],
+    ['Rosca Scott (Polia)','Cable Preacher Curl','biceps','S','1x8wu+3x10',80],
+    ['Rosca Martelo No Banco','Seated Hammer Curl','biceps','S','1x8wu+3x10',80],
+    ['Zercher Back Curl','Zercher Back Curl','back','S','1x5wu+3x5',90],
+    ['Abdominal Remador Weighted','Weighted Boat Crunch','abs','S','4x10-15',60]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Leg Press 45','Leg Press 45','quads','S','2x8wu+3x10',120],
+    ['Agachamento Smith','Smith Machine Squat','quads','S','2x8wu+3x10',120],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','S','2x8wu+3x10',90],
+    ['Cadeira Extensora','Leg Extension','quads','S','2x8wu+3x10',90],
+    ['Panturrilha Smith','Smith Machine Calf Raise','calves','S','3x8-12',60],
+    ['Weighted Crunches (Bosu Ball)','Weighted Crunches Bosu','abs','S','3x12',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body',ex:[
+    ['Supino Inclinado (Smith) (30°)','Incline Smith Bench 30°','chest','S','2x8wu+3x10',120],
+    ['Supino Inclinado Com Halteres','Incline Dumbbell Press','chest','S','2x8wu+3x10',120],
+    ['Triceps Testa (Halteres)','Dumbbell Skull Crusher','triceps','S','1x8wu+3x10',80],
+    ['Remada Unilateral Com Halter','Single Arm Dumbbell Row','back','S','2x8wu+3x10',120],
+    ['Puxada','Lat Pulldown','back','S','2x8wu+3x10',120],
+    ['Rosca 45','45° Incline Curl','biceps','S','2x8wu+3x10',80],
+    ['Barbell Dead Stop Cheat Curl','Barbell Dead Stop Cheat Curl','biceps','S','1x8wu+3x10',80],
+    ['Weighted Sit-ups','Weighted Sit-ups','abs','S','3x10',60]
+  ]}
+}},
+ABCD15:{name:'ABCD15',phase:'int',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Supino Reto','Flat Bench','chest','P','12/10/8/5',180],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','P','12/10/8/5',120],
+    ['Crucifixo na Polia','Cable Fly','chest','S','3x10',80],
+    ['Elevacao Frontal','Front Raise','shoulders','P','12/10/8/5',60],
+    ['Triceps Testa','Skull Crusher','triceps','P','12/10/8/5',80]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Prancha','Plank','abs','S','3x2min',60],
+    ['Puxada','Lat Pulldown','back','P','12/10/8/5',120],
+    ['Remada Baixa','Seated Row','back','P','12/10/8/5',120],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','P','12/10/8/5',60],
+    ['Remada Alta','High Row','shoulders','S','3x10',60],
+    ['Rosca Direta','Barbell Curl','biceps','P','12/10/8/5',80]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Cadeira Extensora','Leg Extension','quads','P','12/10/8/5',90],
+    ['Leg Press 45','Leg Press','quads','P','12/10/8/5',120],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','S','3x10',120],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','RestP','Rest-Pause',90],
+    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+15',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body',ex:[
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','DS','3x10+drop',120],
+    ['Supino Reto com Halteres','DB Bench','chest','S','3x10',120],
+    ['Triceps Frances','French Press','triceps','P','12/10/8/5',80],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','DS','3x10+drop',120],
+    ['Remada Unilateral com Halter','Single Arm DB Row','back','S','3x10',120],
+    ['Rosca Martelo','Hammer Curl','biceps','P','12/10/8/5',80],
+    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x10',60]
+  ]}
+}},
+ABCD16:{name:'ABCD16',phase:'int',type:'ABCD',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push (Deep Intensification)',ex:[
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Supino Maquina','Machine Bench','chest','P','12/10/8/5',180],
+    ['Paralela','Weighted Dips','chest','P','12/10/8/5',120],
+    ['Crucifixo na Polia','Cable Fly','chest','S','3x12',90],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','3x12',90],
+    ['Triceps Corda','Rope Pushdown','triceps','S','3x12',90],
+    ['Triceps Testa','Skull Crusher','triceps','S','3x12',90],
+    ['Triceps Kickback','Triceps Kickback','triceps','S','3x12',90]
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull (Deep Intensification)',ex:[
+    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
+    ['Escalador Alternado Slide','Sliding Mountain Climbers','abs','BS','Bi-Set',0],
+    ['Abdominal Remador','Rower Crunch','abs','BS','Bi-Set',60],
+    ['Pulldown','Straight-Arm Pulldown','back','P','12/10/8/5',120],
+    ['Puxada Frente Triangulo','Close Grip Pulldown','back','P','12/10/8/5',120],
+    ['Remada Baixa','Seated Row','back','S','3x12',90],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','3x12',60],
+    ['Rosca Direta','Barbell Curl','biceps','S','3x12',90],
+    ['Biceps Pulley Corda','Rope Cable Curl','biceps','S','3x12',90],
+    ['Rosca Martelo','Hammer Curl','biceps','S','3x12',90]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs (Deep Intensification)',ex:[
+    ['Cadeira Extensora','Leg Extension','quads','P','12/10/8/5',90],
+    ['Leg Press 45','Leg Press','quads','S','3x10',120],
+    ['Stiff','Stiff Leg Deadlift','hamstrings','S','3x10',120],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','P','12/10/8/5+drop',90],
+    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+15',60]
+  ]},
+  D:{label:'MMSS',labelEn:'Upper Body (Drop-Set Gauntlet)',ex:[
+    ['Supino Inclinado Maquina','Incline Machine Press','chest','DS','3x10+drop',120],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','DS','3x10+drop',120],
+    ['Triceps Frances','French Press','triceps','S','3x12',80],
+    ['Remada Baixa Pegada Aberta','Wide Grip Seated Row','back','DS','3x10+drop',120],
+    ['Puxada','Lat Pulldown','back','S','3x12',90],
+    ['Rosca Direta','Barbell Curl','biceps','S','3x12',80],
+    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x12',60],
+    ['Elevacao Frontal','Front Raise','shoulders','S','3x12',60]
+  ]}
+}}
+};
+
+// ── ATH DATA (All-Time Highs from PDF) ──
+const ATH_DATA = {
+// Warm Up
+'Rotacao Interna Ombro':8,'Rotacao Externa Ombro':6,
+// Chest
+'Crucifixo Adutor na Polia':44,'Crucifixo Halter Flat':30,'Crucifixo Halter Inclinado':20,
+'Crucifixo Voador':140,'Hex Press Smith':105,'Incline Seated Cable Fly':32,
+'Low To High Cable Fly':19,'Paralela':55,'Reverse Grip Smith Bench':135,
+'Supino Inclinado':80,'Supino Inclinado Smith':125,'Supino Inclinado com Halteres':80,
+'Supino Maquina':160,'Supino Maquina Hammer':245,'Supino Reto':130,
+'Supino Reto com Halteres':70,'Weighted Push Ups':70,
+// Back
+'Chin Up Weighted':-70,'Helms Row':65,'Meadows Row':70,'Pull Over Dumbell':29,
+'Pull Up Weighted':37.5,'Pulldown':66,'Puxada':190,'Puxada Pegada Neutra':157.5,
+'Puxada Frente Triangulo':195,'Rack Pulls':205,'Reeves Row':80,
+'Remada Baixa Triangulo':177.5,'Remada Baixa Pegada Aberta Maquina':205,
+'Remada Baixa Pegada Aberta Polia':157.5,'Remada Curvada Tbar':157.5,
+'Remada Curvada com Barra':145,'Remada Curvada Cavalinho':90,
+'Remada Curvada Cavalinho Neutral':110,'Remada Unilateral Baixa':85,
+'Remada Unilateral com Halter':90,'Seated Lat Pullin 1 Handle':28,'Yates Row':160,
+// Shoulders
+'Behind The Back Upright Row':40,'Cable Reverse Fly':30,'Crucifixo Inverso':155,
+'Desenvolvimento Arnold':37.5,'Desenvolvimento com Halteres':60,'Desenvolvimento Maquina':135,
+'Elevacao Frontal Halteres':20,'Elevacao Frontal Barra Polia':26,
+'Elevacao Lateral com Halteres':30,'Elevacao Unilateral Polia':20,
+'Facepull Dumbell':20,'Jayme Lateral Raise':30,'Klokov Press':35,
+'Lateral Raise Machine':185,'Remada Alta Polia':32,'Viking Press':105,
+// Biceps
+'Arnold Concentration Curl':30,'Biceps Concentrado':40,'Biceps Concentrado Pulley Standing':33,
+'Biceps Direto Sentado':35,'Biceps Pulley Corda':45,'Deadstop Cheat Curls':35,
+'Rosca Alternada':27.5,'Rosca com Halteres':40,'Rosca Direta Corda':25,
+'Rosca Direta Ez Normal':70,'Rosca Direta Ez Close':65,'Rosca Direta Barbell Wide':10,
+'Rosca Martelo':40,'Rosca Martelo Sentado':35,'Rosca Martelo No Banco':30,
+'Rosca Scott Ez':60,'Rosca Scott Maquina':75,'Rosca Scott Polia':44,
+'Rosca 45':50,'Spider Curls':35,
+// Triceps
+'Barbell Tricep Extension':40,'JM Press':35,'Seated Tricep Ez OH Extension':60,
+'Standing Tricep Extension Barbell':20,'Triceps Pulley Corda':85,
+'Triceps Pulley V Bar':90,'Triceps Pulley Barra':83.5,
+'Triceps Frances Corda':51,'Triceps Frances Halter':70,
+'Triceps Frances Unilateral Corda':31,'Triceps Frances Unilateral Halter':30,
+'Triceps Testa Ez':45,'Triceps Testa Halteres':35,'Triceps Testa Banco Polia':40,
+'Triceps Testa Banco Polia Inclinado':60,'Triceps Kickback Standing':17.5,
+// Forearms
+'Forearm Extensor Cable':19,'Forearm Flexor Cable':21,'Forearm Pronation':5,
+'Forearm Supination':8,'Lying Wrist Curl':60,'Pulley Pronate':40,
+'Pulley Supinate':22.5,'Wrist Curl Pronated':15,'Wrist Curl Supinated':10,
+// Legs
+'Afundo com Halteres':60,'Agachamento Bulgaro':30,'Agachamento Hack':160,
+'Agachamento Smith':110,'Avanço Smith':80,'Back Squat':60,
+'Barbell Hack Squat':100,'Cable Romanian Dead Lift':28,'Cadeira Abdutora':250,
+'Cadeira Extensora':290,'Cadeira Extensora Unilateral':95,'Cadeira Flexora':165,
+'Calves Leg Press':105,'Goblet Squat':27.5,'Goblet Squat Heel Elevated':45,
+'Good Morning':40,'Good Morning Smith':70,'Good Morning Smith Single Leg':30,
+'Leg Press Hamstring':225,'Leg Press Quad':100,'Leg Press 45':290,
+'Panturrilha Press':334,'Panturrilha Smith':130,'Panturrilha Sentado':115,
+'Panturrilha Donkey Seated':300,'Panturrilha Donkey Dip Belt':67.5,
+'Passada com Halteres':15,'Sissy Squat Cable':7,'Sissy Squat Dumbell':8.5,
+'Single Leg Curl Cable':16,'Stiff':160,'Stiff Maquina':40,
+'Trap Bar Deadlift High':190,
+// Abs
+'Abdominal Infra Weighted':15,'Abdominal na Polia Alta Upstairs':32,
+'Abdominal na Polia Alta Downstairs':46,'Abdominal Remador Weighted':6,
+'Ab Machine Upstairs':16,'Ab Machine Downstairs':130,
+'Abdominal Banca Declinada':12.5,'Leg Raise':15,
+'Weighted Crunches Bosu':23,'Weighted Sit-ups':15
+};
+
+// ── STATE ──
+let data = null;
+let currentView = 'home';
+let currentDay = 'A';
+let currentWorkout = null;
+let restTimerInterval = null;
+let restTimeLeft = 0;
+let workoutStartTime = null;
+let chartRange = 4;
+let currentPrMuscle = 'all';
+let currentLibMuscle = 'all';
+
+// ── HELPERS ──
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
+function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
+function weekStart(d){const dt=new Date(d||Date.now());dt.setDate(dt.getDate()-dt.getDay()+1);return dateStr(dt)}
+function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
+function parseSets(str){
+  // Parse setsReps string into array of {reps, type}
+  if(!str)return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
+  const s=str.toLowerCase();
+  // Handle "4x8-12" style
+  const m1=s.match(/^(\d+)x(\d+)/);
+  if(m1){const sets=[];for(let i=0;i<+m1[1];i++)sets.push({reps:+m1[2],type:'working'});return sets}
+  // Handle "2x10wu+4x8" or similar warmup+working
+  const m2=s.match(/(\d+)x(\d+)\s*wu\s*\+\s*(\d+)x(\d+)/i);
+  if(m2){const sets=[];for(let i=0;i<+m2[1];i++)sets.push({reps:+m2[2],type:'warmup'});for(let i=0;i<+m2[3];i++)sets.push({reps:+m2[4],type:'working'});return sets}
+  // Handle pyramid "12/10/8/6"
+  const m3=s.match(/^[\d\/]+$/);
+  if(m3){return s.split('/').map(r=>({reps:+r,type:'working'}))}
+  // Handle "1x12/2x10/2x8" style
+  const m4=s.match(/(\d+)x(\d+)/g);
+  if(m4){const sets=[];m4.forEach(p=>{const[n,r]=p.split('x');for(let i=0;i<+n;i++)sets.push({reps:+r,type:'working'})});return sets}
+  // Default 4 sets
+  return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
+}
+
+// ── STORAGE ──
+function loadData(){
+  try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
+  catch(e){data={activeProgram:'ABC01',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
+}
+function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+
+// Pre-populate ABCD14 custom version (user's current bold exercises)
+function initCustomABCD14(){
+  if(data.customPrograms.ABCD14)return; // already customized
+  data.customPrograms.ABCD14={days:{
+    A:{ex:[
+      ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
+      ['Reverse Grip Bench Press Smith Machine','Reverse Grip Smith Bench','chest','PC','2x8wu+3x10',180],
+      ['Paralela','Weighted Dips','chest','S','1x8wu+3x10',120],
+      ['Incline Seated Cable Fly (37°)','Incline Seated Cable Fly','chest','S','1x8wu+3x10',90],
+      ['Viking Press (Seated)','Seated Viking Press','shoulders','S','1x8wu+3x10',90],
+      ['Barbell Tricep Extension','Barbell Tricep Extension','triceps','S','1x8wu+3x10',80],
+      ['Triceps Pulley (Barra)','Tricep Pushdown Bar','triceps','S','1x8wu+3x10',80],
+      ['Lying Chest Supported Dumbbell Wrist Curl','Lying DB Wrist Curl','forearms','S','3x8-12',60],
+      ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60]
+    ]},
+    B:{ex:[
+      ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
+      ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
+      ['Seated Lat Pull-In','Seated Lat Pull-In','back','S','2x8wu+3x10',120],
+      ['Tbar Row','T-Bar Row','back','S','2x8wu+3x10',120],
+      ['Reeves Row (Ez Bar)','Reeves Row EZ Bar','back','S','2x8wu+3x10',120],
+      ['Behind-The-Back Upright Row','Behind Back Upright Row','shoulders','S','2x8wu+3x10',80],
+      ['Rosca Scott (Polia)','Cable Preacher Curl','biceps','S','1x8wu+3x10',80],
+      ['Rosca Martelo No Banco','Seated Hammer Curl','biceps','S','1x8wu+3x10',80],
+      ['Zercher Back Curl','Zercher Back Curl','back','S','1x5wu+3x5',90],
+      ['Abdominal Remador Weighted','Weighted Boat Crunch','abs','S','4x10-15',60]
+    ]},
+    C:{ex:[
+      ['Barbell Hack Squat','Barbell Hack Squat','quads','S','2x8wu+3x10',120],
+      ['Agachamento Smith','Smith Machine Squat','quads','S','2x8wu+3x10',120],
+      ['Single Leg Good Morning (Smith)','Single Leg Good Morning Smith','hamstrings','S','1x8wu+3x10',90],
+      ['Quad Focused Leg Press (3 Notches)','Quad Focused Leg Press','quads','S','2x8wu+3x10',90],
+      ['Calves Leg Press','Calf Raise Leg Press','calves','S','3x8-12',60],
+      ['Weighted Crunches (Bosu Ball)','Weighted Crunches Bosu','abs','S','3x12',60]
+    ]},
+    D:{ex:[
+      ['Supino Inclinado (Smith) (30°)','Incline Smith Bench 30°','chest','S','2x8wu+3x10',120],
+      ['Dumbell Fly (Flat)','Flat Dumbbell Fly','chest','S','2x8wu+3x10',90],
+      ['JM Press','JM Press','triceps','S','1x8wu+3x10',80],
+      ['Rack Pulls (Rack 3)','Rack Pulls','back','S','2x8wu+3x10',120],
+      ['Pullover','Pullover','back','S','2x8wu+3x10',90],
+      ['Rosca 45','45° Incline Curl','biceps','S','2x8wu+3x10',80],
+      ['Barbell Dead Stop Cheat Curl','Barbell Dead Stop Cheat Curl','biceps','S','1x8wu+3x10',80],
+      ['Weighted Sit-ups','Weighted Sit-ups','abs','S','3x10',60]
+    ]}
+  }};
+  saveData();
+}
+
+// ── PROGRAM HELPERS ──
+function getProgram(id){
+  const p=PROGRAMS[id];if(!p)return null;
+  // Merge custom overrides if any
+  const custom=data.customPrograms[id];
+  if(!custom)return p;
+  const merged=JSON.parse(JSON.stringify(p));
+  for(const dk in custom.days||{}){
+    if(custom.days[dk]&&custom.days[dk].ex)merged.days[dk].ex=custom.days[dk].ex;
+  }
+  return merged;
+}
+function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'):[]}
+function getAllExerciseNames(){
+  const names=new Set();
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      PROGRAMS[pid].days[dk].ex.forEach(e=>names.add(e[0]));
+    }
+  }
+  return[...names].sort();
+}
+function getExerciseMuscle(name){
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      const ex=PROGRAMS[pid].days[dk].ex.find(e=>e[0]===name);
+      if(ex)return ex[2];
+    }
+  }
+  return'other';
+}
+function getExerciseEnglish(name){
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      const ex=PROGRAMS[pid].days[dk].ex.find(e=>e[0]===name);
+      if(ex)return ex[1];
+    }
+  }
+  return name;
+}
+function getUsedInPrograms(exName){
+  const progs=[];
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      if(PROGRAMS[pid].days[dk].ex.some(e=>e[0]===exName)){progs.push(pid+'-'+dk)}
+    }
+  }
+  return progs;
+}
+
+// ── VIEW SWITCHING ──
+function showView(name,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  currentView=name;
+  if(name==='home')renderHome();
+  if(name==='workout')renderWorkout();
+  if(name==='progress')renderProgress();
+  if(name==='prs')renderPRBoard();
+  if(name==='library')renderLibrary();
+}
+
+// ── HOME VIEW ──
+function renderHome(){
+  const prog=getProgram(data.activeProgram)||getProgram('ABC01');
+  const pid=data.activeProgram;
+  const phase=PHASES[prog.phase]||prog.phase;
+  const days=getProgramDays(pid);
+
+  // Active banner
+  document.getElementById('activeBanner').innerHTML=`
+    <div class="banner-label">Active Program</div>
+    <div class="banner-name">${pid}</div>
+    <div class="banner-phase">${phase} &middot; ${prog.type==='ABC'?'3':'4'}-Day Split</div>
+    <button class="start-btn" onclick="showView('workout',document.querySelectorAll('.nav-btn')[1])">Start Workout</button>
+  `;
+
+  // Week calendar
+  const today=new Date();const dow=today.getDay()||7;
+  const dayNames=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const ws=weekStart();
+  const weekLogs=data.logs.filter(l=>weekStart(l.date)===ws);
+  let calHtml='';
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(d.getDate()-(dow-1)+i);
+    const ds=dateStr(d);
+    const log=weekLogs.find(l=>l.date===ds);
+    const isToday=ds===dateStr(today);
+    calHtml+=`<div class="week-day${log?' done':''}${isToday?' today':''}">
+      <div class="day-label">${dayNames[i]}</div>
+      <div class="day-letter">${log?log.day:'--'}</div>
+    </div>`;
+  }
+  document.getElementById('weekCal').innerHTML=calHtml;
+
+  // Stats
+  const thisWeek=weekLogs.length;
+  const totalLogs=data.logs.length;
+  const recentPRs=Object.values(data.prs).reduce((c,ex)=>{
+    return c+Object.values(ex).filter(pr=>pr.date&&new Date(pr.date)>new Date(Date.now()-30*86400000)).length;
+  },0);
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-box"><div class="stat-val">${thisWeek}/${days.length}</div><div class="stat-label">This Week</div></div>
+    <div class="stat-box"><div class="stat-val">${totalLogs}</div><div class="stat-label">Total Sessions</div></div>
+    <div class="stat-box"><div class="stat-val">${recentPRs}</div><div class="stat-label">PRs (30d)</div></div>
+  `;
+
+  // Program grid
+  let gridHtml='';
+  for(const pid2 in PROGRAMS){
+    const p2=PROGRAMS[pid2];
+    const isActive=pid2===data.activeProgram;
+    const hasCustom=!!data.customPrograms[pid2];
+    gridHtml+=`<div class="prog-card${isActive?' active':''}" onclick="selectProgram('${pid2}')">
+      <div class="prog-name">${pid2}${hasCustom?' <span class="custom-badge">CUSTOM</span>':''}</div>
+      <div class="prog-phase">${PHASES[p2.phase]||p2.phase}</div>
+      <div class="prog-days">${p2.type==='ABC'?'3-Day PPL':'4-Day Split'}</div>
+      <button class="ex-action-btn" onclick="event.stopPropagation();openEditor('${pid2}')" style="margin-top:4px;font-size:0.6rem">Edit</button>
+    </div>`;
+  }
+  document.getElementById('programGrid').innerHTML=gridHtml;
+}
+
+function selectProgram(pid){
+  data.activeProgram=pid;saveData();renderHome();
+  toast('Switched to '+pid);
+}
+
+// ── WORKOUT VIEW ──
+function renderWorkout(){
+  const prog=getProgram(data.activeProgram);if(!prog)return;
+  const days=Object.keys(prog.days);
+  if(!days.includes(currentDay))currentDay=days[0];
+
+  // Day tabs
+  let tabsHtml='';
+  days.forEach(d=>{
+    const dayData=prog.days[d];
+    tabsHtml+=`<button class="day-tab${d===currentDay?' active':''}" onclick="switchDay('${d}')">${d} - ${dayData.labelEn||dayData.label}</button>`;
+  });
+  document.getElementById('dayTabs').innerHTML=tabsHtml;
+
+  // Initialize workout if not started
+  if(!currentWorkout||currentWorkout.program!==data.activeProgram||currentWorkout.day!==currentDay){
+    initWorkout();
+  }
+  renderExerciseCards();
+}
+
+function switchDay(d){currentDay=d;currentWorkout=null;renderWorkout()}
+
+function initWorkout(){
+  const prog=getProgram(data.activeProgram);if(!prog)return;
+  const dayData=prog.days[currentDay];if(!dayData)return;
+
+  currentWorkout={
+    program:data.activeProgram,
+    day:currentDay,
+    date:dateStr(),
+    exercises:dayData.ex.map(e=>{
+      const sets=parseSets(e[4]);
+      const lastLog=getLastLog(e[0]);
+      return{
+        name:e[0],nameEn:e[1],muscle:e[2],technique:e[3],
+        targetSets:e[4],restSec:e[5],
+        sets:sets.map((s,i)=>({
+          weight:lastLog&&lastLog.sets[i]?lastLog.sets[i].weight:'',
+          reps:s.reps,
+          type:s.type,
+          done:false
+        }))
+      };
+    })
+  };
+  workoutStartTime=Date.now();
+}
+
+function getLastLog(exName){
+  for(let i=data.logs.length-1;i>=0;i--){
+    const log=data.logs[i];
+    const ex=log.exercises.find(e=>e.name===exName);
+    if(ex)return ex;
+  }
+  return null;
+}
+
+function renderExerciseCards(){
+  if(!currentWorkout)return;
+  const container=document.getElementById('workoutExercises');
+  let html='';
+  currentWorkout.exercises.forEach((ex,ei)=>{
+    const allDone=ex.sets.every(s=>s.done);
+    const lastLog=getLastLog(ex.name);
+    const techLabel=TECH_LABELS[ex.technique]||ex.technique;
+
+    html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}">
+      <div class="ex-header">
+        <div>
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name-en">${ex.nameEn}</div>
+        </div>
+      </div>
+      <div class="ex-meta">
+        ${getPattern(ex.name)?`<span class="ex-tag pattern">${getPattern(ex.name)}</span>`:''}
+        <span class="ex-tag">${ex.targetSets}</span>
+        <span class="ex-tag tech">${techLabel}</span>
+        <span class="ex-tag">${ex.restSec}s rest</span>
+      </div>`;
+
+    // Set rows
+    ex.sets.forEach((set,si)=>{
+      html+=`<div class="set-row">
+        <span class="set-label${set.type==='warmup'?' warmup':''}">${set.type==='warmup'?'WU':'S'+(si+1)}</span>
+        <div class="set-input-group">
+          <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
+          <span class="set-unit">lbs</span>
+        </div>
+        <div class="set-input-group">
+          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps}" onchange="updateSet(${ei},${si},'reps',this.value)">
+          <span class="set-unit">reps</span>
+        </div>
+        <button class="set-done-btn${set.done?' done':''}" onclick="toggleSet(${ei},${si})">&#10003;</button>
+      </div>`;
+    });
+
+    html+=`<button class="add-set-btn" onclick="addSet(${ei})">+ Add Set</button>`;
+
+    // PR flash
+    html+=`<div class="pr-flash" id="pr-flash-${ei}">NEW PR!</div>`;
+
+    // Last time
+    if(lastLog){
+      const weights=lastLog.sets.filter(s=>s.type!=='warmup').map(s=>s.weight).join('/');
+      html+=`<div class="ex-last">Last: ${weights} lbs (${lastLog.sets.filter(s=>s.type!=='warmup').map(s=>s.reps).join('/')}) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
+    }
+
+    html+=`<div class="ex-actions">
+      <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
+      <button class="ex-action-btn" onclick="removeExercise(${ei})">Remove</button>
+    </div>`;
+
+    html+=`</div>`;
+  });
+  container.innerHTML=html;
+}
+
+function updateSet(ei,si,field,val){
+  if(!currentWorkout)return;
+  const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
+  currentWorkout.exercises[ei].sets[si][field]=v;
+}
+
+function toggleSet(ei,si){
+  if(!currentWorkout)return;
+  const set=currentWorkout.exercises[ei].sets[si];
+  set.done=!set.done;
+
+  // Read current input values
+  const card=document.getElementById('ex-'+ei);
+  const inputs=card.querySelectorAll('.set-row')[si].querySelectorAll('.set-input');
+  set.weight=parseFloat(inputs[0].value.replace(/,/g,''))||0;
+  set.reps=parseInt(inputs[1].value)||0;
+
+  // Check for PR
+  if(set.done&&set.type==='working'&&set.weight>0){
+    checkPR(ei,currentWorkout.exercises[ei].name,set.weight,set.reps);
+  }
+
+  // Start rest timer
+  if(set.done){
+    startRest(currentWorkout.exercises[ei].restSec||90);
+  }
+
+  renderExerciseCards();
+}
+
+function addSet(ei){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];
+  const lastSet=ex.sets[ex.sets.length-1];
+  ex.sets.push({weight:lastSet?lastSet.weight:'',reps:lastSet?lastSet.reps:10,type:'working',done:false});
+  renderExerciseCards();
+}
+
+function removeExercise(ei){
+  if(!currentWorkout)return;
+  if(confirm('Remove '+currentWorkout.exercises[ei].name+'?')){
+    currentWorkout.exercises.splice(ei,1);
+    renderExerciseCards();
+  }
+}
+
+function getBestWeight(exName){
+  const id=exId(exName);
+  const pr=data.prs[id];
+  if(!pr)return findATH(exName);
+  let best=0;
+  for(const r in pr){if(pr[r].weight>best)best=pr[r].weight}
+  return best||findATH(exName);
+}
+
+function findATH(name){
+  // Try exact match first
+  if(ATH_DATA[name])return ATH_DATA[name];
+  // Try partial match
+  const key=Object.keys(ATH_DATA).find(k=>name.includes(k)||k.includes(name));
+  return key?ATH_DATA[key]:0;
+}
+
+// ── PR DETECTION ──
+function checkPR(ei,exName,weight,reps){
+  const id=exId(exName);
+  if(!data.prs[id])data.prs[id]={};
+  const current=data.prs[id][reps];
+  if(!current||weight>current.weight){
+    data.prs[id][reps]={weight,date:dateStr(),program:data.activeProgram};
+    saveData();
+    // Show PR flash
+    const flash=document.getElementById('pr-flash-'+ei);
+    if(flash){flash.classList.add('show');setTimeout(()=>flash.classList.remove('show'),3000)}
+    toast('NEW PR! '+exName+': '+weight+'lbs x '+reps);
+  }
+}
+
+function calcE1RM(weight,reps){
+  if(reps<=0||reps>30)return 0;
+  if(reps===1)return weight;
+  return Math.round(weight*36/(37-reps)*10)/10;
+}
+
+// ── REST TIMER ──
+function startRest(seconds){
+  restTimeLeft=seconds;
+  clearInterval(restTimerInterval);
+  const el=document.getElementById('restTimer');
+  el.classList.add('active');
+  updateRestDisplay();
+  restTimerInterval=setInterval(()=>{
+    restTimeLeft--;
+    if(restTimeLeft<=0){
+      clearInterval(restTimerInterval);
+      restTimeLeft=0;
+      document.getElementById('restTime').textContent='GO!';
+      document.getElementById('restTime').className='rest-time done';
+      try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+      setTimeout(()=>skipRest(),2000);
+    }else{
+      updateRestDisplay();
+    }
+  },1000);
+}
+
+function updateRestDisplay(){
+  const m=Math.floor(restTimeLeft/60);
+  const s=restTimeLeft%60;
+  const el=document.getElementById('restTime');
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  el.className='rest-time'+(restTimeLeft<=10?' warning':'');
+}
+
+function addRestTime(sec){restTimeLeft+=sec;updateRestDisplay()}
+function skipRest(){
+  clearInterval(restTimerInterval);
+  document.getElementById('restTimer').classList.remove('active');
+}
+
+// ── FINISH WORKOUT ──
+function finishWorkout(){
+  if(!currentWorkout)return;
+  if(!currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done))){
+    toast('No sets completed yet!');return;
+  }
+  // Save all input values
+  currentWorkout.exercises.forEach((ex,ei)=>{
+    const card=document.getElementById('ex-'+ei);
+    if(!card)return;
+    const rows=card.querySelectorAll('.set-row');
+    ex.sets.forEach((set,si)=>{
+      if(rows[si]){
+        const inputs=rows[si].querySelectorAll('.set-input');
+        set.weight=parseFloat(inputs[0].value.replace(/,/g,''))||0;
+        set.reps=parseInt(inputs[1].value)||0;
+      }
+    });
+  });
+
+  const logEntry={
+    id:'log_'+Date.now(),
+    date:currentWorkout.date,
+    program:currentWorkout.program,
+    day:currentWorkout.day,
+    exercises:currentWorkout.exercises.map(ex=>({
+      name:ex.name,
+      sets:ex.sets.filter(s=>s.done).map(s=>({weight:s.weight,reps:s.reps,type:s.type}))
+    })).filter(ex=>ex.sets.length>0),
+    duration:workoutStartTime?Math.round((Date.now()-workoutStartTime)/60000):0
+  };
+
+  data.logs.push(logEntry);
+
+  // Auto-detect PRs for all completed sets
+  logEntry.exercises.forEach(ex=>{
+    ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
+      const id=exId(ex.name);
+      if(!data.prs[id])data.prs[id]={};
+      const current=data.prs[id][s.reps];
+      if(!current||s.weight>current.weight){
+        data.prs[id][s.reps]={weight:s.weight,date:logEntry.date,program:logEntry.program};
+      }
+    });
+  });
+
+  saveData();
+  currentWorkout=null;
+  workoutStartTime=null;
+  skipRest();
+  toast('Workout saved! '+logEntry.exercises.length+' exercises logged');
+  showView('home',document.querySelectorAll('.nav-btn')[0]);
+}
+
+// ── PROGRESS VIEW ──
+function renderProgress(){
+  // Populate exercise selector
+  const sel=document.getElementById('progressExSelect');
+  const names=getAllExerciseNames();
+  sel.innerHTML='<option value="">Select exercise...</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+  renderProgressChart();
+}
+
+function setRange(w,btn){
+  chartRange=w;
+  document.querySelectorAll('.range-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProgressChart();
+}
+
+function renderProgressChart(){
+  const exName=document.getElementById('progressExSelect').value;
+  const canvas=document.getElementById('progressChart');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width=canvas.parentElement.offsetWidth-24;
+  const H=canvas.height=200;
+  ctx.clearRect(0,0,W,H);
+
+  if(!exName){
+    ctx.fillStyle='#6b7280';ctx.font='14px sans-serif';ctx.textAlign='center';
+    ctx.fillText('Select an exercise to see progress',W/2,H/2);
+    document.getElementById('sessionHistory').innerHTML='';
+    return;
+  }
+
+  // Get all logs for this exercise
+  let entries=[];
+  data.logs.forEach(log=>{
+    const ex=log.exercises.find(e=>e.name===exName);
+    if(ex){
+      const workingSets=ex.sets.filter(s=>s.type==='working'&&s.weight>0);
+      if(workingSets.length>0){
+        const maxW=Math.max(...workingSets.map(s=>s.weight));
+        entries.push({date:log.date,maxWeight:maxW,sets:workingSets,program:log.program});
+      }
+    }
+  });
+
+  // Filter by range
+  if(chartRange>0){
+    const cutoff=new Date(Date.now()-chartRange*7*86400000);
+    entries=entries.filter(e=>new Date(e.date)>=cutoff);
+  }
+
+  if(entries.length<2){
+    ctx.fillStyle='#6b7280';ctx.font='14px sans-serif';ctx.textAlign='center';
+    ctx.fillText(entries.length===0?'No data yet':'Need 2+ sessions for chart',W/2,H/2);
+    renderSessionHistory(exName);
+    return;
+  }
+
+  // Draw chart
+  const pad={t:20,r:10,b:30,l:50};
+  const cW=W-pad.l-pad.r;
+  const cH=H-pad.t-pad.b;
+  const minW=Math.min(...entries.map(e=>e.maxWeight))*0.9;
+  const maxW=Math.max(...entries.map(e=>e.maxWeight))*1.05;
+  const range=maxW-minW||1;
+
+  // Grid
+  ctx.strokeStyle='#2d3238';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(i/4);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='#6b7280';ctx.font='10px sans-serif';ctx.textAlign='right';
+    ctx.fillText(fmt(maxW-range*(i/4)),pad.l-5,y+3);
+  }
+
+  // Line
+  ctx.strokeStyle='#4a90d9';ctx.lineWidth=2;ctx.beginPath();
+  entries.forEach((e,i)=>{
+    const x=pad.l+cW*(i/(entries.length-1));
+    const y=pad.t+cH*(1-(e.maxWeight-minW)/range);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Points
+  entries.forEach((e,i)=>{
+    const x=pad.l+cW*(i/(entries.length-1));
+    const y=pad.t+cH*(1-(e.maxWeight-minW)/range);
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle=i>0&&e.maxWeight>entries[i-1].maxWeight?'#4aaa6a':i>0&&e.maxWeight<entries[i-1].maxWeight?'#d45a5a':'#4a90d9';
+    ctx.fill();
+  });
+
+  // Date labels
+  ctx.fillStyle='#6b7280';ctx.font='9px sans-serif';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(entries.length/5));
+  entries.forEach((e,i)=>{
+    if(i%step===0||i===entries.length-1){
+      const x=pad.l+cW*(i/(entries.length-1));
+      ctx.fillText(e.date.slice(5),x,H-5);
+    }
+  });
+
+  // Trend
+  const first=entries[0].maxWeight;
+  const last=entries[entries.length-1].maxWeight;
+  const trend=last>first?'up':last<first?'down':'flat';
+  ctx.fillStyle=trend==='up'?'#4aaa6a':trend==='down'?'#d45a5a':'#e8c84a';
+  ctx.font='bold 11px sans-serif';ctx.textAlign='right';
+  const pct=((last-first)/first*100).toFixed(1);
+  ctx.fillText((trend==='up'?'+':'')+pct+'%',W-pad.r,pad.t-5);
+
+  renderSessionHistory(exName);
+}
+
+function renderSessionHistory(exName){
+  let entries=[];
+  data.logs.forEach(log=>{
+    const ex=log.exercises.find(e=>e.name===exName);
+    if(ex)entries.push({date:log.date,sets:ex.sets,program:log.program});
+  });
+  entries.reverse();
+
+  const html=entries.slice(0,20).map((e,i)=>{
+    const ws=e.sets.filter(s=>s.type==='working');
+    const weights=ws.map(s=>s.weight).join('/');
+    const reps=ws.map(s=>s.reps).join('/');
+    let trend='';
+    if(i<entries.length-1){
+      const prevMax=Math.max(...entries[i+1].sets.filter(s=>s.type==='working').map(s=>s.weight));
+      const curMax=Math.max(...ws.map(s=>s.weight));
+      trend=curMax>prevMax?'<span class="session-trend up">UP</span>':curMax<prevMax?'<span class="session-trend down">DOWN</span>':'<span class="session-trend flat">FLAT</span>';
+    }
+    return`<div class="session-item"><span class="session-date">${e.date}</span> ${trend}<div class="session-weights">${weights} lbs &middot; ${reps} reps &middot; ${e.program}</div></div>`;
+  }).join('');
+  document.getElementById('sessionHistory').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:20px">No sessions logged yet</div>';
+}
+
+// ── PR BOARD ──
+function renderPRBoard(){
+  // Muscle tabs
+  const tabs=document.getElementById('prMuscleTabs');
+  tabs.innerHTML='<button class="muscle-tab'+(currentPrMuscle==='all'?' active':'')+'" onclick="setPrMuscle(\'all\')">All</button>'+
+    MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentPrMuscle===m?' active':''}" onclick="setPrMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
+
+  // Build PR cards
+  const allNames=getAllExerciseNames();
+  let html='';
+  allNames.forEach(name=>{
+    const muscle=getExerciseMuscle(name);
+    if(currentPrMuscle!=='all'&&muscle!==currentPrMuscle)return;
+
+    const id=exId(name);
+    const prs=data.prs[id]||{};
+    const athVal=findATH(name);
+    const repCounts=Object.keys(prs).map(Number).sort((a,b)=>a-b);
+    if(repCounts.length===0&&!athVal)return;
+
+    // Calc e1RM
+    let best1rm=0;
+    repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
+
+    html+=`<div class="pr-card">
+      <div class="pr-exercise">${name} <span style="font-size:0.7rem;color:var(--text-dim)">${getExerciseEnglish(name)}</span></div>
+      ${best1rm?`<div class="pr-1rm">est. 1RM: ${fmt(best1rm)} lbs</div>`:''}
+      ${athVal?`<div style="font-size:0.75rem;color:var(--gold);margin-top:4px">ATH: ${athVal} lbs</div>`:''}
+      <table class="pr-table">`;
+
+    repCounts.forEach(r=>{
+      const pr=prs[r];
+      const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
+      const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
+      html+=`<tr>
+        <td class="rep-col">${r} reps</td>
+        <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
+        <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
+      </tr>`;
+    });
+
+    html+=`</table></div>`;
+  });
+
+  document.getElementById('prBoard').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No PRs recorded yet. Start logging workouts!</div>';
+}
+
+function setPrMuscle(m){currentPrMuscle=m;renderPRBoard()}
+
+// ── LIBRARY VIEW ──
+function renderLibrary(){
+  const tabs=document.getElementById('libMuscleTabs');
+  tabs.innerHTML='<button class="muscle-tab'+(currentLibMuscle==='all'?' active':'')+'" onclick="setLibMuscle(\'all\')">All</button>'+
+    MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentLibMuscle===m?' active':''}" onclick="setLibMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
+
+  const search=(document.getElementById('libSearch').value||'').toLowerCase();
+  const allNames=getAllExerciseNames();
+
+  let html='';
+  allNames.forEach(name=>{
+    const muscle=getExerciseMuscle(name);
+    if(currentLibMuscle!=='all'&&muscle!==currentLibMuscle)return;
+    if(search&&!name.toLowerCase().includes(search)&&!getExerciseEnglish(name).toLowerCase().includes(search))return;
+
+    const athVal=findATH(name);
+    const programs=getUsedInPrograms(name);
+
+    html+=`<div class="lib-card">
+      <div class="lib-name">${name} ${athVal?`<span class="lib-ath">${athVal} lbs ATH</span>`:''}</div>
+      <div class="lib-name-en">${getExerciseEnglish(name)}</div>
+      <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
+      <div class="lib-programs">Used in: ${programs.join(', ')||'None'}</div>
+    </div>`;
+  });
+
+  document.getElementById('libList').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises found</div>';
+}
+
+function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
+
+// ── SWAP MODAL ──
+function openSwapModal(ei){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];
+  const muscle=ex.muscle;
+
+  // Get all exercises for same muscle from all programs
+  const options=new Set();
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      PROGRAMS[pid].days[dk].ex.forEach(e=>{
+        if(e[2]===muscle&&e[0]!==ex.name)options.add(e[0]+'|'+e[1]);
+      });
+    }
+  }
+
+  let html=`<div class="modal-header">
+    <div class="modal-title">Swap: ${ex.name}</div>
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+  </div>
+  <div style="margin-bottom:8px;font-size:0.75rem;color:var(--text-dim)">Showing ${muscle} exercises</div>`;
+
+  [...options].sort().forEach(opt=>{
+    const[name,nameEn]=opt.split('|');
+    const ath=findATH(name);
+    html+=`<div class="swap-item" onclick="doSwap(${ei},'${name.replace(/'/g,"\\'")}','${nameEn.replace(/'/g,"\\'")}','${muscle}')">
+      <div class="swap-name">${name} <span style="color:var(--text-dim);font-size:0.75rem">${nameEn}</span></div>
+      ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
+    </div>`;
+  });
+
+  openModal(html);
+}
+
+function doSwap(ei,name,nameEn,muscle){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];
+  ex.name=name;ex.nameEn=nameEn;ex.muscle=muscle;
+  // Try to pre-populate from last log
+  const lastLog=getLastLog(name);
+  if(lastLog){
+    ex.sets.forEach((s,i)=>{
+      if(lastLog.sets[i])s.weight=lastLog.sets[i].weight;
+    });
+  }
+  closeModal();
+  renderExerciseCards();
+  toast('Swapped to '+name);
+}
+
+// ── EDITOR MODAL ──
+let editorPid='';
+let editorDay='';
+let editorExercises=[];
+
+function openEditor(pid){
+  editorPid=pid||data.activeProgram;
+  const prog=getProgram(editorPid);if(!prog)return;
+  const isCustom=!!data.customPrograms[editorPid];
+
+  let html=`<div class="modal-header">
+    <div class="modal-title">Edit: ${editorPid} ${isCustom?'<span class="custom-badge">CUSTOM</span>':'<span class="base-badge">BASE</span>'}</div>
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+  </div>
+  <div class="day-tabs" id="editorDayTabs" style="margin-bottom:12px"></div>
+  <div id="editorDayContent"></div>`;
+
+  openModal(html);
+
+  const days=Object.keys(prog.days);
+  editorDay=days[0];
+  renderEditorTabs();
+  loadEditorDay();
+}
+
+function renderEditorTabs(){
+  const prog=getProgram(editorPid);if(!prog)return;
+  const days=Object.keys(prog.days);
+  let html='';
+  days.forEach(d=>{
+    html+=`<button class="day-tab${d===editorDay?' active':''}" onclick="switchEditorDay('${d}',this)">${d}</button>`;
+  });
+  document.getElementById('editorDayTabs').innerHTML=html;
+}
+
+function switchEditorDay(day,btn){
+  // Auto-save current day before switching
+  saveEditorDay();
+  editorDay=day;
+  if(btn){
+    btn.parentElement.querySelectorAll('.day-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  loadEditorDay();
+}
+
+function loadEditorDay(){
+  const prog=getProgram(editorPid);
+  const dayData=prog.days[editorDay];if(!dayData)return;
+  // Deep copy exercises into editor state
+  editorExercises=dayData.ex.map(e=>[...e]);
+  renderEditorExercises();
+}
+
+function renderEditorExercises(){
+  const baseProg=PROGRAMS[editorPid];
+  const baseDayEx=baseProg.days[editorDay]?baseProg.days[editorDay].ex:[];
+  const isModified=data.customPrograms[editorPid]&&data.customPrograms[editorPid].days&&data.customPrograms[editorPid].days[editorDay];
+
+  let html=`<div style="font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">${editorExercises.length} exercises &middot; Day ${editorDay}${isModified?' &middot; <span style="color:var(--gold)">Modified</span>':''}</div>`;
+
+  editorExercises.forEach((e,i)=>{
+    // e = [name, nameEn, muscle, technique, setsReps, restSec]
+    html+=`<div class="edit-ex-item">
+      <span class="edit-num">${i+1}</span>
+      <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
+      <button class="edit-move" onclick="moveEditorEx(${i},-1)" title="Move up">&#9650;</button>
+      <button class="edit-move" onclick="moveEditorEx(${i},1)" title="Move down">&#9660;</button>
+      <button class="edit-del" onclick="deleteEditorEx(${i})" title="Remove">&times;</button>
+      <div class="edit-row2">
+        <label>EN:</label><input class="edit-field" value="${e[1]}" onchange="editorExercises[${i}][1]=this.value" placeholder="English name">
+        <label>Sets:</label><input class="edit-field" value="${e[4]}" onchange="editorExercises[${i}][4]=this.value" placeholder="e.g. 4x8-12">
+        <label>Rest:</label><input class="edit-field narrow" type="number" value="${e[5]}" onchange="editorExercises[${i}][5]=+this.value" placeholder="sec">
+        <label>Tech:</label><select class="edit-field" onchange="editorExercises[${i}][3]=this.value">
+          ${Object.keys(TECH_LABELS).map(t=>`<option value="${t}"${e[3]===t?' selected':''}>${t}</option>`).join('')}
+        </select>
+        <label>Muscle:</label><select class="edit-field" onchange="editorExercises[${i}][2]=this.value">
+          ${MUSCLE_GROUPS.map(m=>`<option value="${m}"${e[2]===m?' selected':''}>${MUSCLE_LABELS[m]}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+  });
+
+  html+=`<button class="edit-add-btn" onclick="addEditorEx()">+ Add Exercise</button>`;
+  html+=`<button class="edit-save-btn" onclick="saveEditorAll()">Save Changes</button>`;
+  html+=`<button class="edit-reset-btn" onclick="showBaseVersion()">View Base Version</button>`;
+  if(data.customPrograms[editorPid]){
+    html+=`<button class="edit-reset-btn" style="color:var(--red);border-color:var(--red);margin-top:6px" onclick="resetProgram('${editorPid}')">Reset ALL Days to Base</button>`;
+  }
+
+  document.getElementById('editorDayContent').innerHTML=html;
+}
+
+function moveEditorEx(i,dir){
+  const j=i+dir;
+  if(j<0||j>=editorExercises.length)return;
+  [editorExercises[i],editorExercises[j]]=[editorExercises[j],editorExercises[i]];
+  renderEditorExercises();
+}
+
+function deleteEditorEx(i){
+  if(confirm('Remove '+editorExercises[i][0]+'?')){
+    editorExercises.splice(i,1);
+    renderEditorExercises();
+  }
+}
+
+function addEditorEx(){
+  editorExercises.push(['New Exercise','New Exercise','chest','S','4x10',60]);
+  renderEditorExercises();
+  // Scroll to bottom
+  const modal=document.getElementById('modalContent');
+  modal.scrollTop=modal.scrollHeight;
+}
+
+function saveEditorDay(){
+  // Read all current input values from DOM
+  const container=document.getElementById('editorDayContent');
+  if(!container)return;
+  const items=container.querySelectorAll('.edit-ex-item');
+  items.forEach((item,i)=>{
+    if(!editorExercises[i])return;
+    const inputs=item.querySelectorAll('input,select');
+    // inputs order: name, en, sets, rest, tech, muscle
+    if(inputs[0])editorExercises[i][0]=inputs[0].value;
+    if(inputs[1])editorExercises[i][1]=inputs[1].value;  // en name (in edit-row2)
+    if(inputs[2])editorExercises[i][4]=inputs[2].value;  // setsReps
+    if(inputs[3])editorExercises[i][5]=+inputs[3].value; // rest
+    if(inputs[4])editorExercises[i][3]=inputs[4].value;  // technique (select)
+    if(inputs[5])editorExercises[i][2]=inputs[5].value;  // muscle (select)
+  });
+
+  // Save to customPrograms
+  if(!data.customPrograms[editorPid])data.customPrograms[editorPid]={days:{}};
+  if(!data.customPrograms[editorPid].days)data.customPrograms[editorPid].days={};
+  data.customPrograms[editorPid].days[editorDay]={ex:editorExercises.map(e=>[...e])};
+  saveData();
+}
+
+function saveEditorAll(){
+  saveEditorDay();
+  toast(editorPid+' Day '+editorDay+' saved!');
+  // Update badge
+  const titleEl=document.querySelector('.modal-title');
+  if(titleEl){
+    titleEl.innerHTML=`Edit: ${editorPid} <span class="custom-badge">CUSTOM</span>`;
+  }
+  renderEditorExercises();
+}
+
+function showBaseVersion(){
+  const baseProg=PROGRAMS[editorPid];
+  const baseDayEx=baseProg.days[editorDay]?baseProg.days[editorDay].ex:[];
+
+  let html=`<div class="modal-header">
+    <div class="modal-title">Base: ${editorPid} Day ${editorDay} <span class="base-badge">ORIGINAL</span></div>
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+  </div>
+  <div style="font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">${baseDayEx.length} exercises (original version)</div>`;
+
+  baseDayEx.forEach((e,i)=>{
+    html+=`<div class="edit-ex-item" style="cursor:default">
+      <span class="edit-num">${i+1}</span>
+      <span style="flex:1;font-size:0.85rem;color:var(--text-bright)">${e[0]}</span>
+      <span style="font-size:0.75rem;color:var(--text-dim)">${e[4]}</span>
+      <span style="font-size:0.65rem;color:var(--iron)">${TECH_LABELS[e[3]]||e[3]}</span>
+    </div>`;
+  });
+
+  html+=`<button class="edit-save-btn" onclick="openEditor('${editorPid}')">Back to Editor</button>`;
+  html+=`<button class="edit-reset-btn" onclick="resetDayToBase()">Reset This Day to Base</button>`;
+
+  document.getElementById('modalContent').innerHTML=html;
+}
+
+function resetDayToBase(){
+  if(!data.customPrograms[editorPid])return openEditor(editorPid);
+  if(data.customPrograms[editorPid].days){
+    delete data.customPrograms[editorPid].days[editorDay];
+    // Clean up if no more custom days
+    if(Object.keys(data.customPrograms[editorPid].days).length===0){
+      delete data.customPrograms[editorPid];
+    }
+  }
+  saveData();
+  toast('Day '+editorDay+' reset to base');
+  openEditor(editorPid);
+}
+
+function resetProgram(pid){
+  if(!confirm('Reset ALL days of '+pid+' to base version?'))return;
+  delete data.customPrograms[pid];
+  saveData();
+  toast(pid+' reset to base');
+  openEditor(pid);
+}
+
+// ── MODAL HELPERS ──
+function openModal(html){
+  document.getElementById('modalContent').innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+// ── SETTINGS ──
+function openSettings(){
+  let html=`<div class="modal-header">
+    <div class="modal-title">Settings</div>
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+  </div>
+  <div class="card" style="margin-bottom:8px">
+    <div class="card-title">Active Program</div>
+    <div style="font-size:0.85rem;color:var(--text)">${data.activeProgram} - ${PHASES[PROGRAMS[data.activeProgram]?.phase]||''}</div>
+  </div>
+  <div class="card" style="margin-bottom:8px">
+    <div class="card-title">Edit Programs</div>
+    <button class="ex-action-btn" onclick="closeModal();openEditor(data.activeProgram)" style="margin-top:4px">Open Program Editor</button>
+  </div>
+  <div class="card" style="margin-bottom:8px">
+    <div class="card-title">Import ATH Data</div>
+    <button class="ex-action-btn" onclick="importATH()" style="margin-top:4px">Load ATH as PRs</button>
+  </div>
+  <div class="card" style="margin-bottom:8px">
+    <div class="card-title">Data</div>
+    <div style="font-size:0.8rem;color:var(--text-dim)">${data.logs.length} sessions &middot; ${Object.keys(data.prs).length} exercises with PRs</div>
+    <button class="ex-action-btn" onclick="if(confirm('Clear ALL data?')){localStorage.removeItem(STORAGE_KEY);location.reload()}" style="margin-top:4px;color:var(--red)">Reset All Data</button>
+  </div>`;
+  openModal(html);
+}
+
+function importATH(){
+  // Import ATH_DATA as PRs (assume rep count of 1 since these are max weights)
+  for(const name in ATH_DATA){
+    // Try to find matching exercise name from programs
+    const allNames=getAllExerciseNames();
+    let matchName=allNames.find(n=>n===name||name.includes(n)||n.includes(name));
+    const id=exId(matchName||name);
+    if(!data.prs[id])data.prs[id]={};
+    // Store as "ATH" rep range (unknown reps)
+    if(!data.prs[id]['ath']||ATH_DATA[name]>data.prs[id]['ath'].weight){
+      data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'ATH'};
+    }
+  }
+  saveData();
+  toast('Imported '+Object.keys(ATH_DATA).length+' ATH records');
+  closeModal();
+}
+
+// ── INIT ──
+loadData();
+initCustomABCD14();
+renderHome();
+if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js')}
+
+</script>
+</body>
+</html>
+</html>
