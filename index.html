@@ -1076,6 +1076,62 @@ ABCD16:{name:'ABCD16',phase:'int',type:'ABCD',days:{
 }}
 };
 
+// ── ABS ROUTINES (7 choosable abs days from PDF) ──
+const ABS_ROUTINES = {
+  ABS1:{label:'Abdominais 1',labelEn:'Abs 1',ex:[
+    ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
+    ['Abdominal Remador','Rower Crunch','abs','S','4x15-20',45],
+    ['Abdominal Supra Bracos Esticados','Arms Extended Crunch','abs','S','4x15-20',45],
+    ['Dragon Flag','Dragon Flag','abs','S','4x10-15',45],
+    ['Prancha na Bola','Plank on Ball','abs','S','4x30-40s',45]
+  ]},
+  ABS2:{label:'Abdominais 2',labelEn:'Abs 2',ex:[
+    ['Abdominal Crossfit','Crossfit Sit-up','abs','S','4x15-20',45],
+    ['Abdominal Supra Bracos Esticados','Arms Extended Crunch','abs','S','4x12-15',45],
+    ['Abdominal Cruzado','Cross Crunch','abs','S','4x10 each',45],
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x12-15',45],
+    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','4x15-20',45],
+    ['Prancha na Bola','Plank on Ball','abs','S','4x45-60s',45]
+  ]},
+  ABS3:{label:'Abdominais 3',labelEn:'Abs 3',ex:[
+    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','5x12-15',45],
+    ['Abdominal Infra no Banco','Decline Lower Abs','abs','S','4x15-20',45],
+    ['Abdominal Canivete','Jackknife','abs','Fail','4x10 or Failure',45],
+    ['Rotacao de Tronco com Bola','Ball Trunk Rotation','abs','S','4x10',45]
+  ]},
+  ABS4:{label:'Abdominais 4',labelEn:'Abs 4',ex:[
+    ['Abdominal com Carrinho','Ab Wheel','abs','Fail','4x Failure',45],
+    ['Abdominal Obliquo','Oblique Crunch','abs','S','4x10 each',45],
+    ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
+    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','5x12-15',45],
+    ['Abdominal Infra no Banco Inclinado','Incline Decline Abs','abs','S','4x15-20',45],
+    ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45]
+  ]},
+  ABS5:{label:'Abdominais 5',labelEn:'Abs 5',ex:[
+    ['Abdominal Crunch','Crunch','abs','S','3x20-30',45],
+    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','3x20-30',45],
+    ['Prancha','Plank','abs','S','3x60s',45]
+  ]},
+  ABS6:{label:'Abdominais 6',labelEn:'Abs 6',ex:[
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
+    ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
+    ['Abdominal Obliquo','Oblique Crunch','abs','S','4x10 each',45],
+    ['Abdominal Infra no Banco Inclinado','Incline Decline Abs','abs','S','4x15-20',45],
+    ['Dragon Flag','Dragon Flag','abs','S','4x15',45],
+    ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45]
+  ]},
+  ABS7:{label:'Abdominais 7',labelEn:'Abs 7',ex:[
+    ['Abdominal Crunch','Crunch','abs','S','4x20-30',45],
+    ['Abdominal Supra Bracos Esticados','Arms Extended Crunch','abs','S','4x12-15',45],
+    ['Abdominal Cruzado','Cross Crunch','abs','S','4x10 each',45],
+    ['Abdominal Infra no Banco','Decline Lower Abs','abs','S','4x20',45],
+    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x12-15',45],
+    ['Dragon Flag','Dragon Flag','abs','S','4x20',45],
+    ['Prancha','Plank','abs','S','4x60s',45],
+    ['Prancha na Bola','Plank on Ball','abs','S','4x45-60s',45]
+  ]}
+};
+
 // ── ATH DATA (All-Time Highs from PDF) ──
 const ATH_DATA = {
 // Warm Up
@@ -1316,14 +1372,15 @@ function getProgram(id){
   const p=PROGRAMS[id];if(!p)return null;
   // Merge custom overrides if any
   const custom=data.customPrograms[id];
-  if(!custom)return p;
-  const merged=JSON.parse(JSON.stringify(p));
-  for(const dk in custom.days||{}){
-    if(custom.days[dk]&&custom.days[dk].ex)merged.days[dk].ex=custom.days[dk].ex;
-  }
+  let merged;
+  if(!custom){merged=JSON.parse(JSON.stringify(p))}
+  else{merged=JSON.parse(JSON.stringify(p));for(const dk in custom.days||{}){if(custom.days[dk]&&custom.days[dk].ex)merged.days[dk].ex=custom.days[dk].ex;}}
+  // Inject global ABS routines into every program
+  for(const ak in ABS_ROUTINES){merged.days[ak]=ABS_ROUTINES[ak]}
   return merged;
 }
-function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'):[]}
+function isAbsDay(d){return d&&d.startsWith('ABS')&&d.length>3}
+function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>!isAbsDay(k)&&k!=='ABS'):[]}
 function getAllExerciseNames(){
   const names=new Set();
   for(const pid in PROGRAMS){
@@ -1331,6 +1388,8 @@ function getAllExerciseNames(){
       PROGRAMS[pid].days[dk].ex.forEach(e=>names.add(e[0]));
     }
   }
+  // Also include abs routine exercises
+  for(const ak in ABS_ROUTINES){ABS_ROUTINES[ak].ex.forEach(e=>names.add(e[0]))}
   return[...names].sort();
 }
 function getExerciseMuscle(name){
@@ -1378,7 +1437,7 @@ function showView(name,btn){
 
 function getNextDay(){
   const prog=getProgram(data.activeProgram)||getProgram('ABC01');
-  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
+  const days=Object.keys(prog.days).filter(d=>!isAbsDay(d)&&d!=='ABS'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
     const log=data.logs[i];
@@ -1405,7 +1464,7 @@ function renderPrograms(){
     const p=PROGRAMS[pid];
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
-    const days=Object.keys(p.days).filter(d=>d!=='_');
+    const days=Object.keys(p.days).filter(d=>d!=='_'&&!isAbsDay(d));
     html+=`<div class="prog-overview${isActive?' current':''}" onclick="toggleProgram(this)">
       <div class="prog-head">
         <span class="prog-title">${pid}</span>
@@ -2428,7 +2487,7 @@ function renderSubs(){
             const link=SUB_LINKS[e]||userLinks[key]||'';
             return `<div class="sub-item">
               <span>${e}</span>
-              ${link?`<a class="sub-link-btn" href="${link}" target="_blank" rel="noopener">Video</a>`:`<button class="sub-link-btn" onclick="addSubLink('${key.replace(/'/g,"\\'")}','${e.replace(/'/g,"\\'")}')" style="color:var(--text-dim);border-color:var(--border)">+ Link</button>`}
+              ${link?`<a class="sub-link-btn" href="${link}" target="_blank" rel="noopener">Video</a>`:``}
             </div>`;
           }).join('')}
         `).join('')}
