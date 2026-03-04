@@ -181,6 +181,14 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .lib-sub-item{font-size:0.75rem;color:var(--text);padding:3px 0;display:flex;justify-content:space-between;align-items:center}
 .lib-sub-item a{color:var(--iron);text-decoration:none;font-size:0.7rem}
 .lib-programs{font-size:0.65rem;color:var(--green);margin-top:6px}
+.lib-mode-tabs{display:flex;gap:6px;margin-bottom:12px}
+.lib-mode-tab{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;font-size:0.8rem;color:var(--text-dim);cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;text-align:center}
+.lib-mode-tab.active{background:linear-gradient(135deg,var(--iron-deep),var(--iron));border-color:var(--iron);color:#fff}
+.sub-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.sub-card .sub-name{font-size:0.9rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
+.sub-card .sub-original{font-size:0.7rem;color:var(--iron);margin-top:2px}
+.sub-card .sub-link{display:inline-block;margin-top:6px;font-size:0.75rem;color:var(--green);text-decoration:none;border:1px solid var(--green);border-radius:var(--radius-sm);padding:3px 10px}
+.sub-card .sub-delete{float:right;background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;padding:0 4px}
 
 /* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;display:none;justify-content:center;align-items:flex-end}
@@ -302,12 +310,25 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: LIBRARY -->
 <div id="view-library" class="view">
-  <div style="display:flex;gap:8px;margin-bottom:8px">
-    <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrary()" style="margin-bottom:0;flex:1">
-    <button class="add-pr-btn" onclick="openAddExercise()">+ Add</button>
+  <div class="lib-mode-tabs">
+    <button class="lib-mode-tab active" id="libTabExercises" onclick="setLibMode('exercises')">Exercises</button>
+    <button class="lib-mode-tab" id="libTabSubs" onclick="setLibMode('subs')">Substitutions</button>
   </div>
-  <div class="muscle-tabs" id="libMuscleTabs"></div>
-  <div id="libList"></div>
+  <div id="libExercisesPanel">
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrary()" style="margin-bottom:0;flex:1">
+      <button class="add-pr-btn" onclick="openAddExercise()">+ Add</button>
+    </div>
+    <div class="muscle-tabs" id="libMuscleTabs"></div>
+    <div id="libList"></div>
+  </div>
+  <div id="libSubsPanel" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input class="search-bar" id="subSearch" placeholder="Search substitutions..." oninput="renderSubs()" style="margin-bottom:0;flex:1">
+      <button class="add-pr-btn" onclick="openAddSub()">+ Add</button>
+    </div>
+    <div id="subsList"></div>
+  </div>
 </div>
 
 <!-- REST TIMER -->
@@ -2149,6 +2170,75 @@ function renderLibrary(){
 }
 
 function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
+
+// ── LIBRARY: SUBSTITUTIONS TAB ──
+let currentLibMode='exercises';
+function setLibMode(mode){
+  currentLibMode=mode;
+  document.getElementById('libTabExercises').classList.toggle('active',mode==='exercises');
+  document.getElementById('libTabSubs').classList.toggle('active',mode==='subs');
+  document.getElementById('libExercisesPanel').style.display=mode==='exercises'?'block':'none';
+  document.getElementById('libSubsPanel').style.display=mode==='subs'?'block':'none';
+  if(mode==='subs')renderSubs();
+}
+
+function renderSubs(){
+  const subs=data.substitutions||[];
+  const search=(document.getElementById('subSearch').value||'').toLowerCase();
+  let html='';
+  subs.forEach((s,i)=>{
+    if(search&&!s.name.toLowerCase().includes(search)&&!(s.original||'').toLowerCase().includes(search))return;
+    html+=`<div class="sub-card">
+      <button class="sub-delete" onclick="deleteSub(${i})" title="Delete">&times;</button>
+      <div class="sub-name">${s.name}</div>
+      ${s.original?`<div class="sub-original">Replaces: ${s.original}</div>`:''}
+      ${s.link?`<a class="sub-link" href="${s.link}" target="_blank" rel="noopener">Watch Video</a>`:''}
+    </div>`;
+  });
+  document.getElementById('subsList').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No substitutions yet. Tap + Add to create one.</div>';
+}
+
+function openAddSub(){
+  const names=getAllExerciseNames();
+  openModal(`
+    <div class="modal-header"><span class="modal-title">Add Substitution</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Exercise Name</label>
+      <input id="subNameInput" class="search-bar" placeholder="e.g. Landmine Press" style="margin-bottom:0">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Replaces (optional)</label>
+      <input id="subOriginalInput" class="search-bar" placeholder="e.g. Overhead Press" list="subOriginalList" style="margin-bottom:0">
+      <datalist id="subOriginalList">${names.map(n=>`<option value="${n}">`).join('')}</datalist>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Link (optional)</label>
+      <input id="subLinkInput" class="search-bar" placeholder="https://youtube.com/..." style="margin-bottom:0">
+    </div>
+    <button class="modal-btn" onclick="saveSub()">Save</button>
+  `);
+}
+
+function saveSub(){
+  const name=document.getElementById('subNameInput').value.trim();
+  if(!name){toast('Enter a name');return;}
+  const original=document.getElementById('subOriginalInput').value.trim();
+  const link=document.getElementById('subLinkInput').value.trim();
+  if(!data.substitutions)data.substitutions=[];
+  data.substitutions.push({name,original:original||'',link:link||''});
+  saveData();
+  closeModal();
+  renderSubs();
+  toast('Substitution added');
+}
+
+function deleteSub(i){
+  if(!data.substitutions)return;
+  data.substitutions.splice(i,1);
+  saveData();
+  renderSubs();
+  toast('Deleted');
+}
 
 // ── SWAP MODAL ──
 function openSwapModal(ei){
