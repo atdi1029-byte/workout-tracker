@@ -2175,6 +2175,7 @@ function renderExerciseCards(){
     }
 
     html+=`<div class="ex-actions">
+      <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       <button class="ex-action-btn" onclick="removeExercise(${ei})">Remove</button>
     </div>`;
@@ -2239,6 +2240,33 @@ function removeExercise(ei){
     currentWorkout.exercises.splice(ei,1);
     renderExerciseCards();
   }
+}
+
+function renameExercise(ei){
+  if(!currentWorkout)return;
+  const oldName=currentWorkout.exercises[ei].name;
+  const newName=prompt('Rename exercise:',oldName);
+  if(!newName||newName.trim()===oldName)return;
+  const trimmed=newName.trim();
+  const oldId=exId(oldName);
+  const newId=exId(trimmed);
+  // Rename in current workout
+  currentWorkout.exercises[ei].name=trimmed;
+  // Rename in all logs
+  (data.logs||[]).forEach(log=>{
+    (log.exercises||[]).forEach(ex=>{if(ex.name===oldName)ex.name=trimmed;});
+  });
+  // Rename PRs
+  if(data.prs[oldId]){data.prs[newId]=data.prs[oldId];delete data.prs[oldId];}
+  // Rename holds
+  const h=getHolds();if(h[oldName]){h[trimmed]=h[oldName];delete h[oldName];saveHolds(h);}
+  // Rename notes
+  const n=getExNotes();if(n[oldName]){n[trimmed]=n[oldName];delete n[oldName];saveExNotes(n);}
+  // Rename start weights
+  const s=getStartWeights();if(s[oldName]){s[trimmed]=s[oldName];delete s[oldName];saveStartWeights(s);}
+  saveData();
+  renderExerciseCards();
+  toast('Renamed to '+trimmed);
 }
 
 function getBestWeight(exName){
