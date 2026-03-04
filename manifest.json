@@ -4,8 +4,8 @@
   "description": "Workout Tracker & Training Log",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f1114",
-  "theme_color": "#4a90d9",
+  "background_color": "#0e0c0a",
+  "theme_color": "#c48a3a",
   "orientation": "portrait",
   "icons": [
     {
