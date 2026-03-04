@@ -1,6 +1,6 @@
 {
-  "name": "Iron Log",
-  "short_name": "Iron Log",
+  "name": "Zercher",
+  "short_name": "Zercher",
   "description": "Workout Tracker & Training Log",
   "start_url": "./index.html",
   "display": "standalone",

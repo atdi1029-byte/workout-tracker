@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0a0c10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Iron Log">
+<meta name="apple-mobile-web-app-title" content="Zercher">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Iron Log</title>
+<title>Zercher</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -275,7 +275,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- HEADER -->
 <header class="app-header">
-  <h1><span>IRON</span> LOG</h1>
+  <h1><span>ZER</span>CHER</h1>
   <div class="header-actions">
     <button class="add-pr-btn" id="headerAddPR" style="display:none" onclick="openAddPR()">+ PR</button>
     <span class="sync-dot" id="syncDot" title="Sync status"></span>
@@ -368,7 +368,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <script>
 /* ============================================
-   IRON LOG — Workout Tracker
+   ZERCHER — Workout Tracker
    ============================================ */
 
 // ── CONSTANTS ──
@@ -1375,7 +1375,8 @@ function getProgram(id){
   let merged;
   if(!custom){merged=JSON.parse(JSON.stringify(p))}
   else{merged=JSON.parse(JSON.stringify(p));for(const dk in custom.days||{}){if(custom.days[dk]&&custom.days[dk].ex)merged.days[dk].ex=custom.days[dk].ex;}}
-  // Inject global ABS routines into every program
+  // Remove old per-program ABS day, inject global ABS routines
+  delete merged.days.ABS;
   for(const ak in ABS_ROUTINES){merged.days[ak]=ABS_ROUTINES[ak]}
   return merged;
 }
@@ -1399,6 +1400,7 @@ function getExerciseMuscle(name){
       if(ex)return ex[2];
     }
   }
+  for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[2]}
   return'other';
 }
 function getExerciseEnglish(name){
@@ -1408,6 +1410,7 @@ function getExerciseEnglish(name){
       if(ex)return ex[1];
     }
   }
+  for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[1]}
   return name;
 }
 function getUsedInPrograms(exName){
@@ -2114,9 +2117,11 @@ function renderPRBoard(){
       const pr=prs[r];
       const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
       const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
+      const rowE1rm=r>1?calcE1RM(pr.weight,r):0;
       html+=`<tr>
         <td class="rep-col">${r} reps</td>
         <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
+        <td style="font-size:0.7rem;color:var(--text-dim);text-align:center;min-width:60px">${rowE1rm?'~'+fmt(rowE1rm):''}</td>
         <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
       </tr>`;
     });

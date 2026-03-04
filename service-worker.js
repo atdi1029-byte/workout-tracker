@@ -1,4 +1,4 @@
-const CACHE_NAME = 'iron-log-v34';
+const CACHE_NAME = 'zercher-v36';
 const ASSETS = [
   './',
   './index.html',
