@@ -2288,7 +2288,7 @@ function renderProgress(){
     const prs=data.prs[id]||{};
     const athVal=findATH(name);
     const repCounts=Object.keys(prs).map(Number).sort((a,b)=>a-b);
-    if(repCounts.length===0&&!athVal)return;
+    if(repCounts.length===0)return;
     let best1rm=0;
     repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
     const equip=getExerciseEquip(name);
