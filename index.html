@@ -136,7 +136,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 
 /* PROGRESS VIEW */
 .chart-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin:12px 0}
-.chart-container canvas{width:100%;height:200px}
+.chart-container canvas{width:100%;height:150px}
 .range-tabs{display:flex;gap:4px;margin:8px 0}
 .range-tab{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;font-size:0.75rem;color:var(--text-dim);cursor:pointer}
 .range-tab.active{background:linear-gradient(135deg,var(--iron-deep),var(--iron));border-color:var(--iron);color:#fff}
@@ -160,25 +160,33 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .pr-table .crown{color:var(--gold)}
 .pr-table .recent{color:var(--green)}
 
+/* PROGRESS MUSCLE GROUPS */
+.pc-muscle-row{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color 0.2s}
+.pc-muscle-row:active{border-color:var(--iron)}
+.pc-muscle-row .pc-muscle-name{font-size:0.95rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px}
+.pc-muscle-row .pc-muscle-count{color:var(--text-dim);font-size:0.8rem;font-family:'Oswald',sans-serif}
+.pc-muscle-row .pc-muscle-arrow{color:var(--text-dim);font-size:0.7rem;margin-left:6px;transition:transform 0.2s;display:inline-block}
+.pc-muscle-row.open .pc-muscle-arrow{transform:rotate(90deg)}
+.pc-muscle-content{display:none;padding:0 0 8px}
+.pc-muscle-content.open{display:block}
+.pc-equip-label{color:var(--iron);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;margin:10px 0 4px 4px;font-family:'Oswald',sans-serif}
+
 /* PROGRESS GRID */
 .pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pc-equip-label{grid-column:1/-1;color:var(--iron);font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;margin:10px 0 2px;font-family:'Oswald',sans-serif}
 
 /* PROGRESS TILES (collapsed) */
-.progress-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:90px;justify-content:center}
+.progress-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:60px;justify-content:center}
 .progress-card:active{border-color:var(--iron);transform:scale(0.97)}
-.progress-card .pc-name{font-size:0.8rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2}
-.progress-card .pc-name-en{display:block;font-size:0.6rem;color:var(--iron);margin-top:2px}
-.progress-card .pc-1rm{color:var(--gold);font-weight:600;font-size:0.7rem;margin-top:6px}
-.progress-card .pc-ath{color:var(--text-dim);font-size:0.6rem;margin-top:1px}
-.progress-card .pc-compact{font-size:0.65rem;color:var(--green-bright);margin-top:4px}
-.progress-card .pc-compact .pc-crown{color:var(--gold)}
+.progress-card .pc-name{font-size:0.75rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px;line-height:1.3}
+.progress-card .pc-name-en{display:block;font-size:0.58rem;color:var(--iron);margin-top:2px}
+.progress-card .pc-tile-ath{font-size:0.85rem;font-weight:700;color:var(--gold-glow);margin-top:4px;text-shadow:0 0 8px rgba(184,168,120,0.4);font-family:'Playfair Display',serif}
 
 /* EXPANDED CARD (full width overlay) */
 .progress-card.expanded{grid-column:1/-1;border-color:var(--iron);cursor:default;text-align:left;align-items:stretch;min-height:auto;padding:14px}
 .progress-card.expanded .pc-name{font-size:0.95rem}
 .progress-card.expanded .pc-name-en{display:inline;margin-left:6px}
-.progress-card.expanded .pc-1rm{margin-top:0}
+.progress-card.expanded .pc-1rm{margin-top:0;font-size:0.72rem;color:var(--gold);font-weight:600}
+.progress-card.expanded .pc-ath{font-size:1.3rem;color:var(--gold-glow);font-weight:700;font-family:'Playfair Display',serif;text-shadow:0 0 12px rgba(184,168,120,0.3)}
 .progress-card.expanded .pc-header{display:flex;justify-content:space-between;align-items:flex-start}
 .pc-detail{display:none;padding-top:12px;border-top:1px solid var(--border);margin-top:10px}
 .progress-card.expanded .pc-detail{display:block}
@@ -325,7 +333,6 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: PROGRESS -->
 <div id="view-progress" class="view">
-  <div class="muscle-tabs" id="prMuscleTabs"></div>
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <input type="text" class="search-bar" id="progressSearch" placeholder="Search exercises..." oninput="renderProgress()" style="margin-bottom:0;flex:1">
     <button class="add-pr-btn" onclick="openAddPR()">+ PR</button>
@@ -2267,20 +2274,15 @@ function getLoggedExerciseNames(){
   return[...names].sort();
 }
 
-function renderProgress(){
-  // Muscle tabs
-  const tabs=document.getElementById('prMuscleTabs');
-  tabs.innerHTML='<button class="muscle-tab'+(currentPrMuscle==='all'?' active':'')+'" onclick="setPrMuscle(\'all\')">All</button>'+
-    MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentPrMuscle===m?' active':''}" onclick="setPrMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
+var openMuscleGroups={};
 
+function renderProgress(){
   const query=(document.getElementById('progressSearch').value||'').toLowerCase();
   const allNames=getAllExerciseNames();
 
-  // Build list of exercises with data, grouped by equipment
+  // Build exercise data
   const exerciseData=[];
   allNames.forEach((name,idx)=>{
-    const muscle=getExerciseMuscle(name);
-    if(currentPrMuscle!=='all'&&muscle!==currentPrMuscle)return;
     if(query&&!name.toLowerCase().includes(query)&&!(getExerciseEnglish(name)||'').toLowerCase().includes(query))return;
     const id=exId(name);
     const prs=data.prs[id]||{};
@@ -2290,102 +2292,112 @@ function renderProgress(){
     let best1rm=0;
     repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
     const equip=getExerciseEquip(name);
+    const muscle=getExerciseMuscle(name);
     exerciseData.push({name,idx,prs,athVal,repCounts,best1rm,equip,muscle});
   });
 
-  // Group by equipment
-  const equipGroups={};
+  // Group by muscle
+  const muscleGroups={};
   exerciseData.forEach(ex=>{
-    if(!equipGroups[ex.equip])equipGroups[ex.equip]=[];
-    equipGroups[ex.equip].push(ex);
+    const m=ex.muscle||'other';
+    if(!muscleGroups[m])muscleGroups[m]=[];
+    muscleGroups[m].push(ex);
   });
 
-  let html='<div class="pc-grid">';
-  const equipOrder=Object.keys(equipGroups).sort();
-  equipOrder.forEach(equip=>{
-    html+=`<div class="pc-equip-label">${equip}</div>`;
-    equipGroups[equip].forEach(ex=>{
-      const{name,idx,prs,athVal,repCounts,best1rm}=ex;
-      const isExpanded=expandedExercise===name;
-      const enName=getExerciseEnglish(name);
-      const esc=name.replace(/'/g,"\\'");
+  // Auto-open groups when searching
+  if(query){Object.keys(muscleGroups).forEach(m=>{openMuscleGroups[m]=true})}
 
-      // Compact PR summary
-      const compactPrs=repCounts.slice(-3).map(r=>{
-        const isBest=repCounts.length>1&&calcE1RM(prs[r].weight,r)===best1rm;
-        return(isBest?'<span class="pc-crown">&#x1f451;</span>':'')+r+'&times;'+fmt(prs[r].weight);
-      }).join(' ');
+  // Order: MUSCLE_GROUPS first, then extras
+  const muscleOrder=[...MUSCLE_GROUPS.filter(m=>muscleGroups[m]),...Object.keys(muscleGroups).filter(m=>!MUSCLE_GROUPS.includes(m)).sort()];
 
-      if(isExpanded){
-        // Full-width expanded card
-        html+=`<div class="progress-card expanded" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
-          <div class="pc-header">
-            <div>
+  let html='';
+  muscleOrder.forEach(m=>{
+    const exercises=muscleGroups[m];
+    if(!exercises||!exercises.length)return;
+    const label=(MUSCLE_LABELS[m]||m).toUpperCase();
+    const isOpen=!!openMuscleGroups[m];
+
+    html+=`<div class="pc-muscle-row${isOpen?' open':''}" onclick="toggleMuscleGroup('${m}')">
+      <span class="pc-muscle-name">${label}</span>
+      <span><span class="pc-muscle-count">${exercises.length}</span> <span class="pc-muscle-arrow">&#9654;</span></span>
+    </div>`;
+
+    if(isOpen){
+      html+=`<div class="pc-muscle-content open">`;
+      // Sub-group by equipment
+      const equipGroups={};
+      exercises.forEach(ex=>{if(!equipGroups[ex.equip])equipGroups[ex.equip]=[];equipGroups[ex.equip].push(ex)});
+      const equipOrder=Object.keys(equipGroups).sort();
+      equipOrder.forEach(equip=>{
+        if(equipOrder.length>1)html+=`<div class="pc-equip-label">${equip}</div>`;
+        html+=`<div class="pc-grid">`;
+        equipGroups[equip].forEach(ex=>{
+          const{name,idx,prs,athVal,repCounts,best1rm}=ex;
+          const isExpanded=expandedExercise===name;
+          const enName=getExerciseEnglish(name);
+          const esc=name.replace(/'/g,"\\'");
+
+          if(isExpanded){
+            html+=`<div class="progress-card expanded" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
+              <div class="pc-header">
+                <div><span class="pc-name">${name}</span>${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}</div>
+                <div style="text-align:right">
+                  ${athVal?`<div class="pc-ath">${athVal} lbs</div>`:''}
+                  ${best1rm?`<div class="pc-1rm">est. 1RM: ${fmt(best1rm)} lbs</div>`:''}
+                </div>
+              </div>
+              <div class="pc-detail" onclick="event.stopPropagation()">
+                <table class="pr-table">`;
+            repCounts.forEach(r=>{
+              const pr=prs[r];
+              const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
+              const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
+              html+=`<tr><td class="rep-col">${r} reps</td><td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td><td class="date-col${isRecent?' recent':''}">${pr.date||''}</td></tr>`;
+            });
+            html+=`</table>
+                <div style="margin-top:12px">
+                  <div class="range-tabs">
+                    <button class="range-tab${(cardRanges[name]||4)===4?' active':''}" onclick="setCardRange('${esc}',4,this)">4W</button>
+                    <button class="range-tab${(cardRanges[name]||4)===8?' active':''}" onclick="setCardRange('${esc}',8,this)">8W</button>
+                    <button class="range-tab${(cardRanges[name]||4)===12?' active':''}" onclick="setCardRange('${esc}',12,this)">12W</button>
+                    <button class="range-tab${(cardRanges[name]||4)===0?' active':''}" onclick="setCardRange('${esc}',0,this)">All</button>
+                  </div>
+                  <div class="chart-container" style="margin-top:0"><canvas id="chart-${idx}" width="600" height="150"></canvas></div>
+                </div>
+                <div class="card-sub" style="margin:8px 0 6px">Session History</div>
+                <div id="history-${idx}"></div>
+              </div>
+            </div>`;
+          } else {
+            html+=`<div class="progress-card" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
               <span class="pc-name">${name}</span>
               ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
-            </div>
-            <div style="text-align:right;font-size:0.72rem">
-              ${best1rm?`<div class="pc-1rm">1RM: ${fmt(best1rm)} lbs</div>`:''}
-              ${athVal?`<div class="pc-ath">ATH: ${athVal} lbs</div>`:''}
-            </div>
-          </div>
-
-          <div class="pc-detail" onclick="event.stopPropagation()">
-            <table class="pr-table">`;
-
-        repCounts.forEach(r=>{
-          const pr=prs[r];
-          const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
-          const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
-          html+=`<tr>
-            <td class="rep-col">${r} reps</td>
-            <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
-            <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
-          </tr>`;
+              ${athVal?`<div class="pc-tile-ath">${athVal} lbs</div>`:''}
+            </div>`;
+          }
         });
-
-        html+=`</table>
-            <div style="margin-top:12px">
-              <div class="range-tabs">
-                <button class="range-tab${(cardRanges[name]||4)===4?' active':''}" onclick="setCardRange('${esc}',4,this)">4W</button>
-                <button class="range-tab${(cardRanges[name]||4)===8?' active':''}" onclick="setCardRange('${esc}',8,this)">8W</button>
-                <button class="range-tab${(cardRanges[name]||4)===12?' active':''}" onclick="setCardRange('${esc}',12,this)">12W</button>
-                <button class="range-tab${(cardRanges[name]||4)===0?' active':''}" onclick="setCardRange('${esc}',0,this)">All</button>
-              </div>
-              <div class="chart-container" style="margin-top:0"><canvas id="chart-${idx}" width="600" height="200"></canvas></div>
-            </div>
-            <div class="card-sub" style="margin:8px 0 6px">Session History</div>
-            <div id="history-${idx}"></div>
-          </div>
-        </div>`;
-      } else {
-        // Compact tile
-        html+=`<div class="progress-card" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
-          <span class="pc-name">${name}</span>
-          ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
-          ${best1rm?`<div class="pc-1rm">1RM: ${fmt(best1rm)}</div>`:''}
-          <div class="pc-compact">${compactPrs}</div>
-        </div>`;
-      }
-    });
+        html+=`</div>`;
+      });
+      html+=`</div>`;
+    }
   });
-  html+='</div>';
 
   document.getElementById('progressCards').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises logged yet. Start a workout!</div>';
 
-  // If a card is expanded, draw its chart
   if(expandedExercise){
     const cardIdx=allNames.indexOf(expandedExercise);
     if(cardIdx>=0)drawCardChart(expandedExercise,cardIdx);
   }
 }
 
+function toggleMuscleGroup(m){
+  openMuscleGroups[m]=!openMuscleGroups[m];
+  if(!openMuscleGroups[m])expandedExercise=null;
+  renderProgress();
+}
+
 function toggleProgressCard(name,idx){
-  if(expandedExercise===name){
-    expandedExercise=null;
-  } else {
-    expandedExercise=name;
-  }
+  expandedExercise=expandedExercise===name?null:name;
   renderProgress();
 }
 
@@ -2393,7 +2405,6 @@ function setCardRange(name,weeks,btn){
   cardRanges[name]=weeks;
   const allNames=getAllExerciseNames();
   const idx=allNames.indexOf(name);
-  // Update active tab
   btn.parentElement.querySelectorAll('.range-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(idx>=0)drawCardChart(name,idx);
@@ -2404,7 +2415,7 @@ function drawCardChart(exName,idx){
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
   const W=canvas.width=canvas.parentElement.offsetWidth-24;
-  const H=canvas.height=200;
+  const H=canvas.height=150;
   ctx.clearRect(0,0,W,H);
 
   // Get all logs for this exercise
@@ -2519,7 +2530,6 @@ function renderCardHistory(exName,idx){
   container.innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:12px;font-size:0.8rem">No sessions yet</div>';
 }
 
-function setPrMuscle(m){currentPrMuscle=m;expandedExercise=null;renderProgress()}
 
 function openAddPR(){
   const names=getAllExerciseNames();
