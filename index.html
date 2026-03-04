@@ -1305,27 +1305,32 @@ let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]
 
 // ── HELPERS ──
 // ── SYNC ──
-const SYNC_ENDPOINT = ''; // Set Apps Script URL to enable cloud sync
+const SYNC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt438APIycBc534W6T66O3IgtxLUU9cczw-PZAN6Mc9p2xfU2ySsND_wEMJDHUvrXyUg/exec';
 function fireGet(url){const img=new Image();img.src=url}
 function syncToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const payload={logs:data.logs.slice(-50),prs:data.prs,activeProgram:data.activeProgram,customPrograms:data.customPrograms};
+    const payload={logs:data.logs,prs:data.prs,activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings};
     const encoded=encodeURIComponent(JSON.stringify(payload));
     if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encoded)}
     else{
-      // Chunk: just send recent logs + PRs
-      const small={logs:data.logs.slice(-20),prs:data.prs,activeProgram:data.activeProgram};
+      // Too big for GET — chunk to recent logs + PRs
+      const small={logs:data.logs.slice(-30),prs:data.prs,activeProgram:data.activeProgram,settings:data.settings};
       fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encodeURIComponent(JSON.stringify(small)));
     }
   }catch(e){console.warn('Sync failed',e)}
 }
 function loadFromCloud(){
   if(!SYNC_ENDPOINT)return;
-  fetch(SYNC_ENDPOINT+'?action=load_workout').then(r=>r.json()).then(d=>{
+  fetch(SYNC_ENDPOINT+'?action=load_workout').then(r=>r.json()).then(resp=>{
+    const d=resp.data;
     if(d&&d.logs&&d.logs.length>data.logs.length){
       data.logs=d.logs;data.prs=d.prs||data.prs;
       if(d.customPrograms)data.customPrograms=d.customPrograms;
+      if(d.activeProgram)data.activeProgram=d.activeProgram;
+      if(d.customSubs)data.customSubs=d.customSubs;
+      if(d.customExercises)data.customExercises=d.customExercises;
+      if(d.settings)data.settings=d.settings;
       saveData();toast('Synced from cloud');if(currentView==='workout')renderWorkout();
     }
   }).catch(()=>{});
@@ -2459,9 +2464,11 @@ function renderLibrary(){
 
   const search=(document.getElementById('libSearch').value||'').toLowerCase();
   const allNames=getAllExerciseNames();
+  const hidden=new Set(data.hiddenExercises||[]);
 
   let html='';
   allNames.forEach(name=>{
+    if(hidden.has(name))return;
     const muscle=getExerciseMuscle(name);
     if(currentLibMuscle!=='all'&&muscle!==currentLibMuscle)return;
     if(currentLibMode==='favs'&&!favExercises.has(name))return;
@@ -2470,17 +2477,34 @@ function renderLibrary(){
     const athVal=findATH(name);
     const isFav=favExercises.has(name);
 
-    html+=`<div class="lib-card">
+    html+=`<div class="lib-card" ontouchstart="libLongStart('${name.replace(/'/g,"\\'")}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${name.replace(/'/g,"\\'")}')">
       <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${name.replace(/'/g,"\\'")}')">${isFav?'&#9733;':'&#9734;'}</span></div>
       <div class="lib-name-en">${getExerciseEnglish(name)}</div>
       <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
     </div>`;
   });
 
+  if(hidden.size)html+=`<div class="sub-restore-btn" onclick="restoreLibrary()">${hidden.size} hidden — tap to restore all</div>`;
   document.getElementById('libList').innerHTML=html||`<div style="color:var(--text-dim);text-align:center;padding:40px">${currentLibMode==='favs'?'No favorites yet — tap ☆ on any exercise to add it':'No exercises found'}</div>`;
 }
 
 function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
+var _libLongTimer=null;
+function libLongStart(name,e){_libLongTimer=setTimeout(()=>{_libLongTimer=null;libDelete(name)},600)}
+function libLongEnd(){if(_libLongTimer){clearTimeout(_libLongTimer);_libLongTimer=null}}
+function libDelete(name){
+  if(!confirm('Hide "'+name+'" from Library?'))return;
+  if(!data.hiddenExercises)data.hiddenExercises=[];
+  if(!data.hiddenExercises.includes(name))data.hiddenExercises.push(name);
+  saveData();renderLibrary();
+  toast('Hidden: '+name);
+}
+function restoreLibrary(){
+  if(!confirm('Restore all hidden exercises?'))return;
+  data.hiddenExercises=[];
+  saveData();renderLibrary();
+  toast('All exercises restored');
+}
 
 // ── LIBRARY: SUBSTITUTIONS TAB ──
 const SUBS_DATA=[
@@ -3126,9 +3150,47 @@ function openSettings(){
   <div class="card" style="margin-bottom:8px">
     <div class="card-title">Data</div>
     <div style="font-size:0.8rem;color:var(--text-dim)">${data.logs.length} sessions &middot; ${Object.keys(data.prs).length} exercises with PRs</div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="ex-action-btn" onclick="syncToCloud();toast('Syncing to cloud...')" style="flex:1">Sync Now</button>
+      <button class="ex-action-btn" onclick="exportData()" style="flex:1">Export</button>
+      <button class="ex-action-btn" onclick="showImport()" style="flex:1">Import</button>
+    </div>
+    <div id="import-area" style="display:none;margin-top:8px">
+      <textarea id="import-json" placeholder="Paste exported JSON here..." style="width:100%;height:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-bright);font-size:0.8rem;padding:8px;resize:vertical;font-family:monospace"></textarea>
+      <button class="ex-action-btn" onclick="importData()" style="margin-top:4px;color:var(--green)">Load Imported Data</button>
+    </div>
     <button class="ex-action-btn" onclick="if(confirm('Clear ALL data?')){localStorage.removeItem(STORAGE_KEY);location.reload()}" style="margin-top:4px;color:var(--red)">Reset All Data</button>
   </div>`;
   openModal(html);
+}
+
+function exportData(){
+  const json=JSON.stringify(data);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(json).then(()=>toast('Data copied to clipboard')).catch(()=>{
+      prompt('Copy this data:',json);
+    });
+  }else{
+    prompt('Copy this data:',json);
+  }
+}
+function showImport(){
+  const area=document.getElementById('import-area');
+  area.style.display=area.style.display==='none'?'block':'none';
+}
+function importData(){
+  const raw=document.getElementById('import-json').value.trim();
+  if(!raw){toast('Paste data first');return}
+  try{
+    const imported=JSON.parse(raw);
+    if(!imported.logs||!Array.isArray(imported.logs)){toast('Invalid data format');return}
+    if(!confirm('Replace all data with imported data? ('+imported.logs.length+' sessions)')){return}
+    data=imported;
+    saveData();
+    toast('Imported '+data.logs.length+' sessions');
+    closeModal();
+    showView('workout',document.querySelector('.nav-btn'));
+  }catch(e){toast('Invalid JSON')}
 }
 
 function importATH(){
