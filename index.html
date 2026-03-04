@@ -1542,8 +1542,7 @@ function renderWorkout(){
     let apHtml='<select class="view-select" onchange="switchAbsRoutine(Number(this.value))" style="margin-bottom:8px">';
     for(let i=1;i<=7;i++){
       const r=ABS_ROUTINES['ABS'+i];
-      const exList=r.ex.map(e=>e[1]).join(', ');
-      apHtml+=`<option value="${i}"${currentAbsRoutine===i?' selected':''}>Abs ${i} — ${exList}</option>`;
+      apHtml+=`<option value="${i}"${currentAbsRoutine===i?' selected':''}>Abs ${i}</option>`;
     }
     apHtml+='</select>';
     absPickerEl.innerHTML=apHtml;
