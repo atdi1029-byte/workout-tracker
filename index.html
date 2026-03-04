@@ -320,6 +320,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <div id="view-library" class="view">
   <div class="lib-mode-tabs">
     <button class="lib-mode-tab active" id="libTabExercises" onclick="setLibMode('exercises')">Exercises</button>
+    <button class="lib-mode-tab" id="libTabFavs" onclick="setLibMode('favs')">Favorites</button>
     <button class="lib-mode-tab" id="libTabSubs" onclick="setLibMode('subs')">Substitutions</button>
   </div>
   <div id="libExercisesPanel">
@@ -1213,6 +1214,7 @@ let chartRange = 4;
 let currentPrMuscle = 'all';
 let currentLibMuscle = 'all';
 let currentAbsRoutine = parseInt(localStorage.getItem('abs_routine'))||1;
+let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]'));
 
 // ── HELPERS ──
 // ── SYNC ──
@@ -2264,18 +2266,20 @@ function renderLibrary(){
   allNames.forEach(name=>{
     const muscle=getExerciseMuscle(name);
     if(currentLibMuscle!=='all'&&muscle!==currentLibMuscle)return;
+    if(currentLibMode==='favs'&&!favExercises.has(name))return;
     if(search&&!name.toLowerCase().includes(search)&&!getExerciseEnglish(name).toLowerCase().includes(search))return;
 
     const athVal=findATH(name);
+    const isFav=favExercises.has(name);
 
     html+=`<div class="lib-card">
-      <div class="lib-name">${name} ${athVal?`<span class="lib-ath">${athVal} lbs ATH</span>`:''}</div>
+      <div class="lib-name">${name} ${athVal?`<span class="lib-ath">${athVal} lbs ATH</span>`:''}<span style="float:right;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${name.replace(/'/g,"\\'")}')">${isFav?'&#9733;':'&#9734;'}</span></div>
       <div class="lib-name-en">${getExerciseEnglish(name)}</div>
       <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
     </div>`;
   });
 
-  document.getElementById('libList').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises found</div>';
+  document.getElementById('libList').innerHTML=html||`<div style="color:var(--text-dim);text-align:center;padding:40px">${currentLibMode==='favs'?'No favorites yet — tap ☆ on any exercise to add it':'No exercises found'}</div>`;
 }
 
 function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
@@ -2499,10 +2503,18 @@ let currentLibMode='exercises';
 function setLibMode(mode){
   currentLibMode=mode;
   document.getElementById('libTabExercises').classList.toggle('active',mode==='exercises');
+  document.getElementById('libTabFavs').classList.toggle('active',mode==='favs');
   document.getElementById('libTabSubs').classList.toggle('active',mode==='subs');
-  document.getElementById('libExercisesPanel').style.display=mode==='exercises'?'block':'none';
+  document.getElementById('libExercisesPanel').style.display=mode==='exercises'||mode==='favs'?'block':'none';
   document.getElementById('libSubsPanel').style.display=mode==='subs'?'block':'none';
   if(mode==='subs')renderSubs();
+  if(mode==='favs'||mode==='exercises')renderLibrary();
+}
+function toggleFav(name){
+  if(favExercises.has(name))favExercises.delete(name);
+  else favExercises.add(name);
+  localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));
+  renderLibrary();
 }
 
 function renderSubs(){
