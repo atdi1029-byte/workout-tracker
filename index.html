@@ -1164,6 +1164,50 @@ function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 // Pre-populate ABCD14 custom version (user's current bold exercises)
 function initCustomABCD14(){
   if(data.customPrograms.ABCD14)return; // already customized
+  // Seed last workout weights from PDF so inputs are pre-filled
+  data.logs.push(
+    {id:'seed_a',date:'2026-03-02',program:'ABCD14',day:'A',exercises:[
+      {name:'Dumbell Circles',sets:[{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'}]},
+      {name:'Reverse Grip Bench Press Smith Machine',sets:[{weight:70,reps:8,type:'warmup'},{weight:70,reps:8,type:'warmup'},{weight:130,reps:10,type:'working'},{weight:130,reps:10,type:'working'},{weight:125,reps:10,type:'working'}]},
+      {name:'Paralela',sets:[{weight:0,reps:8,type:'warmup'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'}]},
+      {name:'Incline Seated Cable Fly (37°)',sets:[{weight:13,reps:8,type:'warmup'},{weight:32,reps:10,type:'working'},{weight:31,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
+      {name:'Viking Press (Seated)',sets:[{weight:55,reps:8,type:'warmup'},{weight:110,reps:10,type:'working'},{weight:115,reps:10,type:'working'},{weight:120,reps:10,type:'working'}]},
+      {name:'Barbell Tricep Extension',sets:[{weight:20,reps:8,type:'warmup'},{weight:45,reps:10,type:'working'},{weight:40,reps:10,type:'working'},{weight:35,reps:10,type:'working'}]},
+      {name:'Triceps Pulley (Barra)',sets:[{weight:40,reps:8,type:'warmup'},{weight:84.5,reps:10,type:'working'},{weight:85,reps:10,type:'working'},{weight:84.5,reps:10,type:'working'}]},
+      {name:'Lying Chest Supported Dumbbell Wrist Curl',sets:[{weight:65,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:65,reps:10,type:'working'}]},
+      {name:'Abdominal na Polia Alta',sets:[{weight:47,reps:12,type:'working'},{weight:47,reps:12,type:'working'},{weight:47,reps:12,type:'working'},{weight:47,reps:12,type:'working'}]}
+    ],duration:0},
+    {id:'seed_b',date:'2026-03-02',program:'ABCD14',day:'B',exercises:[
+      {name:'Rotação Externa Ombro',sets:[{weight:0,reps:10,type:'working'}]},
+      {name:'Rotação Interna Ombro',sets:[{weight:0,reps:10,type:'working'}]},
+      {name:'Seated Lat Pull-In',sets:[{weight:12,reps:8,type:'warmup'},{weight:12,reps:8,type:'warmup'},{weight:28,reps:10,type:'working'},{weight:28,reps:10,type:'working'},{weight:28,reps:10,type:'working'}]},
+      {name:'Tbar Row',sets:[{weight:75,reps:8,type:'warmup'},{weight:75,reps:8,type:'warmup'},{weight:152.5,reps:10,type:'working'},{weight:152.5,reps:10,type:'working'},{weight:155,reps:10,type:'working'}]},
+      {name:'Reeves Row (Ez Bar)',sets:[{weight:40,reps:8,type:'warmup'},{weight:40,reps:8,type:'warmup'},{weight:70,reps:10,type:'working'},{weight:75,reps:10,type:'working'},{weight:80,reps:10,type:'working'}]},
+      {name:'Behind-The-Back Upright Row',sets:[{weight:15,reps:8,type:'warmup'},{weight:15,reps:8,type:'warmup'},{weight:40,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
+      {name:'Rosca Scott (Polia)',sets:[{weight:21,reps:8,type:'warmup'},{weight:44,reps:10,type:'working'},{weight:44,reps:10,type:'working'},{weight:44,reps:10,type:'working'}]},
+      {name:'Rosca Martelo No Banco',sets:[{weight:15,reps:8,type:'warmup'},{weight:27.5,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
+      {name:'Zercher Back Curl',sets:[{weight:0,reps:5,type:'warmup'},{weight:15,reps:5,type:'working'},{weight:0,reps:5,type:'working'},{weight:5,reps:5,type:'working'}]},
+      {name:'Abdominal Remador Weighted',sets:[{weight:6,reps:12,type:'working'},{weight:6,reps:12,type:'working'},{weight:6,reps:12,type:'working'},{weight:5,reps:12,type:'working'}]}
+    ],duration:0},
+    {id:'seed_c',date:'2026-03-02',program:'ABCD14',day:'C',exercises:[
+      {name:'Barbell Hack Squat',sets:[{weight:50,reps:8,type:'warmup'},{weight:50,reps:8,type:'warmup'},{weight:95,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:105,reps:10,type:'working'}]},
+      {name:'Agachamento Smith',sets:[{weight:40,reps:8,type:'warmup'},{weight:40,reps:8,type:'warmup'},{weight:85,reps:10,type:'working'},{weight:85,reps:10,type:'working'},{weight:80,reps:10,type:'working'}]},
+      {name:'Single Leg Good Morning (Smith)',sets:[{weight:15,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
+      {name:'Quad Focused Leg Press (3 Notches)',sets:[{weight:50,reps:8,type:'warmup'},{weight:50,reps:8,type:'warmup'},{weight:90,reps:10,type:'working'},{weight:95,reps:10,type:'working'},{weight:100,reps:10,type:'working'}]},
+      {name:'Calves Leg Press',sets:[{weight:100,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:110,reps:10,type:'working'}]},
+      {name:'Weighted Crunches (Bosu Ball)',sets:[{weight:26,reps:12,type:'working'},{weight:26,reps:12,type:'working'},{weight:25,reps:12,type:'working'}]}
+    ],duration:0},
+    {id:'seed_d',date:'2026-03-02',program:'ABCD14',day:'D',exercises:[
+      {name:'Supino Inclinado (Smith) (30°)',sets:[{weight:60,reps:8,type:'warmup'},{weight:60,reps:8,type:'warmup'},{weight:120,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:130,reps:10,type:'working'}]},
+      {name:'Dumbell Fly (Flat)',sets:[{weight:15,reps:8,type:'warmup'},{weight:15,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
+      {name:'JM Press',sets:[{weight:10,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:20,reps:10,type:'working'}]},
+      {name:'Rack Pulls (Rack 3)',sets:[{weight:100,reps:8,type:'warmup'},{weight:100,reps:8,type:'warmup'},{weight:205,reps:10,type:'working'},{weight:210,reps:10,type:'working'},{weight:205,reps:10,type:'working'}]},
+      {name:'Pullover',sets:[{weight:12.5,reps:8,type:'warmup'},{weight:12.5,reps:8,type:'warmup'},{weight:27.5,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:22.5,reps:10,type:'working'}]},
+      {name:'Rosca 45',sets:[{weight:15,reps:8,type:'warmup'},{weight:15,reps:8,type:'warmup'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
+      {name:'Barbell Dead Stop Cheat Curl',sets:[{weight:15,reps:8,type:'warmup'},{weight:35,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:25,reps:10,type:'working'}]},
+      {name:'Weighted Sit-ups',sets:[{weight:16,reps:10,type:'working'},{weight:16,reps:10,type:'working'},{weight:16,reps:10,type:'working'}]}
+    ],duration:0}
+  );
   data.customPrograms.ABCD14={days:{
     A:{ex:[
       ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
