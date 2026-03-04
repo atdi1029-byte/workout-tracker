@@ -2137,13 +2137,11 @@ function renderLibrary(){
     if(search&&!name.toLowerCase().includes(search)&&!getExerciseEnglish(name).toLowerCase().includes(search))return;
 
     const athVal=findATH(name);
-    const programs=getUsedInPrograms(name);
 
     html+=`<div class="lib-card">
       <div class="lib-name">${name} ${athVal?`<span class="lib-ath">${athVal} lbs ATH</span>`:''}</div>
       <div class="lib-name-en">${getExerciseEnglish(name)}</div>
       <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
-      <div class="lib-programs">Used in: ${programs.join(', ')||'None'}</div>
     </div>`;
   });
 
