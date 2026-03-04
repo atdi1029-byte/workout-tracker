@@ -124,7 +124,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .rest-btn.skip{background:var(--iron);border-color:var(--iron);color:#fff}
 
 /* FINISH BTN */
-.finish-btn{display:block;width:calc(100% - 32px);max-width:568px;background:linear-gradient(135deg,#5a8040,var(--green));color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:1rem;font-weight:700;cursor:pointer;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:95;box-shadow:0 -2px 16px rgba(0,0,0,0.6);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:2px}
+.finish-btn{display:block;width:100%;background:linear-gradient(135deg,#5a8040,var(--green));color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:16px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:2px}
 .finish-btn:hover{background:var(--green-bright)}
 .start-overlay{text-align:center;padding:50px 20px}
 .start-overlay .day-label{font-size:1.6rem;font-weight:900;color:var(--text-bright);margin-bottom:8px;font-family:'Playfair Display',serif;text-transform:uppercase;letter-spacing:3px}
@@ -276,6 +276,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
   <div class="workout-timer" id="workoutTimer"></div>
   <div id="startOverlay"></div>
   <div id="workoutExercises"></div>
+  <button class="finish-btn" id="finishBtn" style="display:none" onclick="finishWorkout()">Finish Workout</button>
 </div>
 
 <!-- VIEW: PROGRESS -->
@@ -329,9 +330,6 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <div id="view-programs" class="view">
   <div id="programsList"></div>
 </div>
-
-<!-- FINISH WORKOUT (fixed above nav) -->
-<button class="finish-btn" id="finishBtn" style="display:none" onclick="finishWorkout()">Finish Workout</button>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -1344,9 +1342,6 @@ function showView(name,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   currentView=name;
-  // Hide finish button when not on workout view
-  const finBtn=document.getElementById('finishBtn');
-  if(name!=='workout'&&finBtn)finBtn.style.display='none';
   if(name==='workout')renderWorkout();
   if(name==='progress')renderProgress();
   if(name==='prs')renderPRBoard();
