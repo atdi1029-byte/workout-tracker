@@ -1661,17 +1661,18 @@ function getExerciseMuscle(name){
       if(ex)return ex[2];
     }
   }
-  // Infer from exercise name keywords
+  // Infer from exercise name keywords (specific patterns first)
   const n=name.toLowerCase();
-  if(n.includes('bicep')||n.includes('curl')||n.includes('rosca')||n.includes('scott'))return'biceps';
-  if(n.includes('tricep')||n.includes('jm press')||n.includes('pushdown')||n.includes('frances'))return'triceps';
-  if(n.includes('chest')||n.includes('bench')||n.includes('supino')||n.includes('fly')||n.includes('pec'))return'chest';
-  if(n.includes('row')||n.includes('pulldown')||n.includes('lat ')||n.includes('pull-in')||n.includes('pullover')||n.includes('back'))return'back';
+  if(n.includes('calf')||n.includes('calves'))return'calves';
   if(n.includes('shoulder')||n.includes('ombro')||n.includes('delt')||n.includes('lateral raise')||n.includes('upright row')||n.includes('rotacao'))return'shoulders';
+  if(n.includes('bicep')||n.includes('curl')||n.includes('rosca')||n.includes('scott'))return'biceps';
+  if(n.includes('tricep')||n.includes('jm press')||n.includes('pushdown')||n.includes('frances')||n.includes('pulley barra'))return'triceps';
+  if(n.includes('chest')||n.includes('bench')||n.includes('supino')||n.includes('fly')||n.includes('pec')||n.includes('dumbell fly'))return'chest';
+  if(n.includes('row')||n.includes('pulldown')||n.includes('lat ')||n.includes('pull-in')||n.includes('pullover')||n.includes('tbar')||n.includes('t-bar')||n.includes('reeves'))return'back';
   if(n.includes('squat')||n.includes('quad')||n.includes('leg press')||n.includes('lunge')||n.includes('leg ext'))return'quads';
   if(n.includes('hamstring')||n.includes('leg curl')||n.includes('rdl')||n.includes('stiff'))return'hamstrings';
-  if(n.includes('calf')||n.includes('calves')||n.includes('calf raise'))return'calves';
-  if(n.includes('ab ')||n.includes('abs')||n.includes('crunch')||n.includes('plank'))return'abs';
+  if(n.includes('glute')||n.includes('hip thrust'))return'glutes';
+  if(n.includes('ab ')||n.includes('abs')||n.includes('crunch')||n.includes('plank')||n.includes('abdominal')||n.includes('sit-up'))return'abs';
   if(n.includes('forearm')||n.includes('wrist')||n.includes('grip'))return'forearms';
   if(n.includes('shrug')||n.includes('trap'))return'traps';
   return'other';
@@ -2368,7 +2369,7 @@ function renderProgress(){
               <div class="pc-header">
                 <div><span class="pc-name">${name}</span>${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}</div>
                 <div style="text-align:right">
-                  ${athVal?`<div class="pc-ath">${athVal} lbs</div>`:''}
+                  <div class="pc-ath">${athVal||fmt(Math.max(...repCounts.map(r=>prs[r].weight)))} lbs</div>
                   ${best1rm?`<div class="pc-1rm">est. 1RM: ${fmt(best1rm)} lbs</div>`:''}
                 </div>
               </div>
@@ -2395,10 +2396,11 @@ function renderProgress(){
               </div>
             </div>`;
           } else {
+            const tileWeight=athVal||Math.max(...repCounts.map(r=>prs[r].weight));
             html+=`<div class="progress-card" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
               <span class="pc-name">${name}</span>
               ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
-              ${athVal?`<div class="pc-tile-ath">${athVal} lbs</div>`:''}
+              <div class="pc-tile-ath">${fmt(tileWeight)} lbs</div>
             </div>`;
           }
         });
