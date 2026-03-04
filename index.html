@@ -75,8 +75,13 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .ex-name-en{font-size:0.7rem;color:var(--text-dim)}
 .ex-meta{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .ex-tag{font-size:0.65rem;padding:2px 8px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--iron);border:1px solid rgba(74,144,217,0.2)}
-.ex-tag.tech{background:rgba(232,184,74,0.1);color:var(--gold);border-color:rgba(232,184,74,0.2)}
+.ex-tag.tech{background:rgba(232,184,74,0.1);color:var(--gold);border-color:rgba(232,184,74,0.2);cursor:pointer}
 .ex-tag.pattern{background:rgba(74,170,106,0.1);color:var(--green);border-color:rgba(74,170,106,0.2)}
+.tech-popup{position:fixed;bottom:70px;left:16px;right:16px;max-width:568px;margin:0 auto;background:rgba(14,16,20,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(160,148,106,0.3);border-radius:var(--radius);padding:16px;z-index:200;box-shadow:0 -4px 24px rgba(0,0,0,0.6);animation:slideUp 0.2s ease}
+.tech-popup-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.tech-popup-desc{font-size:0.85rem;color:var(--text);line-height:1.5}
+.tech-popup-close{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* SET ROWS */
 .set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
@@ -96,7 +101,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 @keyframes prPulse{0%{transform:scale(0.95);opacity:0}50%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
 
 /* LAST TIME ROW */
-.ex-last{font-size:0.7rem;color:var(--text-dim);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.ex-last{font-size:0.7rem;color:var(--iron);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
 .ex-last .pr-badge{color:var(--gold);font-weight:600}
 
 /* EX ACTIONS */
@@ -348,6 +353,24 @@ const MUSCLE_GROUPS = ['chest','back','shoulders','biceps','triceps','forearms',
 const MUSCLE_LABELS = {chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs'};
 const PHASES = {acc:'Accumulation',int:'Intensification',spe:'Specialization',rea:'Realization',peak:'Peak Strength',freq:'Frequency'};
 const TECH_LABELS = {S:'Straight Sets',P:'Pyramid',TP:'Truncated Pyramid',RP:'Reverse Pyramid',DS:'Drop Set',BS:'Bi-Set',TS:'Tri-Set',SS:'Superset',ASS:'Antagonist Superset',RestP:'Rest-Pause',PE:'Pre-Exhaust',Dead:'Dead Stop',BO:'Back-Off',Mob:'Mobility',Fail:'To Failure',Prog:'Progressive'};
+const TECH_DESC = {
+  S:'Same weight and reps for every set. Complete all sets with the prescribed rest between each.',
+  P:'Start light and add weight each set while keeping reps high, then decrease reps as weight gets heavier.',
+  TP:'Like a pyramid but stop before going back down. Increase weight each set, reducing reps as you go.',
+  RP:'Start with your heaviest set first, then reduce weight each set while increasing reps. Maximizes intensity when fresh.',
+  DS:'After your last set, immediately drop the weight 20-30% and keep going without rest. Repeat 2-3 drops.',
+  BS:'Pair two exercises back-to-back with no rest between them. Rest only after completing both exercises.',
+  TS:'Three exercises performed back-to-back with no rest between them. Rest only after all three are done.',
+  SS:'Two exercises for the same muscle group performed back-to-back with no rest between them.',
+  ASS:'Two exercises for opposing muscles (e.g. biceps + triceps) performed back-to-back. Rest after both.',
+  RestP:'Do a set to failure, rest 10-15 seconds, then squeeze out a few more reps. Repeat 2-3 times.',
+  PE:'Isolate the target muscle first with an isolation exercise, then immediately hit a compound movement.',
+  Dead:'Pause completely at the bottom of each rep (no bounce). Reset and lift from a dead stop.',
+  BO:'After your heavy working sets, reduce weight 40-50% and do a higher-rep set to pump more blood into the muscle.',
+  Mob:'Mobility and flexibility work. Move through full range of motion slowly and controlled.',
+  Fail:'Push each set until you physically cannot complete another rep with good form.',
+  Prog:'Increase weight or reps systematically each session or week following a progression scheme.'
+};
 
 // ── MOVEMENT PATTERNS ──
 const MOVEMENT_PATTERNS = {
@@ -1321,6 +1344,9 @@ function showView(name,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   currentView=name;
+  // Hide finish button when not on workout view
+  const finBtn=document.getElementById('finishBtn');
+  if(name!=='workout'&&finBtn)finBtn.style.display='none';
   if(name==='workout')renderWorkout();
   if(name==='progress')renderProgress();
   if(name==='prs')renderPRBoard();
@@ -1388,7 +1414,7 @@ function renderPrograms(){
               if(wuMatch)reps=wuMatch[1];
               return `<div class="prog-detail-ex">
               <span class="prog-detail-num">${i+1}.</span>
-              <span class="prog-detail-name">${e[1]||e[0]}${tech?` <span class="prog-detail-tech">${tech}</span>`:''}</span>
+              <span class="prog-detail-name">${e[1]||e[0]}${tech?` <span class="prog-detail-tech" onclick="showTechPopup('${e[3]}',event)">${tech}</span>`:''}</span>
               <span class="prog-detail-reps">${reps}</span>
             </div>`;}).join('')}
           </div>`;
@@ -1456,6 +1482,19 @@ function updateWorkoutTimer(){
   const elapsed=Math.floor((Date.now()-workoutStartTime)/1000);
   const m=Math.floor(elapsed/60);const s=elapsed%60;
   document.getElementById('workoutTimer').textContent=m+':'+(s<10?'0':'')+s+' elapsed';
+}
+
+function showTechPopup(code,e){
+  if(e)e.stopPropagation();
+  let pop=document.getElementById('techPopup');
+  if(pop){pop.remove();}
+  const label=TECH_LABELS[code]||code;
+  const desc=TECH_DESC[code]||'No description available.';
+  pop=document.createElement('div');
+  pop.id='techPopup';pop.className='tech-popup';
+  pop.innerHTML=`<button class="tech-popup-close" onclick="document.getElementById('techPopup').remove()">&times;</button><div class="tech-popup-title">${label}</div><div class="tech-popup-desc">${desc}</div>`;
+  document.body.appendChild(pop);
+  setTimeout(()=>{document.addEventListener('click',function closePop(){document.getElementById('techPopup')?.remove();document.removeEventListener('click',closePop)},{once:true})},100);
 }
 
 function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
@@ -1578,8 +1617,8 @@ function renderExerciseCards(){
       </div>
       <div class="ex-meta">
         ${getPattern(ex.name)?`<span class="ex-tag pattern">${getPattern(ex.name)}</span>`:''}
-        <span class="ex-tag">${ex.targetSets}</span>
-        <span class="ex-tag tech">${techLabel}</span>
+        <span class="ex-tag">${ex.targetSets.replace(/\+/g,' + ')}</span>
+        <span class="ex-tag tech" onclick="showTechPopup('${ex.technique}',event)">${techLabel}</span>
         <span class="ex-tag">${ex.restSec}s rest</span>
       </div>`;
 
@@ -2420,11 +2459,7 @@ function importATH(){
 // ── INIT ──
 loadData();
 initCustomABCD14();
-// Ensure every program has an ABS day
-for(const pid in PROGRAMS){
-  if(pid.startsWith('_'))continue;
-  if(!PROGRAMS[pid].days.ABS)PROGRAMS[pid].days.ABS={label:'Abdominais',labelEn:'Abs',ex:[]};
-}
+// ABS days exist in some programs — they show as tabs but aren't in ABCD rotation
 // Load custom exercises into hidden program
 if(data.customExercises&&data.customExercises.length){
   PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
