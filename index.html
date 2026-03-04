@@ -1504,7 +1504,16 @@ function getLastLog(exName){
   return null;
 }
 
-function getSuggestion(lastLog, targetReps){
+function getLastNLogs(exName,n){
+  const results=[];
+  for(let i=data.logs.length-1;i>=0&&results.length<n;i--){
+    const ex=data.logs[i].exercises.find(e=>e.name===exName);
+    if(ex)results.push(ex);
+  }
+  return results;
+}
+
+function getSuggestion(lastLog, targetReps, exName){
   if(!lastLog)return null;
   const working=lastLog.sets.filter(s=>s.type!=='warmup');
   if(working.length===0)return null;
@@ -1513,20 +1522,40 @@ function getSuggestion(lastLog, targetReps){
   const allHitTarget=working.every(s=>s.reps>=target);
   const someHitTarget=working.some(s=>s.reps>=target);
   const avgReps=working.reduce((a,s)=>a+s.reps,0)/working.length;
-  // Determine step size: heavier exercises get +5, lighter get +2.5
   const step=maxWeight>=50?5:2.5;
+  const repsStr=working.map(s=>s.reps).join('/');
 
+  let weightTip='';
+  let volTip='';
+
+  // Weight suggestion
   if(allHitTarget){
-    // Hit all target reps → go up
-    return{type:'up',text:'Go up to '+(maxWeight+step)+' lbs — you hit all '+target+' reps last time',weight:maxWeight+step};
+    weightTip='&#9650; Go up to '+(maxWeight+step)+' lbs — hit all '+target+' reps';
   } else if(avgReps>=target*0.7 && someHitTarget){
-    // Got close, stay same weight
-    return{type:'stay',text:'Stay at '+maxWeight+' lbs — got '+working.map(s=>s.reps).join('/')+' reps (target: '+target+')',weight:maxWeight};
+    weightTip='&#9654; Stay at '+maxWeight+' lbs — got '+repsStr+' reps (target: '+target+')';
   } else {
-    // Missed by a lot, drop weight
-    const dropWeight=maxWeight-step;
-    return{type:'down',text:'Drop to '+dropWeight+' lbs — only got '+working.map(s=>s.reps).join('/')+' reps last time',weight:dropWeight};
+    weightTip='&#9660; Drop to '+(maxWeight-step)+' lbs — got '+repsStr+' reps';
   }
+
+  // Volume suggestion: check last 3 sessions
+  const history=exName?getLastNLogs(exName,3):[];
+  if(history.length>=2){
+    const recentWorking=history.map(h=>h.sets.filter(s=>s.type!=='warmup'));
+    const allSessionsHit=recentWorking.every(w=>w.every(s=>s.reps>=target));
+    const lastSetFailed=working.length>1 && working[working.length-1].reps<target*0.6;
+    const mostFailed=working.filter(s=>s.reps<target).length>=working.length*0.6;
+
+    if(allSessionsHit && history.length>=2){
+      volTip=' | Consider adding a set — crushing it '+history.length+' sessions in a row';
+    } else if(mostFailed){
+      volTip=' | Consider dropping to '+(working.length-1)+' sets — struggling on most sets';
+    } else if(lastSetFailed && working.length>2){
+      volTip=' | Last set only '+working[working.length-1].reps+' reps — maybe drop to '+(working.length-1)+' sets';
+    }
+  }
+
+  const type=allHitTarget?'up':(avgReps>=target*0.7&&someHitTarget)?'stay':'down';
+  return{type,text:weightTip+volTip};
 }
 
 function renderExerciseCards(){
@@ -1583,9 +1612,9 @@ function renderExerciseCards(){
       const reps=workingSets.map(s=>s.reps).join('/');
       html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
       const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
-      const sug=getSuggestion(lastLog,targetReps);
+      const sug=getSuggestion(lastLog,targetReps,ex.name);
       if(sug){
-        html+=`<div class="ex-suggest ${sug.type}">${sug.type==='up'?'&#9650;':sug.type==='stay'?'&#9654;':'&#9660;'} ${sug.text}</div>`;
+        html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
       }
     }
 
