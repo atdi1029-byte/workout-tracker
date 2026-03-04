@@ -2454,7 +2454,7 @@ function renderStrengthScore(){
     const pct=((last-first)/first*100).toFixed(1);
     const dir=last>first?'up':last<first?'down':'flat';
     const arrow=dir==='up'?'&#9650; +':dir==='down'?'&#9660; ':'';
-    const label=ssRange===4?'1 month':ssRange===13?'3 months':ssRange===26?'6 months':ssRange===52?'1 year':'all time';
+    const label=ssRange===4?'1 month':ssRange===13?'3 months':ssRange===26?'6 months':ssRange===52?'1 year':ssRange===0?'all time':'all time';
     trendHtml=`<div class="ss-trend ${dir}">${arrow}${pct}% over ${label}</div>`;
   }
 
@@ -2468,7 +2468,7 @@ function renderStrengthScore(){
   }).join('');
 
   // Range tabs
-  const ranges=[{w:4,l:'1M'},{w:13,l:'3M'},{w:26,l:'6M'},{w:52,l:'1Y'}];
+  const ranges=[{w:4,l:'1M'},{w:13,l:'3M'},{w:26,l:'6M'},{w:52,l:'1Y'},{w:0,l:'AT'}];
   const tabsHtml=ranges.map(r=>`<button class="ss-range-tab${ssRange===r.w?' active':''}" onclick="ssRange=${r.w};renderStrengthScore()">${r.l}</button>`).join('');
 
   // Plateau detection: score unchanged for 3+ weeks with 4+ workouts
