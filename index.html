@@ -1653,6 +1653,27 @@ function getExerciseMuscle(name){
   }
   for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[2]}
   for(const g of SUBS_DATA){for(const c of g.subs){if(c.ex.includes(name))return g.muscle.toLowerCase()}}
+  // Also check custom programs
+  for(const pid in data.customPrograms||{}){
+    const cp=data.customPrograms[pid];
+    for(const dk in cp.days||{}){
+      const ex=(cp.days[dk].ex||[]).find(e=>e[0]===name);
+      if(ex)return ex[2];
+    }
+  }
+  // Infer from exercise name keywords
+  const n=name.toLowerCase();
+  if(n.includes('bicep')||n.includes('curl')||n.includes('rosca')||n.includes('scott'))return'biceps';
+  if(n.includes('tricep')||n.includes('jm press')||n.includes('pushdown')||n.includes('frances'))return'triceps';
+  if(n.includes('chest')||n.includes('bench')||n.includes('supino')||n.includes('fly')||n.includes('pec'))return'chest';
+  if(n.includes('row')||n.includes('pulldown')||n.includes('lat ')||n.includes('pull-in')||n.includes('pullover')||n.includes('back'))return'back';
+  if(n.includes('shoulder')||n.includes('ombro')||n.includes('delt')||n.includes('lateral raise')||n.includes('upright row')||n.includes('rotacao'))return'shoulders';
+  if(n.includes('squat')||n.includes('quad')||n.includes('leg press')||n.includes('lunge')||n.includes('leg ext'))return'quads';
+  if(n.includes('hamstring')||n.includes('leg curl')||n.includes('rdl')||n.includes('stiff'))return'hamstrings';
+  if(n.includes('calf')||n.includes('calves')||n.includes('calf raise'))return'calves';
+  if(n.includes('ab ')||n.includes('abs')||n.includes('crunch')||n.includes('plank'))return'abs';
+  if(n.includes('forearm')||n.includes('wrist')||n.includes('grip'))return'forearms';
+  if(n.includes('shrug')||n.includes('trap'))return'traps';
   return'other';
 }
 function getExerciseEnglish(name){
