@@ -161,9 +161,9 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .pr-card .pr-1rm{font-size:0.75rem;color:var(--gold);float:right}
 .pr-table{width:100%;margin-top:8px;font-size:0.8rem}
 .pr-table td{padding:4px 8px}
-.pr-table .rep-col{color:var(--text-dim);width:60px}
+.pr-table .rep-col{color:var(--green-bright);width:60px}
 .pr-table .weight-col{color:var(--text-bright);font-weight:600}
-.pr-table .date-col{color:var(--text-dim);font-size:0.7rem;text-align:right}
+.pr-table .date-col{color:var(--green);font-size:0.7rem;text-align:right}
 .pr-table .crown{color:var(--gold)}
 .pr-table .recent{color:var(--green)}
 
@@ -2437,7 +2437,7 @@ function renderPRBoard(){
     repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
 
     html+=`<div class="pr-card">
-      <div class="pr-exercise">${name} <span style="font-size:0.7rem;color:var(--text-dim)">${getExerciseEnglish(name)}</span></div>
+      <div class="pr-exercise">${name} <span style="font-size:0.7rem;color:var(--iron)">${getExerciseEnglish(name)}</span></div>
       ${best1rm?`<div class="pr-1rm">est. 1RM: ${fmt(best1rm)} lbs</div>`:''}
       ${athVal?`<div style="font-size:0.75rem;color:var(--gold);margin-top:4px">ATH: ${athVal} lbs</div>`:''}
       <table class="pr-table">`;
@@ -2450,7 +2450,7 @@ function renderPRBoard(){
       html+=`<tr>
         <td class="rep-col">${r} reps</td>
         <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
-        <td style="font-size:0.7rem;color:var(--text-dim);text-align:center;min-width:60px">${rowE1rm?'~'+fmt(rowE1rm):''}</td>
+        <td style="font-size:0.7rem;color:var(--green);text-align:center;min-width:60px">${rowE1rm?'~'+fmt(rowE1rm):''}</td>
         <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
       </tr>`;
     });
