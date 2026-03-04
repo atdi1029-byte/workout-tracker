@@ -26,7 +26,7 @@
 }
 html{height:100%}
 body{min-height:100%;color:var(--text);font-family:'Oswald',-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent;overflow-x:hidden;padding-bottom:70px;
-background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:cover}
+background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:contain}
 
 /* HEADER */
 .app-header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(128,144,168,0.15)}
@@ -50,7 +50,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .view.active{display:block}
 
 /* CARDS */
-.card{background:rgba(14,16,20,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
 .card:hover{border-color:var(--border-light)}
 .card-title{font-size:0.95rem;font-weight:600;color:var(--text-bright);margin-bottom:6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
 .card-sub{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;font-family:'Oswald',sans-serif}
@@ -61,7 +61,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .day-tab.active{background:linear-gradient(135deg,var(--iron-deep),var(--iron));border-color:var(--iron);color:#fff;box-shadow:0 0 10px rgba(128,144,168,0.2)}
 
 /* EXERCISE CARD (WORKOUT) */
-.ex-card{background:rgba(14,16,20,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.ex-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
 .ex-card.all-done{border-color:rgba(74,170,106,0.3);max-height:48px;overflow:hidden;opacity:0.5;cursor:pointer;transition:max-height 0.3s,opacity 0.3s;padding:10px 14px}
 .ex-card.all-done .ex-done-label{display:inline}
 .ex-card.all-done.expanded{max-height:800px;opacity:1;padding:14px}
@@ -145,7 +145,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .session-trend.flat{background:rgba(232,200,74,0.15);color:var(--yellow)}
 
 /* PR BOARD */
-.pr-card{background:rgba(14,16,20,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.pr-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
 .pr-card .pr-exercise{font-size:0.95rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
 .pr-card .pr-1rm{font-size:0.75rem;color:var(--gold);float:right}
 .pr-table{width:100%;margin-top:8px;font-size:0.8rem}
@@ -166,7 +166,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .search-bar:focus{outline:none;border-color:var(--iron)}
 
 /* LIB CARD */
-.lib-card{background:rgba(14,16,20,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.lib-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
 .lib-card .lib-name{font-size:0.9rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
 .lib-card .lib-name-en{font-size:0.75rem;color:var(--text-dim)}
 .lib-card .lib-equip{font-size:0.65rem;color:var(--iron);margin-top:2px}
@@ -216,7 +216,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .toast.show{opacity:1}
 
 /* PROGRAMS VIEW */
-.prog-overview{background:rgba(14,16,20,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:border-color 0.2s}
+.prog-overview{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:border-color 0.2s}
 .prog-overview:hover{border-color:var(--border-light)}
 .prog-overview.current{border-color:var(--iron);box-shadow:0 0 12px rgba(128,144,168,0.15)}
 .prog-overview .prog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -238,6 +238,11 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .prog-detail-num{color:var(--text-dim);min-width:18px;font-family:'Oswald',sans-serif}
 .prog-detail-name{color:var(--text);flex:1}
 .prog-detail-reps{color:var(--iron);font-family:'Oswald',sans-serif;font-weight:600;white-space:nowrap}
+.prog-detail-tech{font-size:0.6rem;padding:1px 5px;border-radius:8px;background:rgba(160,148,106,0.15);color:var(--gold);border:1px solid rgba(160,148,106,0.25);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px;vertical-align:middle}
+
+/* ADD PR / ADD EXERCISE BUTTON */
+.add-pr-btn{background:rgba(128,144,168,0.15);border:1px solid rgba(128,144,168,0.25);border-radius:var(--radius-sm);padding:6px 14px;color:var(--iron);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.add-pr-btn:hover{background:rgba(128,144,168,0.25)}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px}
@@ -285,13 +290,19 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: PRS -->
 <div id="view-prs" class="view">
-  <div class="muscle-tabs" id="prMuscleTabs"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="muscle-tabs" id="prMuscleTabs" style="flex:1;margin-bottom:0"></div>
+    <button class="add-pr-btn" onclick="openAddPR()">+ Add PR</button>
+  </div>
   <div id="prBoard"></div>
 </div>
 
 <!-- VIEW: LIBRARY -->
 <div id="view-library" class="view">
-  <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrary()">
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrary()" style="margin-bottom:0;flex:1">
+    <button class="add-pr-btn" onclick="openAddExercise()">+ Add</button>
+  </div>
   <div class="muscle-tabs" id="libMuscleTabs"></div>
   <div id="libList"></div>
 </div>
@@ -1367,11 +1378,13 @@ function renderPrograms(){
           const day=p.days[d];
           return `<div class="prog-detail-day">
             <div class="prog-detail-header">${d} — ${day.labelEn||day.label}</div>
-            ${day.ex.map((e,i)=>`<div class="prog-detail-ex">
+            ${day.ex.map((e,i)=>{
+              const tech=e[3]&&e[3]!=='S'?TECH_LABELS[e[3]]||e[3]:'';
+              return `<div class="prog-detail-ex">
               <span class="prog-detail-num">${i+1}.</span>
-              <span class="prog-detail-name">${e[1]||e[0]}</span>
+              <span class="prog-detail-name">${e[1]||e[0]}${tech?` <span class="prog-detail-tech">${tech}</span>`:''}</span>
               <span class="prog-detail-reps">${e[4]||'4x10'}</span>
-            </div>`).join('')}
+            </div>`;}).join('')}
           </div>`;
         }).join('')}
       </div>
@@ -1990,6 +2003,85 @@ function renderPRBoard(){
 
 function setPrMuscle(m){currentPrMuscle=m;renderPRBoard()}
 
+function openAddPR(){
+  const names=getAllExerciseNames();
+  const opts=names.map(n=>`<option value="${n}">${n}</option>`).join('');
+  openModal(`
+    <div class="modal-header"><span class="modal-title">Add PR</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Exercise</label>
+      <input id="prExInput" class="set-input" style="text-align:left" list="prExList" placeholder="Type or select exercise...">
+      <datalist id="prExList">${opts}</datalist>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1"><label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Weight (lbs)</label><input id="prWeightInput" class="set-input" type="number" placeholder="0"></div>
+      <div style="flex:1"><label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Reps</label><input id="prRepsInput" class="set-input" type="number" placeholder="0"></div>
+    </div>
+    <button class="edit-save-btn" onclick="saveManualPR()">Save PR</button>
+  `);
+}
+
+function saveManualPR(){
+  const name=document.getElementById('prExInput').value.trim();
+  const weight=parseFloat(document.getElementById('prWeightInput').value);
+  const reps=parseInt(document.getElementById('prRepsInput').value);
+  if(!name||!weight||!reps){toast('Fill in all fields');return}
+  const id=exId(name);
+  if(!data.prs[id])data.prs[id]={};
+  const current=data.prs[id][reps];
+  if(current&&current.weight>=weight){toast('Not a PR — existing: '+fmt(current.weight)+' lbs');return}
+  data.prs[id][reps]={weight,date:dateStr(),program:'Manual'};
+  saveData();
+  closeModal();
+  toast('PR saved: '+name+' '+fmt(weight)+'lbs x'+reps);
+  renderPRBoard();
+}
+
+function openAddExercise(){
+  openModal(`
+    <div class="modal-header"><span class="modal-title">Add Exercise</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Exercise Name</label>
+      <input id="newExName" class="set-input" style="text-align:left" placeholder="e.g. Barbell Curl">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Muscle Group</label>
+      <select id="newExMuscle" class="set-input" style="text-align:left">
+        ${MUSCLE_GROUPS.map(m=>`<option value="${m}">${MUSCLE_LABELS[m]}</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">ATH Weight (optional)</label>
+      <input id="newExATH" class="set-input" type="number" placeholder="0">
+    </div>
+    <button class="edit-save-btn" onclick="saveNewExercise()">Add to Library</button>
+  `);
+}
+
+function saveNewExercise(){
+  const name=document.getElementById('newExName').value.trim();
+  const muscle=document.getElementById('newExMuscle').value;
+  const ath=parseFloat(document.getElementById('newExATH').value)||0;
+  if(!name){toast('Enter exercise name');return}
+  // Add to a hidden "_custom" program so it shows in getAllExerciseNames
+  if(!PROGRAMS._custom)PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:[]}}};
+  const exists=PROGRAMS._custom.days.A.ex.find(e=>e[0]===name);
+  if(!exists)PROGRAMS._custom.days.A.ex.push([name,name,muscle,'S','4x10',60]);
+  // Save ATH as PR if provided
+  if(ath>0){
+    const id=exId(name);
+    if(!data.prs[id])data.prs[id]={};
+    data.prs[id]['ath']={weight:ath,date:'',program:'ATH'};
+  }
+  // Persist custom exercises
+  if(!data.customExercises)data.customExercises=[];
+  if(!data.customExercises.find(e=>e[0]===name))data.customExercises.push([name,name,muscle,'S','4x10',60]);
+  saveData();
+  closeModal();
+  toast('Added: '+name);
+  renderLibrary();
+}
+
 // ── LIBRARY VIEW ──
 function renderLibrary(){
   const tabs=document.getElementById('libMuscleTabs');
@@ -2322,6 +2414,10 @@ function importATH(){
 // ── INIT ──
 loadData();
 initCustomABCD14();
+// Load custom exercises into hidden program
+if(data.customExercises&&data.customExercises.length){
+  PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
+}
 currentDay=getNextDay();
 showView('workout',document.querySelector('.nav-btn'));
 loadFromCloud();
