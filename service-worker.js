@@ -1,10 +1,11 @@
-const CACHE_NAME = 'iron-log-v14';
+const CACHE_NAME = 'iron-log-v15';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './bg-sandow.jpg'
 ];
 
 self.addEventListener('install', event => {
