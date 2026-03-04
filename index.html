@@ -145,8 +145,13 @@ body{padding-bottom:70px}
 .rest-btn.skip{background:var(--iron);border-color:var(--iron);color:#fff}
 
 /* FINISH BTN */
-.finish-btn{display:block;width:100%;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:16px}
+.finish-btn{display:block;width:100%;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:16px;position:sticky;bottom:70px;z-index:10;box-shadow:0 -2px 12px rgba(0,0,0,0.5)}
 .finish-btn:hover{background:var(--green-bright)}
+.start-overlay{text-align:center;padding:40px 20px}
+.start-overlay .day-label{font-size:1.4rem;font-weight:700;color:var(--text-bright);margin-bottom:8px}
+.start-overlay .ex-count{font-size:0.9rem;color:var(--text-dim);margin-bottom:24px}
+.start-workout-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:16px 40px;font-size:1.1rem;font-weight:700;cursor:pointer}
+.workout-timer{text-align:center;color:var(--text-dim);font-size:0.8rem;padding:6px 0;margin-bottom:4px}
 
 /* PROGRESS VIEW */
 .chart-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin:12px 0}
@@ -275,8 +280,10 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <!-- VIEW: WORKOUT -->
 <div id="view-workout" class="view">
   <div class="day-tabs" id="dayTabs"></div>
+  <div class="workout-timer" id="workoutTimer"></div>
+  <div id="startOverlay"></div>
   <div id="workoutExercises"></div>
-  <button class="finish-btn" id="finishBtn" onclick="finishWorkout()">Finish Workout</button>
+  <button class="finish-btn" id="finishBtn" style="display:none" onclick="finishWorkout()">Finish Workout</button>
 </div>
 
 <!-- VIEW: PROGRESS -->
@@ -1402,10 +1409,48 @@ function renderWorkout(){
   if(!currentWorkout||currentWorkout.program!==data.activeProgram||currentWorkout.day!==currentDay){
     initWorkout();
   }
-  renderExerciseCards();
+
+  // Show start overlay or exercises
+  const overlay=document.getElementById('startOverlay');
+  const exContainer=document.getElementById('workoutExercises');
+  const finBtn=document.getElementById('finishBtn');
+  const timerEl=document.getElementById('workoutTimer');
+  if(!workoutStartTime){
+    const dayData=prog.days[currentDay];
+    const exCount=currentWorkout?currentWorkout.exercises.length:0;
+    overlay.innerHTML=`<div class="start-overlay">
+      <div class="day-label">Day ${currentDay} — ${dayData.labelEn||dayData.label}</div>
+      <div class="ex-count">${exCount} exercises</div>
+      <button class="start-workout-btn" onclick="beginWorkout()">Start Workout</button>
+    </div>`;
+    overlay.style.display='block';
+    exContainer.innerHTML='';
+    finBtn.style.display='none';
+    timerEl.textContent='';
+  } else {
+    overlay.style.display='none';
+    finBtn.style.display='block';
+    renderExerciseCards();
+    updateWorkoutTimer();
+  }
 }
 
-function switchDay(d){currentDay=d;currentWorkout=null;renderWorkout()}
+function beginWorkout(){
+  workoutStartTime=Date.now();
+  renderWorkout();
+  // Update timer every second
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+  window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
+}
+
+function updateWorkoutTimer(){
+  if(!workoutStartTime)return;
+  const elapsed=Math.floor((Date.now()-workoutStartTime)/1000);
+  const m=Math.floor(elapsed/60);const s=elapsed%60;
+  document.getElementById('workoutTimer').textContent=m+':'+(s<10?'0':'')+s+' elapsed';
+}
+
+function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 
 function initWorkout(){
   const prog=getProgram(data.activeProgram);if(!prog)return;
