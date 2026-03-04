@@ -376,7 +376,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 // ── CONSTANTS ──
 const STORAGE_KEY = 'workout_data_v1';
 const MUSCLE_GROUPS = ['chest','back','shoulders','biceps','triceps','forearms','quads','hamstrings','glutes','calves','abs'];
-const MUSCLE_LABELS = {chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs'};
+const MUSCLE_LABELS = {chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs',traps:'Traps',neck:'Neck','legs (full)':'Legs (Full)','olympic weightlifting':'Olympic Lifting','old time lifts':'Old Time Lifts',rings:'Rings'};
 const PHASES = {acc:'Accumulation',int:'Intensification',spe:'Specialization',rea:'Realization',peak:'Peak Strength',freq:'Frequency'};
 const TECH_LABELS = {S:'Straight Sets',P:'Pyramid',TP:'Truncated Pyramid',RP:'Reverse Pyramid',DS:'Drop Set',BS:'Bi-Set',TS:'Tri-Set',SS:'Superset',ASS:'Antagonist Superset',RestP:'Rest-Pause',PE:'Pre-Exhaust',Dead:'Dead Stop',BO:'Back-Off',Mob:'Mobility',Fail:'To Failure',Prog:'Progressive'};
 const TECH_DESC = {
@@ -1395,6 +1395,13 @@ function getAllExerciseNames(){
   }
   // Also include abs routine exercises
   for(const ak in ABS_ROUTINES){ABS_ROUTINES[ak].ex.forEach(e=>names.add(e[0]))}
+  // Include substitution exercises
+  SUBS_DATA.forEach(g=>g.subs.forEach(c=>c.ex.forEach(n=>names.add(n))));
+  // Include custom program exercises
+  for(const pid in data.customPrograms){
+    const cp=data.customPrograms[pid];
+    for(const dk in cp.days||{}){if(cp.days[dk]&&cp.days[dk].ex)cp.days[dk].ex.forEach(e=>names.add(e[0]));}
+  }
   return[...names].sort();
 }
 function getExerciseMuscle(name){
@@ -1405,6 +1412,7 @@ function getExerciseMuscle(name){
     }
   }
   for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[2]}
+  for(const g of SUBS_DATA){for(const c of g.subs){if(c.ex.includes(name))return g.muscle.toLowerCase()}}
   return'other';
 }
 function getExerciseEnglish(name){
