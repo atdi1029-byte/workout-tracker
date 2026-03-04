@@ -88,7 +88,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* SET ROWS */
-.set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
+.set-row{display:grid;grid-template-columns:auto 1fr 1fr auto auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
 .set-label{font-size:0.75rem;color:var(--iron);min-width:36px}
 .set-label.warmup{color:var(--yellow)}
 .set-input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.9rem;width:100%;text-align:center}
@@ -116,6 +116,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 /* ADD SET */
 .add-set-btn{background:none;border:1px dashed var(--border);border-radius:var(--radius-sm);padding:6px;width:100%;color:var(--text-dim);font-size:0.75rem;cursor:pointer;margin-top:4px}
 .add-set-btn:hover{border-color:var(--iron);color:var(--iron)}
+.rm-set-btn{background:none;border:none;color:var(--text-dim);font-size:0.85rem;cursor:pointer;padding:4px;opacity:0.5;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.rm-set-btn:hover{color:var(--red);opacity:1}
 
 /* REST TIMER */
 .rest-timer{position:fixed;bottom:70px;left:0;right:0;background:var(--bg-deep);border-top:2px solid var(--border);padding:12px 16px;display:none;z-index:90;text-align:center}
@@ -1997,7 +1999,8 @@ function renderExerciseCards(){
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
-      html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
+      const canRemove=ex.sets.filter(s=>s.type===set.type).length>1;
+      html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto auto':'grid-template-columns:auto 1fr 1fr auto auto'}">
         <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
@@ -2008,6 +2011,7 @@ function renderExerciseCards(){
           <span class="set-unit">reps</span>
         </div>
         <button class="set-done-btn${set.done?' done':''}" onclick="toggleSet(${ei},${si})">&#10003;</button>
+        ${canRemove?`<button class="rm-set-btn" onclick="removeSet(${ei},${si})" title="Remove set">&#10005;</button>`:`<span style="width:24px"></span>`}
       </div>`;
     });
 
@@ -2101,6 +2105,15 @@ function addSet(ei){
   const ex=currentWorkout.exercises[ei];
   const lastSet=ex.sets[ex.sets.length-1];
   ex.sets.push({weight:lastSet?lastSet.weight:'',reps:lastSet?lastSet.reps:10,type:'working',done:false});
+  renderExerciseCards();
+}
+
+function removeSet(ei,si){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];
+  const setType=ex.sets[si].type;
+  if(ex.sets.filter(s=>s.type===setType).length<=1){toast('Need at least 1 set');return;}
+  ex.sets.splice(si,1);
   renderExerciseCards();
 }
 
