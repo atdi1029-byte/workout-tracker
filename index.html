@@ -1170,8 +1170,8 @@ function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 
 // Pre-populate ABCD14 custom version (user's current bold exercises)
 function initCustomABCD14(){
-  if(data.customPrograms.ABCD14)return; // already customized
   // Seed last workout weights from PDF so inputs are pre-filled
+  if(!data.logs.some(l=>l.id&&l.id.startsWith('seed_'))){
   data.logs.push(
     {id:'seed_a',date:'2026-03-02',program:'ABCD14',day:'A',exercises:[
       {name:'Dumbell Circles',sets:[{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'}]},
@@ -1215,6 +1215,8 @@ function initCustomABCD14(){
       {name:'Weighted Sit-ups',sets:[{weight:16,reps:10,type:'working'},{weight:16,reps:10,type:'working'},{weight:16,reps:10,type:'working'}]}
     ],duration:0}
   );
+  }
+  if(data.customPrograms.ABCD14){saveData();return;}
   data.customPrograms.ABCD14={days:{
     A:{ex:[
       ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
