@@ -1359,10 +1359,18 @@ function fireGet(url){const img=new Image();img.src=url}
 function syncConfigToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings};
+    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{}};
     const encoded=encodeURIComponent(JSON.stringify(config));
     if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);
   }catch(e){console.warn('Config sync failed',e)}
+}
+function syncExtraToCloud(){
+  if(!SYNC_ENDPOINT)return;
+  try{
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights()};
+    const encoded=encodeURIComponent(JSON.stringify(extra));
+    if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+encoded);
+  }catch(e){console.warn('Extra sync failed',e)}
 }
 function syncWorkoutToCloud(logEntry){
   if(!SYNC_ENDPOINT)return;
@@ -1372,15 +1380,16 @@ function syncWorkoutToCloud(logEntry){
     else console.warn('Workout too large for GET:',encoded.length);
   }catch(e){console.warn('Workout sync failed',e)}
 }
-function syncToCloud(){syncConfigToCloud()}
+function syncToCloud(){syncConfigToCloud();syncExtraToCloud()}
 function fullSync(){
   if(!SYNC_ENDPOINT){toast('No sync endpoint');return}
   toast('Syncing...');
   syncConfigToCloud();
+  syncExtraToCloud();
   fetch(SYNC_ENDPOINT+'?action=zercher_load').then(r=>r.json()).then(resp=>{
     const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
     const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
-    if(unsynced.length===0){toast('Already synced!');return}
+    if(unsynced.length===0){toast('All synced!');return}
     let i=0;
     function sendNext(){
       if(i>=unsynced.length){toast('Synced '+unsynced.length+' workouts!');return}
@@ -1419,6 +1428,21 @@ function loadFromCloud(){
     if(config.customSubs)data.customSubs=config.customSubs;
     if(config.customExercises)data.customExercises=config.customExercises;
     if(config.settings)data.settings=config.settings;
+    if(config.prs){
+      for(const eid in config.prs){
+        if(!data.prs[eid])data.prs[eid]={};
+        for(const reps in config.prs[eid]){
+          const cloud=config.prs[eid][reps];
+          const local=data.prs[eid][reps];
+          if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
+        }
+      }
+    }
+    // Merge extra (holds, notes, starts)
+    const extra=resp.extra||{};
+    if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!h[k])h[k]=extra.holds[k];}saveHolds(h);}
+    if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!n[k])n[k]=extra.notes[k];}saveExNotes(n);}
+    if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!s[k])s[k]=extra.starts[k];}saveStartWeights(s);}
     saveData();
     if(currentView==='workout')renderWorkout();
     toast('Synced from cloud');
@@ -2203,7 +2227,7 @@ function toggleSet(ei,si){
   // Read current input values
   const card=document.getElementById('ex-'+ei);
   const inputs=card.querySelectorAll('.set-row')[si].querySelectorAll('.set-input');
-  const isAbsEx=currentWorkout.exercises[ei].muscle==='abs';
+  const isAbsEx=currentDay==='ABS'&&currentWorkout.exercises[ei].muscle==='abs';
   if(isAbsEx){
     set.weight=0;
     set.reps=parseInt(inputs[0].value)||0;
@@ -2224,7 +2248,7 @@ function toggleSet(ei,si){
   ex.sets.forEach((s,i)=>{
     if(rows[i]){
       const inp=rows[i].querySelectorAll('.set-input');
-      if(ex.muscle==='abs'){
+      if(currentDay==='ABS'&&ex.muscle==='abs'){
         s.weight=0;
         s.reps=parseInt(inp[0].value)||0;
       } else {
@@ -2358,7 +2382,7 @@ function finishWorkout(){
     const card=document.getElementById('ex-'+ei);
     if(!card)return;
     const rows=card.querySelectorAll('.set-row');
-    const isAbsEx=ex.muscle==='abs';
+    const isAbsEx=currentDay==='ABS'&&ex.muscle==='abs';
     ex.sets.forEach((set,si)=>{
       if(rows[si]){
         const inputs=rows[si].querySelectorAll('.set-input');
@@ -2402,6 +2426,7 @@ function finishWorkout(){
   saveData();
   syncWorkoutToCloud(logEntry);
   syncConfigToCloud();
+  syncExtraToCloud();
   localStorage.removeItem('workout_in_progress');
   currentWorkout=null;
   workoutStartTime=null;
