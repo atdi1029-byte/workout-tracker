@@ -68,8 +68,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .ex-done-label{display:none;color:var(--green);font-size:0.75rem;margin-left:8px}
 .hold-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(232,200,74,0.15);color:var(--yellow);border:1px solid rgba(232,200,74,0.25);margin-left:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.5px;vertical-align:middle}
 .hold-badge.active{background:rgba(232,200,74,0.3);color:#e8c84a;border-color:rgba(232,200,74,0.5)}
-.start-line{font-size:0.78rem;padding:6px 10px;margin-top:4px;border-radius:var(--radius-sm);color:var(--green);opacity:0.7;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:400;letter-spacing:0.3px}
-.start-line:active{opacity:1}
+.ex-action-btn.start-set{color:var(--green);border-color:rgba(106,136,112,0.4)}
 .ex-note-corner{font-size:0.72rem;color:var(--iron);cursor:pointer;text-align:right;font-family:'Oswald',sans-serif;font-weight:400;letter-spacing:0.3px;white-space:nowrap;padding:2px 0;opacity:0.8}
 .ex-note-corner .note-text{color:#a0b8d0;font-style:italic;font-family:'Playfair Display',serif;font-weight:400}
 .ex-note-corner .note-pencil{font-size:0.65rem;opacity:0.5;margin-left:4px}
@@ -2169,12 +2168,9 @@ function renderExerciseCards(){
         }
       }
     }
-    if(!isAbs){
-      const startW=getStartWeight(ex.name);
-      html+=`<div class="start-line" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startW?'&#9654; Next time start S1 at <strong>'+startW+' lbs</strong>':'+ Set S1 start weight'}</div>`;
-    }
-
+    const startW=isAbs?'':getStartWeight(ex.name);
     html+=`<div class="ex-actions">
+      ${!isAbs?`<button class="ex-action-btn${startW?' start-set':''}" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startW?'S1: '+startW+'lbs':'S1 Start'}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       <button class="ex-action-btn" onclick="removeExercise(${ei})">Remove</button>
