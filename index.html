@@ -2124,7 +2124,7 @@ function renderExerciseCards(){
       </div>`;
 
     // Set rows
-    const isAbs=ex.muscle==='abs';
+    const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
     let wNum=0;
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
