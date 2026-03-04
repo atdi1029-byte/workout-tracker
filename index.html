@@ -68,9 +68,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .ex-done-label{display:none;color:var(--green);font-size:0.75rem;margin-left:8px}
 .hold-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(232,200,74,0.15);color:var(--yellow);border:1px solid rgba(232,200,74,0.25);margin-left:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.5px;vertical-align:middle}
 .hold-badge.active{background:rgba(232,200,74,0.3);color:#e8c84a;border-color:rgba(232,200,74,0.5)}
-.start-btn{font-size:0.55rem;padding:2px 5px;border-radius:6px;background:rgba(106,136,112,0.15);color:var(--green);border:1px solid rgba(106,136,112,0.3);cursor:pointer;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.5px;margin-left:6px;vertical-align:middle}
-.start-btn.has-start{background:rgba(106,136,112,0.25);color:#7ab888;border-color:rgba(106,136,112,0.5)}
-.start-hint{font-size:0.7rem;color:var(--green);opacity:0.7;margin-top:2px;font-style:italic}
+.start-line{font-size:0.78rem;padding:6px 10px;margin-top:4px;border-radius:var(--radius-sm);color:var(--green);opacity:0.7;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:400;letter-spacing:0.3px}
+.start-line:active{opacity:1}
 .ex-note-corner{font-size:0.72rem;color:var(--iron);cursor:pointer;text-align:right;font-family:'Oswald',sans-serif;font-weight:400;letter-spacing:0.3px;white-space:nowrap;padding:2px 0;opacity:0.8}
 .ex-note-corner .note-text{color:#a0b8d0;font-style:italic;font-family:'Playfair Display',serif;font-weight:400}
 .ex-note-corner .note-pencil{font-size:0.65rem;opacity:0.5;margin-left:4px}
@@ -2128,16 +2127,13 @@ function renderExerciseCards(){
     // Set rows
     const isAbs=ex.muscle==='abs';
     let wNum=0;
-    const startW=getStartWeight(ex.name);
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
-      const isS1=wNum===1&&set.type!=='warmup';
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
-        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}${isS1&&!isAbs?`<button class="start-btn${startW?' has-start':''}" onclick="event.stopPropagation();promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startW?startW+'lbs':'START'}</button>`:''}
-        </span>
+        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
         ${isAbs?'':`<div class="set-input-group">
-          <input class="set-input" type="number" inputmode="decimal" placeholder="${isS1&&startW?startW:'lbs'}" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
+          <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
         </div>`}
         <div class="set-input-group">
@@ -2172,6 +2168,10 @@ function renderExerciseCards(){
           html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
         }
       }
+    }
+    if(!isAbs){
+      const startW=getStartWeight(ex.name);
+      html+=`<div class="start-line" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startW?'&#9654; Next time start S1 at <strong>'+startW+' lbs</strong>':'+ Set S1 start weight'}</div>`;
     }
 
     html+=`<div class="ex-actions">
