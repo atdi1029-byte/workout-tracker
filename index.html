@@ -1402,6 +1402,10 @@ function getAllExerciseNames(){
     const cp=data.customPrograms[pid];
     for(const dk in cp.days||{}){if(cp.days[dk]&&cp.days[dk].ex)cp.days[dk].ex.forEach(e=>names.add(e[0]));}
   }
+  // Include exercises from ATH data
+  Object.keys(ATH_DATA).forEach(n=>names.add(n));
+  // Include exercises from workout logs
+  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>names.add(ex.name)));
   return[...names].sort();
 }
 function getExerciseMuscle(name){
