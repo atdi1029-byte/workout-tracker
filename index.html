@@ -1157,7 +1157,7 @@ function parseSets(str){
 // ── STORAGE ──
 function loadData(){
   try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
-  catch(e){data={activeProgram:'ABC01',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
+  catch(e){data={activeProgram:'ABCD14',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
 }
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 
