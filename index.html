@@ -1453,6 +1453,17 @@ function updateWorkoutTimer(){
 function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 
 function initWorkout(){
+  // Try to recover in-progress workout
+  try{
+    const saved=JSON.parse(localStorage.getItem('workout_in_progress'));
+    if(saved&&saved.program===data.activeProgram&&saved.day===currentDay){
+      currentWorkout=saved.workout;workoutStartTime=saved.startTime;
+      if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+      window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
+      return;
+    }
+  }catch(e){}
+
   const prog=getProgram(data.activeProgram);if(!prog)return;
   const dayData=prog.days[currentDay];if(!dayData)return;
 
@@ -1572,6 +1583,22 @@ function toggleSet(ei,si){
   // Start rest timer
   if(set.done){
     startRest(currentWorkout.exercises[ei].restSec||90);
+  }
+
+  // Auto-save progress when all sets of an exercise are done
+  const ex=currentWorkout.exercises[ei];
+  if(ex.sets.every(s=>s.done)){
+    // Read all input values for this exercise
+    const rows=card.querySelectorAll('.set-row');
+    ex.sets.forEach((s,i)=>{
+      if(rows[i]){
+        const inp=rows[i].querySelectorAll('.set-input');
+        s.weight=parseFloat(inp[0].value.replace(/,/g,''))||0;
+        s.reps=parseInt(inp[1].value)||0;
+      }
+    });
+    // Save in-progress workout to localStorage
+    localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
   }
 
   renderExerciseCards();
@@ -1715,6 +1742,7 @@ function finishWorkout(){
 
   saveData();
   syncToCloud();
+  localStorage.removeItem('workout_in_progress');
   currentWorkout=null;
   workoutStartTime=null;
   skipRest();
