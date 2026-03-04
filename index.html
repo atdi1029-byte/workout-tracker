@@ -1330,7 +1330,7 @@ function showView(name,btn){
 
 function getNextDay(){
   const prog=getProgram(data.activeProgram)||getProgram('ABC01');
-  const days=Object.keys(prog.days).filter(d=>d!=='ABS');
+  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
     const log=data.logs[i];
@@ -1357,7 +1357,7 @@ function renderPrograms(){
     const p=PROGRAMS[pid];
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
-    const days=Object.keys(p.days).filter(d=>d!=='ABS');
+    const days=Object.keys(p.days).filter(d=>d!=='_');
     html+=`<div class="prog-overview${isActive?' current':''}" onclick="toggleProgram(this)">
       <div class="prog-head">
         <span class="prog-title">${pid}</span>
@@ -2420,6 +2420,16 @@ function importATH(){
 // ── INIT ──
 loadData();
 initCustomABCD14();
+// Ensure every program has an ABS day
+const defaultAbs=[
+  ['Abdominal Infra','Lower Abs','abs','S','4x15-20',45],
+  ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
+  ['Prancha','Plank','abs','S','3x60s',45]
+];
+for(const pid in PROGRAMS){
+  if(pid.startsWith('_'))continue;
+  if(!PROGRAMS[pid].days.ABS)PROGRAMS[pid].days.ABS={label:'Abdominais',labelEn:'Abs',ex:defaultAbs};
+}
 // Load custom exercises into hidden program
 if(data.customExercises&&data.customExercises.length){
   PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
