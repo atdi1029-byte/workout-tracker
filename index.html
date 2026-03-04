@@ -1307,6 +1307,17 @@ let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]
 // ── SYNC ──
 const SYNC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt438APIycBc534W6T66O3IgtxLUU9cczw-PZAN6Mc9p2xfU2ySsND_wEMJDHUvrXyUg/exec';
 function fireGet(url){const img=new Image();img.src=url}
+function firePost(jsonStr){
+  const iframe=document.createElement('iframe');
+  iframe.name='zercher_sync';iframe.style.display='none';
+  document.body.appendChild(iframe);
+  const form=document.createElement('form');
+  form.method='POST';form.action=SYNC_ENDPOINT;form.target='zercher_sync';
+  const f1=document.createElement('input');f1.type='hidden';f1.name='action';f1.value='save_workout';form.appendChild(f1);
+  const f2=document.createElement('textarea');f2.name='data';f2.style.display='none';f2.value=jsonStr;form.appendChild(f2);
+  document.body.appendChild(form);form.submit();
+  setTimeout(()=>{form.remove();iframe.remove()},10000);
+}
 function syncToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
@@ -1314,13 +1325,7 @@ function syncToCloud(){
     const json=JSON.stringify(payload);
     const encoded=encodeURIComponent(json);
     if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encoded)}
-    else if(navigator.sendBeacon){
-      const blob=new Blob([JSON.stringify({action:'save_workout',data:json})],{type:'application/json'});
-      navigator.sendBeacon(SYNC_ENDPOINT,blob);
-    }else{
-      const small={logs:data.logs.slice(-30),prs:data.prs,activeProgram:data.activeProgram,settings:data.settings};
-      fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encodeURIComponent(JSON.stringify(small)));
-    }
+    else{firePost(json)}
   }catch(e){console.warn('Sync failed',e)}
 }
 function loadFromCloud(){
