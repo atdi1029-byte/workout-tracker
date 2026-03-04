@@ -289,6 +289,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <!-- VIEW: WORKOUT -->
 <div id="view-workout" class="view active">
   <div class="day-tabs" id="dayTabs"></div>
+  <div id="absRoutinePicker" style="display:none"></div>
   <div class="workout-timer" id="workoutTimer"></div>
   <div id="startOverlay"></div>
   <div id="workoutExercises"></div>
@@ -1211,6 +1212,7 @@ let workoutStartTime = null;
 let chartRange = 4;
 let currentPrMuscle = 'all';
 let currentLibMuscle = 'all';
+let currentAbsRoutine = parseInt(localStorage.getItem('abs_routine'))||1;
 
 // ── HELPERS ──
 // ── SYNC ──
@@ -1375,13 +1377,13 @@ function getProgram(id){
   let merged;
   if(!custom){merged=JSON.parse(JSON.stringify(p))}
   else{merged=JSON.parse(JSON.stringify(p));for(const dk in custom.days||{}){if(custom.days[dk]&&custom.days[dk].ex)merged.days[dk].ex=custom.days[dk].ex;}}
-  // Remove old per-program ABS day, inject global ABS routines
+  // Replace old per-program ABS with single ABS day using selected routine
   delete merged.days.ABS;
-  for(const ak in ABS_ROUTINES){merged.days[ak]=ABS_ROUTINES[ak]}
+  const absR=ABS_ROUTINES['ABS'+currentAbsRoutine]||ABS_ROUTINES.ABS1;
+  merged.days.ABS={label:absR.label,labelEn:'Abs '+currentAbsRoutine,ex:absR.ex};
   return merged;
 }
-function isAbsDay(d){return d&&d.startsWith('ABS')&&d.length>3}
-function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>!isAbsDay(k)&&k!=='ABS'):[]}
+function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'&&k!=='_'):[]}
 function getAllExerciseNames(){
   const names=new Set();
   for(const pid in PROGRAMS){
@@ -1440,7 +1442,7 @@ function showView(name,btn){
 
 function getNextDay(){
   const prog=getProgram(data.activeProgram)||getProgram('ABC01');
-  const days=Object.keys(prog.days).filter(d=>!isAbsDay(d)&&d!=='ABS'&&d!=='_');
+  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
     const log=data.logs[i];
@@ -1467,7 +1469,7 @@ function renderPrograms(){
     const p=PROGRAMS[pid];
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
-    const days=Object.keys(p.days).filter(d=>d!=='_'&&!isAbsDay(d));
+    const days=Object.keys(p.days).filter(d=>d!=='_'&&d!=='ABS');
     html+=`<div class="prog-overview${isActive?' current':''}" onclick="toggleProgram(this)">
       <div class="prog-head">
         <span class="prog-title">${pid}</span>
@@ -1519,7 +1521,8 @@ function renderWorkout(){
   let tabsHtml='';
   days.forEach(d=>{
     const dayData=prog.days[d];
-    tabsHtml+=`<button class="day-tab${d===currentDay?' active':''}" onclick="switchDay('${d}')">${d} - ${dayData.labelEn||dayData.label}</button>`;
+    const tabLabel=d==='ABS'?'ABS':`${d} - ${dayData.labelEn||dayData.label}`;
+    tabsHtml+=`<button class="day-tab${d===currentDay?' active':''}" onclick="switchDay('${d}')">${tabLabel}</button>`;
   });
   document.getElementById('dayTabs').innerHTML=tabsHtml;
 
@@ -1533,11 +1536,28 @@ function renderWorkout(){
   const exContainer=document.getElementById('workoutExercises');
   const finBtn=document.getElementById('finishBtn');
   const timerEl=document.getElementById('workoutTimer');
+  // Abs routine dropdown
+  const absPickerEl=document.getElementById('absRoutinePicker');
+  if(currentDay==='ABS'){
+    let apHtml='<select class="view-select" onchange="switchAbsRoutine(Number(this.value))" style="margin-bottom:8px">';
+    for(let i=1;i<=7;i++){
+      const r=ABS_ROUTINES['ABS'+i];
+      const exList=r.ex.map(e=>e[1]).join(', ');
+      apHtml+=`<option value="${i}"${currentAbsRoutine===i?' selected':''}>Abs ${i} — ${exList}</option>`;
+    }
+    apHtml+='</select>';
+    absPickerEl.innerHTML=apHtml;
+    absPickerEl.style.display='block';
+  } else {
+    absPickerEl.innerHTML='';
+    absPickerEl.style.display='none';
+  }
+
   if(!workoutStartTime){
     const dayData=prog.days[currentDay];
     const exCount=currentWorkout?currentWorkout.exercises.length:0;
     overlay.innerHTML=`<div class="start-overlay">
-      <div class="day-label">Day ${currentDay} — ${dayData.labelEn||dayData.label}</div>
+      <div class="day-label">${currentDay==='ABS'?'Abs '+currentAbsRoutine:'Day '+currentDay} — ${dayData.labelEn||dayData.label}</div>
       <div class="ex-count">${exCount} exercises</div>
       <button class="start-workout-btn" onclick="beginWorkout()">Start Workout</button>
     </div>`;
@@ -1582,6 +1602,7 @@ function showTechPopup(code,e){
 }
 
 function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
+function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routine',n);currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 
 function initWorkout(){
   // Try to recover in-progress workout
@@ -1707,16 +1728,17 @@ function renderExerciseCards(){
       </div>`;
 
     // Set rows
+    const isAbs=ex.muscle==='abs';
     let wNum=0;
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
-      html+=`<div class="set-row">
+      html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
-        <div class="set-input-group">
+        ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
-        </div>
+        </div>`}
         <div class="set-input-group">
           <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps}" onchange="updateSet(${ei},${si},'reps',this.value)">
           <span class="set-unit">reps</span>
@@ -1735,7 +1757,11 @@ function renderExerciseCards(){
       const workingSets=lastLog.sets.filter(s=>s.type!=='warmup');
       const weights=workingSets.map(s=>s.weight).join('/');
       const reps=workingSets.map(s=>s.reps).join('/');
-      html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
+      if(isAbs){
+        html+=`<div class="ex-last">Last: ${reps} reps</div>`;
+      } else {
+        html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
+      }
       const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
       const sug=getSuggestion(lastLog,targetReps,ex.name);
       if(sug){
@@ -1767,8 +1793,14 @@ function toggleSet(ei,si){
   // Read current input values
   const card=document.getElementById('ex-'+ei);
   const inputs=card.querySelectorAll('.set-row')[si].querySelectorAll('.set-input');
-  set.weight=parseFloat(inputs[0].value.replace(/,/g,''))||0;
-  set.reps=parseInt(inputs[1].value)||0;
+  const isAbsEx=currentWorkout.exercises[ei].muscle==='abs';
+  if(isAbsEx){
+    set.weight=0;
+    set.reps=parseInt(inputs[0].value)||0;
+  } else {
+    set.weight=parseFloat(inputs[0].value.replace(/,/g,''))||0;
+    set.reps=parseInt(inputs[1].value)||0;
+  }
 
   // Check for PR
   if(set.done&&set.type==='working'&&set.weight>0){
@@ -1900,11 +1932,17 @@ function finishWorkout(){
     const card=document.getElementById('ex-'+ei);
     if(!card)return;
     const rows=card.querySelectorAll('.set-row');
+    const isAbsEx=ex.muscle==='abs';
     ex.sets.forEach((set,si)=>{
       if(rows[si]){
         const inputs=rows[si].querySelectorAll('.set-input');
-        set.weight=parseFloat(inputs[0].value.replace(/,/g,''))||0;
-        set.reps=parseInt(inputs[1].value)||0;
+        if(isAbsEx){
+          set.weight=0;
+          set.reps=parseInt(inputs[0].value)||0;
+        } else {
+          set.weight=parseFloat(inputs[0].value.replace(/,/g,''))||0;
+          set.reps=parseInt(inputs[1].value)||0;
+        }
       }
     });
   });
@@ -2566,7 +2604,7 @@ function openSwapModal(ei){
   const ex=currentWorkout.exercises[ei];
   const muscle=ex.muscle;
 
-  // Get all exercises for same muscle from all programs
+  // Get all exercises for same muscle from all programs + abs routines
   const options=new Set();
   for(const pid in PROGRAMS){
     for(const dk in PROGRAMS[pid].days){
@@ -2575,6 +2613,21 @@ function openSwapModal(ei){
       });
     }
   }
+  for(const ak in ABS_ROUTINES){
+    ABS_ROUTINES[ak].ex.forEach(e=>{
+      if(e[2]===muscle&&e[0]!==ex.name)options.add(e[0]+'|'+e[1]);
+    });
+  }
+  // Also include substitution exercises from Library
+  const muscleMap={chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs'};
+  const subsMuscleName=muscleMap[muscle]||muscle;
+  SUBS_DATA.forEach(g=>{
+    if(g.muscle===subsMuscleName||g.muscle==='Legs (Full)'&&(muscle==='quads'||muscle==='hamstrings'||muscle==='glutes')){
+      g.subs.forEach(s=>s.ex.forEach(name=>{
+        if(name!==ex.name&&name!==ex.nameEn)options.add(name+'|'+name);
+      }));
+    }
+  });
 
   let html=`<div class="modal-header">
     <div class="modal-title">Swap: ${ex.name}</div>
