@@ -2109,7 +2109,7 @@ function renderExerciseCards(){
     html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
         <div>
-          <div class="ex-name">${ex.name}<span class="ex-done-label">&#10003; DONE</span><span class="hold-badge${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'JUST':'J'}</span></div>
+          <div class="ex-name">${ex.name}<span class="ex-done-label">&#10003; DONE</span>${isAbs?'':`<span class="hold-badge${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'JUST':'J'}</span>`}</div>
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
         <div class="ex-note-corner" onclick="event.stopPropagation();promptExNote('${ex.name.replace(/'/g,"\\'")}')">
