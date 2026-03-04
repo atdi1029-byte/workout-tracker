@@ -1382,10 +1382,14 @@ function renderPrograms(){
             <div class="prog-detail-header">${d} — ${day.labelEn||day.label}</div>
             ${day.ex.map((e,i)=>{
               const tech=e[3]&&e[3]!=='S'?TECH_LABELS[e[3]]||e[3]:'';
+              let reps=e[4]||'4x10';
+              // Strip warmup sets (e.g. "2x8wu+3x10" → "3x10")
+              const wuMatch=reps.match(/\d+x\d+\s*wu\s*\+\s*(.*)/i);
+              if(wuMatch)reps=wuMatch[1];
               return `<div class="prog-detail-ex">
               <span class="prog-detail-num">${i+1}.</span>
               <span class="prog-detail-name">${e[1]||e[0]}${tech?` <span class="prog-detail-tech">${tech}</span>`:''}</span>
-              <span class="prog-detail-reps">${e[4]||'4x10'}</span>
+              <span class="prog-detail-reps">${reps}</span>
             </div>`;}).join('')}
           </div>`;
         }).join('')}
