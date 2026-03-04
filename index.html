@@ -1311,10 +1311,13 @@ function syncToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
     const payload={logs:data.logs,prs:data.prs,activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings};
-    const encoded=encodeURIComponent(JSON.stringify(payload));
+    const json=JSON.stringify(payload);
+    const encoded=encodeURIComponent(json);
     if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encoded)}
-    else{
-      // Too big for GET — chunk to recent logs + PRs
+    else if(navigator.sendBeacon){
+      const blob=new Blob([JSON.stringify({action:'save_workout',data:json})],{type:'application/json'});
+      navigator.sendBeacon(SYNC_ENDPOINT,blob);
+    }else{
       const small={logs:data.logs.slice(-30),prs:data.prs,activeProgram:data.activeProgram,settings:data.settings};
       fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encodeURIComponent(JSON.stringify(small)));
     }
