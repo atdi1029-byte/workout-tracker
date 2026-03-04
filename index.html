@@ -2168,7 +2168,7 @@ function renderExerciseCards(){
           <span class="set-unit">lbs</span>
         </div>`}
         <div class="set-input-group">
-          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps}" onchange="updateSet(${ei},${si},'reps',this.value)">
+          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${isAbs?'':set.reps}" onchange="updateSet(${ei},${si},'reps',this.value)">
           <span class="set-unit">reps</span>
         </div>
         <button class="set-done-btn${set.done?' done':''}" onclick="toggleSet(${ei},${si})">&#10003;</button>
