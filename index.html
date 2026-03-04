@@ -66,6 +66,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .ex-card.all-done .ex-done-label{display:inline}
 .ex-card.all-done.expanded{max-height:800px;opacity:1;padding:14px}
 .ex-done-label{display:none;color:var(--green);font-size:0.75rem;margin-left:8px}
+.hold-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(232,200,74,0.15);color:var(--yellow);border:1px solid rgba(232,200,74,0.25);margin-left:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.5px;vertical-align:middle}
+.hold-badge.active{background:rgba(232,200,74,0.3);color:#e8c84a;border-color:rgba(232,200,74,0.5)}
 .ex-suggest{font-size:0.82rem;padding:8px 12px;margin-top:6px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);line-height:1.5}
 .ex-suggest.up{color:var(--green);border-left:3px solid var(--green)}
 .ex-suggest.stay{color:var(--yellow);border-left:3px solid var(--yellow)}
@@ -1419,6 +1421,17 @@ function loadFromCloud(){
   }).catch(()=>{});
 }
 
+// ── HOLD WEIGHTS ──
+function getHolds(){try{return JSON.parse(localStorage.getItem('zercher_holds')||'{}')}catch(e){return{}}}
+function saveHolds(h){localStorage.setItem('zercher_holds',JSON.stringify(h))}
+function toggleHold(exName){
+  const h=getHolds();
+  if(h[exName])delete h[exName];else h[exName]=true;
+  saveHolds(h);
+  renderExerciseCards();
+}
+function isHeld(exName){return!!getHolds()[exName]}
+
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
 function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
@@ -1450,6 +1463,17 @@ function loadData(){
   catch(e){data={activeProgram:'ABCD14',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
 }
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function migrateData(){
+  // Fix ABCD01 seed dates: 2026-01-27 → 2025-01-27
+  if(data.logs){
+    let changed=false;
+    data.logs.forEach(l=>{
+      if(l.id&&l.id.startsWith('abcd01_')&&l.date==='2026-01-27'){l.date='2025-01-27';changed=true;}
+      if(l.id&&l.id.startsWith('abcd02_')&&l.date==='2026-02-24'){l.date='2025-02-24';changed=true;}
+    });
+    if(changed)saveData();
+  }
+}
 
 // Pre-populate ABCD14 custom version (user's current bold exercises)
 function initCustomABCD14(){
@@ -1502,7 +1526,7 @@ function initCustomABCD14(){
   // Seed ABCD01 (Treino ABCD 1) final weights - Jan 27
   if(!data.logs.some(l=>l.id&&l.id.startsWith('abcd01_'))){
   data.logs.push(
-    {id:'abcd01_a',date:'2026-01-27',program:'ABCD01',day:'A',exercises:[
+    {id:'abcd01_a',date:'2025-01-27',program:'ABCD01',day:'A',exercises:[
       {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
       {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
       {name:'Crucifixo na Maquina',sets:[{weight:135,reps:10,type:'working'},{weight:140,reps:10,type:'working'},{weight:145,reps:10,type:'working'},{weight:95,reps:8,type:'working'},{weight:80,reps:10,type:'working'},{weight:75,reps:12,type:'working'}]},
@@ -1512,7 +1536,7 @@ function initCustomABCD14(){
       {name:'Elevacao Frontal com Halteres',sets:[{weight:17.5,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:15,reps:10,type:'working'}]},
       {name:'Remada Alta',sets:[{weight:32,reps:12,type:'working'},{weight:34,reps:12,type:'working'},{weight:36,reps:12,type:'working'},{weight:36,reps:12,type:'working'}]}
     ],duration:0},
-    {id:'abcd01_b',date:'2026-01-27',program:'ABCD01',day:'B',exercises:[
+    {id:'abcd01_b',date:'2025-01-27',program:'ABCD01',day:'B',exercises:[
       {name:'Abdominal na Polia Alta',sets:[{weight:32,reps:10,type:'working'},{weight:32,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:28,reps:10,type:'working'},{weight:26,reps:10,type:'working'},{weight:24,reps:10,type:'working'}]},
       {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
       {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
@@ -1523,7 +1547,7 @@ function initCustomABCD14(){
       {name:'Elevacao Lateral com Halteres',sets:[{weight:17.5,reps:12,type:'working'},{weight:17.5,reps:12,type:'working'},{weight:17.5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'}]},
       {name:'Crucifixo Inverso Maquina',sets:[{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'}]}
     ],duration:0},
-    {id:'abcd01_c',date:'2026-01-27',program:'ABCD01',day:'C',exercises:[
+    {id:'abcd01_c',date:'2025-01-27',program:'ABCD01',day:'C',exercises:[
       {name:'Abdominal Crunch',sets:[{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'}]},
       {name:'Abdominal Infra no Solo',sets:[{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'}]},
       {name:'Prancha',sets:[{weight:0,reps:60,type:'working'},{weight:0,reps:60,type:'working'},{weight:0,reps:60,type:'working'}]},
@@ -1534,7 +1558,7 @@ function initCustomABCD14(){
       {name:'Triceps Testa',sets:[{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'}]},
       {name:'Triceps Coice',sets:[{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17,reps:10,type:'working'}]}
     ],duration:0},
-    {id:'abcd01_d',date:'2026-01-27',program:'ABCD01',day:'D',exercises:[
+    {id:'abcd01_d',date:'2025-01-27',program:'ABCD01',day:'D',exercises:[
       {name:'Agachamento Hack',sets:[{weight:15,reps:10,type:'warmup'},{weight:15,reps:10,type:'warmup'},{weight:65,reps:8,type:'working'},{weight:65,reps:8,type:'working'},{weight:65,reps:8,type:'working'}]},
       {name:'Afundo com Halteres',sets:[{weight:0,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'}]},
       {name:'Cadeira Extensora',sets:[{weight:115,reps:12,type:'working'},{weight:115,reps:12,type:'working'},{weight:110,reps:12,type:'working'},{weight:110,reps:12,type:'working'}]},
@@ -1548,7 +1572,7 @@ function initCustomABCD14(){
   // Seed ABCD02 (Treino 7) final weights - Feb 24
   if(!data.logs.some(l=>l.id&&l.id.startsWith('abcd02_'))){
   data.logs.push(
-    {id:'abcd02_a',date:'2026-02-24',program:'ABCD02',day:'A',exercises:[
+    {id:'abcd02_a',date:'2025-02-24',program:'ABCD02',day:'A',exercises:[
       {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
       {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
       {name:'Crucifixo Adutor na Polia',sets:[{weight:5,reps:10,type:'warmup'},{weight:12,reps:10,type:'working'},{weight:13,reps:10,type:'working'},{weight:14,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:14,reps:10,type:'working'},{weight:15,reps:10,type:'working'}]},
@@ -1557,7 +1581,7 @@ function initCustomABCD14(){
       {name:'Supino Inclinado com Halteres',sets:[{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'}]},
       {name:'Desenvolvimento Maquina',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:45,reps:10,type:'working'}]}
     ],duration:0},
-    {id:'abcd02_b',date:'2026-02-24',program:'ABCD02',day:'B',exercises:[
+    {id:'abcd02_b',date:'2025-02-24',program:'ABCD02',day:'B',exercises:[
       {name:'Dragon Flag',sets:[{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'}]},
       {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
       {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
@@ -1568,7 +1592,7 @@ function initCustomABCD14(){
       {name:'Elevacao Lateral com Halteres',sets:[{weight:22.5,reps:12,type:'working'},{weight:22.5,reps:12,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'}]},
       {name:'Rosca com Halteres',sets:[{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:17.5,reps:8,type:'working'}]}
     ],duration:0},
-    {id:'abcd02_c',date:'2026-02-24',program:'ABCD02',day:'C',exercises:[
+    {id:'abcd02_c',date:'2025-02-24',program:'ABCD02',day:'C',exercises:[
       {name:'Rosca Scott Maquina',sets:[{weight:70,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:60,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
       {name:'Rosca Direta',sets:[{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'}]},
       {name:'Rosca Alternada',sets:[{weight:25,reps:8,type:'working'},{weight:25,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'}]},
@@ -1576,7 +1600,7 @@ function initCustomABCD14(){
       {name:'Triceps Testa',sets:[{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'}]},
       {name:'Triceps Frances Unilateral',sets:[{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'}]}
     ],duration:0},
-    {id:'abcd02_d',date:'2026-02-24',program:'ABCD02',day:'D',exercises:[
+    {id:'abcd02_d',date:'2025-02-24',program:'ABCD02',day:'D',exercises:[
       {name:'Agachamento Hack',sets:[{weight:15,reps:10,type:'warmup'},{weight:20,reps:10,type:'warmup'},{weight:25,reps:12,type:'working'},{weight:30,reps:10,type:'working'},{weight:35,reps:8,type:'working'}]},
       {name:'Cadeira Extensora',sets:[{weight:80,reps:10,type:'working'},{weight:90,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:110,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
       {name:'Cadeira Abdutora',sets:[{weight:240,reps:12,type:'working'},{weight:245,reps:12,type:'working'},{weight:250,reps:12,type:'working'},{weight:255,reps:12,type:'working'}]},
@@ -2051,7 +2075,7 @@ function renderExerciseCards(){
     html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
         <div>
-          <div class="ex-name">${ex.name}<span class="ex-done-label">&#10003; DONE</span></div>
+          <div class="ex-name">${ex.name}<span class="ex-done-label">&#10003; DONE</span><span class="hold-badge${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'J HOLD':'J'}</span></div>
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
       </div>
@@ -2096,10 +2120,14 @@ function renderExerciseCards(){
       } else {
         html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
       }
-      const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
-      const sug=getSuggestion(lastLog,targetReps,ex.name);
-      if(sug){
-        html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
+      if(isHeld(ex.name)){
+        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs</div></div>`;
+      } else {
+        const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+        const sug=getSuggestion(lastLog,targetReps,ex.name);
+        if(sug){
+          html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
+        }
       }
     }
 
@@ -2141,10 +2169,6 @@ function toggleSet(ei,si){
     checkPR(ei,currentWorkout.exercises[ei].name,set.weight,set.reps);
   }
 
-  // Start rest timer
-  if(set.done){
-    startRest(currentWorkout.exercises[ei].restSec||90);
-  }
 
   // Auto-save progress on every set toggle
   const ex=currentWorkout.exercises[ei];
@@ -3717,6 +3741,7 @@ function importATH(){
 
 // ── INIT ──
 loadData();
+migrateData();
 initCustomABCD14();
 // ABS days exist in some programs — they show as tabs but aren't in ABCD rotation
 // Load custom exercises into hidden program
