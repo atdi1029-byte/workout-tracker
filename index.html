@@ -1367,7 +1367,7 @@ function syncConfigToCloud(){
 function syncExtraToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights()};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises]};
     const encoded=encodeURIComponent(JSON.stringify(extra));
     if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+encoded);
   }catch(e){console.warn('Extra sync failed',e)}
@@ -1443,6 +1443,7 @@ function loadFromCloud(){
     if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!h[k])h[k]=extra.holds[k];}saveHolds(h);}
     if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!n[k])n[k]=extra.notes[k];}saveExNotes(n);}
     if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!s[k])s[k]=extra.starts[k];}saveStartWeights(s);}
+    if(extra.favs){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
     saveData();
     if(currentView==='workout')renderWorkout();
     toast('Synced from cloud');
