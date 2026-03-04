@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a1510">
+<meta name="theme-color" content="#0a0c10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Iron Log">
@@ -14,28 +14,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
---bg-deep:#0e0c0a;--bg-card:#1a1714;--bg-card-hover:#242018;--bg-input:#13110e;
---border:#332e26;--border-light:#443d32;
---text:#b8a88e;--text-dim:#6d6050;--text-bright:#d8c8a8;
---iron:#c48a3a;--iron-glow:#d8a050;--iron-deep:#a06820;
---green:#7a9a5a;--green-bright:#8ab06a;
---red:#a84a3a;--red-bright:#c05a48;
---gold:#c8a040;--gold-glow:#dab450;
---yellow:#c8a040;
+--bg-deep:#0a0c10;--bg-card:#141820;--bg-card-hover:#1c2028;--bg-input:#0e1018;
+--border:#2a3040;--border-light:#384058;
+--text:#9aa0b0;--text-dim:#585e70;--text-bright:#c8ccd8;
+--iron:#8090a8;--iron-glow:#98a8c0;--iron-deep:#607088;
+--green:#6a8870;--green-bright:#7a9880;
+--red:#905050;--red-bright:#a86060;
+--gold:#a0946a;--gold-glow:#b8a878;
+--yellow:#a0946a;
 --radius:6px;--radius-sm:4px;
 }
 html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:'Oswald',-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 body{padding-bottom:70px}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:999;
-background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-opacity:0.06;mix-blend-mode:overlay}
+background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+opacity:0.09;mix-blend-mode:overlay}
 body::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:998;
-background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.4) 100%)}
+background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.5) 100%)}
 
 /* HEADER */
 .app-header{position:sticky;top:0;z-index:100;background:var(--bg-deep);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--border)}
 .app-header h1{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--text-bright);letter-spacing:3px;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
-.app-header h1 span{color:var(--iron);text-shadow:0 0 8px rgba(196,138,58,0.3)}
+.app-header h1 span{color:var(--iron);text-shadow:0 0 8px rgba(128,144,168,0.3)}
 .header-actions{display:flex;gap:10px;align-items:center}
 .header-btn{background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:6px}
 .header-btn:hover{color:var(--text-bright)}
@@ -47,7 +47,7 @@ background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.4) 100
 .nav-btn{background:none;border:none;color:var(--text-dim);font-size:0.65rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;transition:color 0.2s;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px}
 .nav-btn .nav-icon{font-size:1.3rem}
 .nav-btn.active{color:var(--iron)}
-.nav-btn.active .nav-icon{filter:drop-shadow(0 0 6px rgba(196,138,58,0.4))}
+.nav-btn.active .nav-icon{filter:drop-shadow(0 0 6px rgba(128,144,168,0.4))}
 
 /* VIEWS */
 .view{display:none;padding:12px 16px;max-width:600px;margin:0 auto}
@@ -62,7 +62,7 @@ background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.4) 100
 /* DAY TABS */
 .day-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
 .day-tab{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 18px;font-size:0.85rem;font-weight:700;color:var(--text-dim);cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px}
-.day-tab.active{background:linear-gradient(135deg,var(--iron-deep),var(--iron));border-color:var(--iron);color:#fff;box-shadow:0 0 10px rgba(196,138,58,0.3)}
+.day-tab.active{background:linear-gradient(135deg,var(--iron-deep),var(--iron));border-color:var(--iron);color:#fff;box-shadow:0 0 10px rgba(128,144,168,0.2)}
 
 /* EXERCISE CARD (WORKOUT) */
 .ex-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
@@ -90,7 +90,7 @@ background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.4) 100
 .set-input:focus{outline:none;border-color:var(--iron)}
 .set-input::placeholder{color:var(--text-dim)}
 .set-done-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s}
-.set-done-btn.done{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 0 6px rgba(122,154,90,0.3)}
+.set-done-btn.done{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 0 6px rgba(106,136,112,0.3)}
 .set-input-group{position:relative}
 .set-unit{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:0.65rem;color:var(--text-dim)}
 
@@ -128,7 +128,7 @@ background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.4) 100
 .start-overlay{text-align:center;padding:50px 20px}
 .start-overlay .day-label{font-size:1.6rem;font-weight:900;color:var(--text-bright);margin-bottom:8px;font-family:'Playfair Display',serif;text-transform:uppercase;letter-spacing:3px}
 .start-overlay .ex-count{font-size:0.9rem;color:var(--text-dim);margin-bottom:28px;font-family:'Oswald',sans-serif}
-.start-workout-btn{background:linear-gradient(135deg,var(--iron-deep),var(--iron));color:#fff;border:none;border-radius:var(--radius-sm);padding:16px 44px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:3px;box-shadow:0 4px 16px rgba(196,138,58,0.3)}
+.start-workout-btn{background:linear-gradient(135deg,var(--iron-deep),var(--iron));color:#fff;border:none;border-radius:var(--radius-sm);padding:16px 44px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:3px;box-shadow:0 4px 16px rgba(128,144,168,0.2)}
 .workout-timer{text-align:center;color:var(--text-dim);font-size:0.85rem;padding:6px 0;margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px}
 
 /* PROGRESS VIEW */
