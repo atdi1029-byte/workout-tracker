@@ -26,7 +26,8 @@
 }
 html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:'Oswald',-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 body{padding-bottom:70px}
-.bg-img{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;background:var(--bg-deep) url('bg-sandow.jpg') no-repeat center top;background-size:cover}
+.bg-img{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;background:var(--bg-deep) url('bg-sandow.jpg') no-repeat center top;background-size:cover}
+.app-header,.view,.bottom-nav,.rest-timer,.modal-overlay,.toast,.finish-btn{position:relative;z-index:1}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:999;
 background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
 opacity:0.09;mix-blend-mode:overlay}
@@ -235,6 +236,14 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .prog-overview .prog-day-letter{font-family:'Oswald',sans-serif;font-weight:700;font-size:0.8rem;color:var(--iron);min-width:20px}
 .prog-overview .prog-day-label{font-size:0.78rem;color:var(--text);flex:1}
 .prog-overview .prog-day-count{font-size:0.65rem;color:var(--text-dim);font-family:'Oswald',sans-serif}
+.prog-overview .prog-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.prog-overview.expanded .prog-detail{display:block}
+.prog-detail-day{margin-bottom:10px}
+.prog-detail-header{font-family:'Oswald',sans-serif;font-weight:700;font-size:0.8rem;color:var(--iron);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;padding-bottom:3px;border-bottom:1px solid rgba(128,144,168,0.15)}
+.prog-detail-ex{display:flex;gap:6px;align-items:baseline;padding:2px 0;font-size:0.75rem}
+.prog-detail-num{color:var(--text-dim);min-width:18px;font-family:'Oswald',sans-serif}
+.prog-detail-name{color:var(--text);flex:1}
+.prog-detail-reps{color:var(--iron);font-family:'Oswald',sans-serif;font-weight:600;white-space:nowrap}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px}
@@ -1335,28 +1344,41 @@ function selectProgram(pid){
 }
 
 // ── PROGRAMS VIEW ──
+function toggleProgram(el){el.classList.toggle('expanded')}
 function renderPrograms(){
   let html='';
   for(const pid in PROGRAMS){
-    const p=getProgram(pid);
+    const p=PROGRAMS[pid];
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
     const days=Object.keys(p.days).filter(d=>d!=='ABS');
-    html+=`<div class="prog-overview${isActive?' current':''}" onclick="selectProgram('${pid}')">
+    html+=`<div class="prog-overview${isActive?' current':''}" onclick="toggleProgram(this)">
       <div class="prog-head">
         <span class="prog-title">${pid}</span>
         <span>${isActive?'<span class="prog-badge active-badge">Active</span> ':''}
         <span class="prog-badge phase">${phase}</span></span>
       </div>
-      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'}</div>
+      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'} &middot; tap to expand</div>
       <div class="prog-days-list">
         ${days.map(d=>{
           const day=p.days[d];
-          const exCount=day.ex.length;
           return `<div class="prog-day-row">
             <span class="prog-day-letter">${d}</span>
             <span class="prog-day-label">${day.labelEn||day.label}</span>
-            <span class="prog-day-count">${exCount} ex</span>
+            <span class="prog-day-count">${day.ex.length} ex</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="prog-detail">
+        ${days.map(d=>{
+          const day=p.days[d];
+          return `<div class="prog-detail-day">
+            <div class="prog-detail-header">${d} — ${day.labelEn||day.label}</div>
+            ${day.ex.map((e,i)=>`<div class="prog-detail-ex">
+              <span class="prog-detail-num">${i+1}.</span>
+              <span class="prog-detail-name">${e[1]||e[0]}</span>
+              <span class="prog-detail-reps">${e[4]||'4x10'}</span>
+            </div>`).join('')}
           </div>`;
         }).join('')}
       </div>
