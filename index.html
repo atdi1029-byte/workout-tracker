@@ -66,10 +66,14 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .ex-card.all-done .ex-done-label{display:inline}
 .ex-card.all-done.expanded{max-height:800px;opacity:1;padding:14px}
 .ex-done-label{display:none;color:var(--green);font-size:0.75rem;margin-left:8px}
-.ex-suggest{font-size:0.78rem;padding:6px 10px;margin-top:4px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.04)}
+.ex-suggest{font-size:0.82rem;padding:8px 12px;margin-top:6px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);line-height:1.5}
 .ex-suggest.up{color:var(--green);border-left:3px solid var(--green)}
 .ex-suggest.stay{color:var(--yellow);border-left:3px solid var(--yellow)}
 .ex-suggest.down{color:var(--red);border-left:3px solid var(--red)}
+.sug-main{font-weight:600}
+.sug-trend{font-size:0.72rem;opacity:0.7;margin-top:3px}
+.sug-trend-up{color:var(--green)}
+.sug-trend-down{color:var(--red)}
 .ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .ex-name{font-size:0.9rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
 .ex-name-en{font-size:0.7rem;color:var(--text-dim)}
@@ -1307,40 +1311,72 @@ let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]
 // ── SYNC ──
 const SYNC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt438APIycBc534W6T66O3IgtxLUU9cczw-PZAN6Mc9p2xfU2ySsND_wEMJDHUvrXyUg/exec';
 function fireGet(url){const img=new Image();img.src=url}
-function firePost(jsonStr){
-  const iframe=document.createElement('iframe');
-  iframe.name='zercher_sync';iframe.style.display='none';
-  document.body.appendChild(iframe);
-  const form=document.createElement('form');
-  form.method='POST';form.action=SYNC_ENDPOINT;form.target='zercher_sync';
-  const f1=document.createElement('input');f1.type='hidden';f1.name='action';f1.value='save_workout';form.appendChild(f1);
-  const f2=document.createElement('textarea');f2.name='data';f2.style.display='none';f2.value=jsonStr;form.appendChild(f2);
-  document.body.appendChild(form);form.submit();
-  setTimeout(()=>{form.remove();iframe.remove()},10000);
-}
-function syncToCloud(){
+function syncConfigToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const payload={logs:data.logs,prs:data.prs,activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings};
-    const json=JSON.stringify(payload);
-    const encoded=encodeURIComponent(json);
-    if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encoded)}
-    else{firePost(json)}
-  }catch(e){console.warn('Sync failed',e)}
+    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings};
+    const encoded=encodeURIComponent(JSON.stringify(config));
+    if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);
+  }catch(e){console.warn('Config sync failed',e)}
+}
+function syncWorkoutToCloud(logEntry){
+  if(!SYNC_ENDPOINT)return;
+  try{
+    const encoded=encodeURIComponent(JSON.stringify(logEntry));
+    if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded);
+    else console.warn('Workout too large for GET:',encoded.length);
+  }catch(e){console.warn('Workout sync failed',e)}
+}
+function syncToCloud(){syncConfigToCloud()}
+function fullSync(){
+  if(!SYNC_ENDPOINT){toast('No sync endpoint');return}
+  toast('Syncing...');
+  syncConfigToCloud();
+  fetch(SYNC_ENDPOINT+'?action=zercher_load').then(r=>r.json()).then(resp=>{
+    const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
+    const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
+    if(unsynced.length===0){toast('Already synced!');return}
+    let i=0;
+    function sendNext(){
+      if(i>=unsynced.length){toast('Synced '+unsynced.length+' workouts!');return}
+      const encoded=encodeURIComponent(JSON.stringify(unsynced[i]));
+      fireGet(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded);
+      i++;
+      setTimeout(sendNext,600);
+    }
+    sendNext();
+  }).catch(()=>toast('Sync failed'));
 }
 function loadFromCloud(){
   if(!SYNC_ENDPOINT)return;
-  fetch(SYNC_ENDPOINT+'?action=load_workout').then(r=>r.json()).then(resp=>{
-    const d=resp.data;
-    if(d&&d.logs&&d.logs.length>data.logs.length){
-      data.logs=d.logs;data.prs=d.prs||data.prs;
-      if(d.customPrograms)data.customPrograms=d.customPrograms;
-      if(d.activeProgram)data.activeProgram=d.activeProgram;
-      if(d.customSubs)data.customSubs=d.customSubs;
-      if(d.customExercises)data.customExercises=d.customExercises;
-      if(d.settings)data.settings=d.settings;
-      saveData();toast('Synced from cloud');if(currentView==='workout')renderWorkout();
+  fetch(SYNC_ENDPOINT+'?action=zercher_load').then(r=>r.json()).then(resp=>{
+    if(resp.status!=='ok')return;
+    const cloudLogs=resp.logs||[];
+    const cloudPrs=resp.prs||{};
+    const config=resp.config||{};
+    // Merge logs by ID
+    const logMap={};
+    data.logs.forEach(l=>{logMap[l.id]=l});
+    cloudLogs.forEach(l=>{if(!logMap[l.id])logMap[l.id]=l});
+    data.logs=Object.values(logMap).sort((a,b)=>a.date.localeCompare(b.date));
+    // Merge PRs: take higher weight
+    for(const eid in cloudPrs){
+      if(!data.prs[eid])data.prs[eid]={};
+      for(const reps in cloudPrs[eid]){
+        const cloud=cloudPrs[eid][reps];
+        const local=data.prs[eid][reps];
+        if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
+      }
     }
+    // Merge config
+    if(config.activeProgram)data.activeProgram=config.activeProgram;
+    if(config.customPrograms)data.customPrograms=config.customPrograms;
+    if(config.customSubs)data.customSubs=config.customSubs;
+    if(config.customExercises)data.customExercises=config.customExercises;
+    if(config.settings)data.settings=config.settings;
+    saveData();
+    if(currentView==='workout')renderWorkout();
+    toast('Synced from cloud');
   }).catch(()=>{});
 }
 
@@ -1868,40 +1904,65 @@ function getSuggestion(lastLog, targetReps, exName){
   const allHitTarget=working.every(s=>s.reps>=target);
   const someHitTarget=working.some(s=>s.reps>=target);
   const avgReps=working.reduce((a,s)=>a+s.reps,0)/working.length;
-  const step=maxWeight>=50?5:2.5;
+  const step=maxWeight>=100?5:maxWeight>=50?2.5:1;
   const repsStr=working.map(s=>s.reps).join('/');
 
-  let weightTip='';
-  let volTip='';
+  const history=exName?getLastNLogs(exName,5):[];
 
-  // Weight suggestion
-  if(allHitTarget){
-    weightTip='&#9650; Go up to '+(maxWeight+step)+' lbs — hit all '+target+' reps';
-  } else if(avgReps>=target*0.7 && someHitTarget){
-    weightTip='&#9654; Stay at '+maxWeight+' lbs — got '+repsStr+' reps (target: '+target+')';
-  } else {
-    weightTip='&#9660; Drop to '+(maxWeight-step)+' lbs — got '+repsStr+' reps';
+  // Count consecutive sessions hitting all target reps
+  let streak=0;
+  for(const h of history){
+    const w=h.sets.filter(s=>s.type!=='warmup');
+    if(w.every(s=>s.reps>=target))streak++;else break;
+  }
+  // Count consecutive sessions struggling (<70% avg reps)
+  let failStreak=0;
+  for(const h of history){
+    const w=h.sets.filter(s=>s.type!=='warmup');
+    const avg=w.reduce((a,s)=>a+s.reps,0)/w.length;
+    if(avg<target*0.7)failStreak++;else break;
   }
 
-  // Volume suggestion: check last 3 sessions
-  const history=exName?getLastNLogs(exName,3):[];
-  if(history.length>=2){
-    const recentWorking=history.map(h=>h.sets.filter(s=>s.type!=='warmup'));
-    const allSessionsHit=recentWorking.every(w=>w.every(s=>s.reps>=target));
-    const lastSetFailed=working.length>1 && working[working.length-1].reps<target*0.6;
-    const mostFailed=working.filter(s=>s.reps<target).length>=working.length*0.6;
+  // Weight advice
+  let weightTip='',type='stay';
+  if(streak>=2&&allHitTarget){
+    weightTip='Increase to '+fmt(maxWeight+step)+' lbs';
+    type='up';
+  } else if(allHitTarget){
+    weightTip='Go up to '+fmt(maxWeight+step)+' lbs — hit all '+target+' reps';
+    type='up';
+  } else if(avgReps>=target*0.7&&someHitTarget){
+    weightTip='Stay at '+fmt(maxWeight)+' lbs — got '+repsStr+' (target: '+target+')';
+    type='stay';
+  } else if(failStreak>=2){
+    weightTip='Pull back to '+fmt(maxWeight-step)+' lbs — struggling '+failStreak+' sessions';
+    type='down';
+  } else {
+    weightTip='Drop to '+fmt(maxWeight-step)+' lbs — got '+repsStr;
+    type='down';
+  }
 
-    if(allSessionsHit && history.length>=2){
-      volTip=' | Consider adding a set — crushing it '+history.length+' sessions in a row';
-    } else if(mostFailed){
-      volTip=' | Consider dropping to '+(working.length-1)+' sets — struggling on most sets';
-    } else if(lastSetFailed && working.length>2){
-      volTip=' | Last set only '+working[working.length-1].reps+' reps — maybe drop to '+(working.length-1)+' sets';
+  // Trend (3+ sessions)
+  let trendHtml='';
+  if(history.length>=3){
+    const weights=history.map(h=>{
+      const w=h.sets.filter(s=>s.type!=='warmup'&&s.weight>0);
+      return w.length?Math.max(...w.map(s=>s.weight)):0;
+    }).reverse();
+    const first=weights[0],last=weights[weights.length-1];
+    const pct=first>0?((last-first)/first*100):0;
+    const allFlat=weights.every(w=>first>0&&Math.abs(w-first)/first<0.05);
+    if(allFlat){
+      trendHtml='<div class="sug-trend">&#8212; Plateau '+history.length+' sessions — try varying rep range or technique</div>';
+    } else if(pct>5){
+      trendHtml='<div class="sug-trend sug-trend-up">&#9650; Up '+pct.toFixed(0)+'% over '+history.length+' sessions</div>';
+    } else if(pct<-5){
+      trendHtml='<div class="sug-trend sug-trend-down">&#9660; Down '+Math.abs(pct).toFixed(0)+'% — consider a deload week</div>';
     }
   }
 
-  const type=allHitTarget?'up':(avgReps>=target*0.7&&someHitTarget)?'stay':'down';
-  return{type,text:weightTip+volTip};
+  const icon=type==='up'?'&#9650;':type==='down'?'&#9660;':'&#9654;';
+  return{type,text:'<div class="sug-main">'+icon+' '+weightTip+'</div>'+trendHtml};
 }
 
 function renderExerciseCards(){
@@ -2175,7 +2236,8 @@ function finishWorkout(){
   });
 
   saveData();
-  syncToCloud();
+  syncWorkoutToCloud(logEntry);
+  syncConfigToCloud();
   localStorage.removeItem('workout_in_progress');
   currentWorkout=null;
   workoutStartTime=null;
@@ -3159,7 +3221,7 @@ function openSettings(){
     <div class="card-title">Data</div>
     <div style="font-size:0.8rem;color:var(--text-dim)">${data.logs.length} sessions &middot; ${Object.keys(data.prs).length} exercises with PRs</div>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="ex-action-btn" onclick="syncToCloud();toast('Syncing to cloud...')" style="flex:1">Sync Now</button>
+      <button class="ex-action-btn" onclick="fullSync()" style="flex:1">Full Sync</button>
       <button class="ex-action-btn" onclick="exportData()" style="flex:1">Export</button>
       <button class="ex-action-btn" onclick="showImport()" style="flex:1">Import</button>
     </div>
