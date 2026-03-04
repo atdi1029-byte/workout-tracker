@@ -518,578 +518,7 @@ function getPattern(name){return MOVEMENT_PATTERNS[name]||''}
 // ── PROGRAMS DATA ──
 // Format: [name, nameEn, muscle, technique, setsReps, restSec]
 const PROGRAMS = {
-ABC01:{name:'ABC01',phase:'acc',type:'ABC',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push (Chest + Shoulders + Triceps)',ex:[
-    ['Supino Reto','Bench Press','chest','P','1x12/2x10/2x8',90],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8-12',80],
-    ['Crucifixo Inclinado com Halteres','Incline DB Fly','chest','S','4x8-12',60],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','4x10-12',60],
-    ['Elevacao Lateral com Halteres','DB Lateral Raise','shoulders','S','4x10-12',60],
-    ['Triceps Corda','Rope Pushdown','triceps','S','4x10-12',60],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x10-12',60]
-  ]},
-  B:{label:'Costas + Biceps',labelEn:'Pull (Back + Biceps)',ex:[
-    ['Puxada Frente','Lat Pulldown','back','S','4x8-12',80],
-    ['Remada Curvada com Barra','Bent Over Barbell Row','back','S','4x8-12',80],
-    ['Remada Baixa','Seated Cable Row','back','S','4x8-12',80],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
-    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x10-12',60]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Livre','Barbell Squat','quads','S','4x8-12',90],
-    ['Leg Press 45','Leg Press','quads','S','4x10-12',90],
-    ['Cadeira Extensora','Leg Extension','quads','DS','3x10-12+drop',60],
-    ['Cadeira Flexora','Seated Leg Curl','hamstrings','S','4x10-12',60],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','S','4x10-12',80],
-    ['Panturrilha Press','Calf on Leg Press','calves','S','4x15-20',45]
-  ]}
-}},
-ABC02:{name:'ABC02',phase:'int',type:'ABC',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
-    ['Supino Reto','Bench Press','chest','P','Pyramid',90],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8-12',80],
-    ['Crucifixo na Polia','Cable Fly','chest','BS','Bi-Set',60],
-    ['Flexao','Push-ups','chest','Fail','To failure',0],
-    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x10-12',60],
-    ['Elevacao Lateral','Lateral Raise','shoulders','P','Pyramid',60],
-    ['Triceps Corda','Rope Pushdown','triceps','P','Pyramid',60],
-    ['Triceps Frances','French Press','triceps','S','4x10-12',60]
-  ]},
-  B:{label:'Costas + Biceps',labelEn:'Pull',ex:[
-    ['Puxada Pegada Neutra','Neutral Grip Pulldown','back','Fail','4x failure',80],
-    ['Remada Curvada','Bent Over Row','back','P','Pyramid',90],
-    ['Remada Baixa','Seated Cable Row','back','RestP','Rest-Pause',80],
-    ['Puxada Frente','Lat Pulldown','back','S','4x8-12',80],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
-    ['Rosca Scott','Preacher Curl','biceps','P','Pyramid',60]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','P','Pyramid',90],
-    ['Leg Press 45','Leg Press','quads','S','4x10-12',90],
-    ['Cadeira Extensora','Leg Extension','quads','BS','Bi-Set',60],
-    ['Afundo','Lunges','quads','BS','Bi-Set',0],
-    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10-12',60],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','S','4x10-12',80],
-    ['Panturrilha','Calf Raise','calves','S','4x12-15',45]
-  ]},
-  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
-    ['Abdominal Infra','Lower Abs','abs','S','4x15-20',45],
-    ['Abdominal Crunch','Crunch','abs','S','4x15-20',45],
-    ['Prancha','Plank','abs','S','3x60s',45]
-  ]}
-}},
-ABC03:{name:'ABC03',phase:'spe',type:'ABC',days:{
-  A:{label:'Peito (ALL INCLINE) + Ombros + Triceps',labelEn:'Push (All Incline)',ex:[
-    ['Supino Inclinado','Incline Barbell Bench','chest','S','4x8-10',90],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8-10',80],
-    ['Crucifixo Inclinado','Incline Fly','chest','TP','Truncated Pyramid',60],
-    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x10-12',60],
-    ['Elevacao Frontal','Front Raise','shoulders','BS','Bi-Set',60],
-    ['Elevacao Lateral','Lateral Raise','shoulders','BS','Bi-Set',0],
-    ['Triceps Corda','Rope Pushdown','triceps','DS','Drop-Set last set',60],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x10-12',60]
-  ]},
-  B:{label:'Costas + Biceps',labelEn:'Pull',ex:[
-    ['Barra Fixa com Peso','Weighted Pull-ups','back','Prog','Progressive loading',120],
-    ['Puxada Pegada Neutra','Neutral Grip Pulldown','back','S','4x8-10',80],
-    ['Remada Curvada','Bent Over Row','back','P','Pyramid',90],
-    ['Remada Unilateral','Single Arm Row','back','S','4x10-12',60],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','RestP','Rest-Pause',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8-10',60],
-    ['Rosca Martelo','Hammer Curl','biceps','P','Pyramid',60],
-    ['Rosca Concentrada','Concentration Curl','biceps','S','4x10-12',60]
-  ]},
-  C:{label:'Pernas + Deadlift',labelEn:'Legs (with Deadlift)',ex:[
-    ['Jefferson Curl','Jefferson Curl','hamstrings','Mob','Mobility',60],
-    ['Cossack Squats','Cossack Squats','quads','Mob','Mobility',60],
-    ['Levantamento Terra','Deadlift','back','S','4x8-10',120],
-    ['Leg Press 45','Leg Press','quads','S','4x8-12',90],
-    ['Cadeira Extensora','Leg Extension','quads','TP','Truncated Pyramid',60],
-    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10-12',60],
-    ['Panturrilha','Calf Raise','calves','S','4x12-15',45]
-  ]},
-  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
-    ['Abdominal Infra','Lower Abs','abs','S','4x15-20',45],
-    ['Abdominal Obliquo','Oblique Crunch','abs','S','4x10 each',45],
-    ['Prancha Lateral','Side Plank','abs','S','3x30s each',45],
-    ['Crunch','Crunch','abs','S','4x15-20',45]
-  ]}
-}},
-ABC04:{name:'ABC04',phase:'rea',type:'ABC',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
-    ['Supino Reto','Flat Bench Press','chest','S','4x6-8',90],
-    ['Supino Inclinado','Incline Bench','chest','S','4x6-8',90],
-    ['Crucifixo na Polia','Cable Fly','chest','DS','Drop-Set',60],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','4x8-10',60],
-    ['Triceps Corda','Rope Pushdown','triceps','S','4x8-10',60],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x8-10',60]
-  ]},
-  B:{label:'Costas + Biceps',labelEn:'Pull',ex:[
-    ['Abdominal Infra','Lower Abs','abs','S','5x12-15',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Barra Fixa Supinada','Chin-ups','back','Fail','4x failure',90],
-    ['Puxada Frente','Lat Pulldown','back','S','4x6-8',90],
-    ['Remada Curvada','Bent Over Row','back','S','4x6-8',90],
-    ['Remada Baixa','Seated Row','back','S','4x8-10',80],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8-10',60],
-    ['Rosca Scott','Preacher Curl','biceps','S','4x8-10',60]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','S','4x6-8',90],
-    ['Leg Press 45','Leg Press','quads','S','4x8-10',90],
-    ['Cadeira Extensora','Leg Extension','quads','S','4x10-12',60],
-    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10-12',60],
-    ['Panturrilha','Calf Raise','calves','P','20/15/10',45]
-  ]},
-  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
-    ['Abdominal Crunch','Crunch','abs','S','4x20-30',45],
-    ['Prancha','Plank','abs','S','4x60s',45],
-    ['Abdominal Obliquo','Oblique','abs','S','4x10 each',45]
-  ]}
-}},
-ABC05:{name:'ABC05',phase:'acc',type:'ABC',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push (Pre-Exhaust)',ex:[
-    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','PE','2x10-12wu+6x10-12',60],
-    ['Supino Reto com Halteres','DB Flat Bench','chest','S','4x8-12',80],
-    ['Supino Inclinado','Incline Bench','chest','S','4x8-12',80],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','4x10-12',60],
-    ['Elevacao Lateral','Lateral Raise','shoulders','S','4x10-12',60],
-    ['Triceps Corda','Rope Pushdown','triceps','S','4x10-12',60],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x10-12',60]
-  ]},
-  B:{label:'Costas + Biceps',labelEn:'Pull (Pre-Exhaust)',ex:[
-    ['Remada Baixa','Seated Row','back','PE','2x10-12wu+6x10-12',80],
-    ['Puxada Frente','Lat Pulldown','back','S','4x8-12',80],
-    ['Remada Curvada','Bent Over Row','back','S','4x8-12',90],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-15',60],
-    ['Rosca Scott','Preacher Curl','biceps','S','4x8-12',60],
-    ['Rosca Martelo','Hammer Curl','biceps','S','4x8-12',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
-    ['Rosca Concentrada','Concentration Curl','biceps','S','4x10-12',60],
-    ['Rosca Zotman','Zotman Curl','biceps','S','3x10-12',60]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','S','4x8-12',90],
-    ['Leg Press 45','Leg Press','quads','S','4x10-12',90],
-    ['Cadeira Extensora','Leg Extension','quads','S','4x10-12',60],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','BS','4x10-12 Bi-Set',60],
-    ['Cadeira Flexora','Leg Curl','hamstrings','BS','4x10-12 Bi-Set',0],
-    ['Panturrilha','Calf Raise','calves','S','4x15-20',45]
-  ]},
-  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
-    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','4x15-20',45],
-    ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45],
-    ['Abdominal Obliquo','Oblique Crunch','abs','BS','4x10 each Bi-Set',0],
-    ['Abdominal Crunch','Crunch','abs','BS','4x15-20 Bi-Set',45]
-  ]}
-}},
-ABCD01:{name:'Treino ABCD 1',phase:'int',type:'ABCD',dates:'Dec 16 – Jan 27',days:{
-  A:{label:'Peito + Ombros',labelEn:'Push (Chest + Shoulders)',ex:[
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Crucifixo na Maquina','Pec Deck','chest','DS','3x8-12+drop',60,'St.140 → 135,140,145 (drop 95,80,75)'],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','5x5-8',120,'St.60 → 60x5'],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60,'St.25 → 25x3,23'],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x8-12+drop',60,'St.105 → 105x3 (drop 55F)'],
-    ['Elevacao Frontal com Halteres','DB Front Raise','shoulders','BS','4x10 each Bi-Set',0,'St.15 → 17.5,15x3'],
-    ['Remada Alta','Upright Row','shoulders','BS','4x10-15 Bi-Set',60,'St.34 → 32,34,36x2']
-  ]},
-  B:{label:'Costas + Ombros',labelEn:'Pull (Back + Shoulders)',ex:[
-    ['Abdominal na Polia Alta','Cable Crunch','abs','S','6x10',45,'St.30 → 32x2,30,28,26,24'],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Remada Curvada','Bent Over Row','back','RP','12-15/10/5/10/12-15',120,'St.127.5 → 122.5/125/127.5/125/120'],
-    ['Remada Baixa Triangulo','Seated Row (Triangle)','back','DS','3x8-12+drop',80,'St.125 → 125x3 (drop 115+70+45)'],
-    ['Puxada Aberta Neutra','Lat Pulldown (Wide Neutral)','back','S','5x5-8',120,'St.157.5 → 160x2,157.5,155,152.5'],
-    ['Remada Baixa Pegada Aberta','Wide Seated Row Machine','back','S','4x8-12',80,'St.105 → 105x4'],
-    ['Elevacao Lateral com Halteres','DB Lateral Raise','shoulders','DS','3x10-15+drop',60,'St.20 → 17.5x3 (drop 7.5F)'],
-    ['Crucifixo Inverso Maquina','Reverse Fly Machine','shoulders','S','4x10-15',60,'St.90 → 90x4']
-  ]},
-  C:{label:'Bracos + Abdominais',labelEn:'Arms + Abs',ex:[
-    ['Abdominal Crunch','Crunch','abs','TS','3x20-30 Tri-Set',0],
-    ['Abdominal Infra no Solo','Lower Abs Floor','abs','TS','3x20-30 Tri-Set',0],
-    ['Prancha','Plank','abs','TS','3x60s Tri-Set',60],
-    ['Rosca Direta','EZ Bar Curl','biceps','P','15/12/5-10/5-10',60,'St.45 → 45/50/55x2'],
-    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x8 each',60,'St.30 → 30,27.5x3'],
-    ['Biceps Polia Corda','Cable Rope Curl','biceps','DS','4x8-12+drop',60,'St.38 → 40,38x3 (drop 17F)'],
-    ['Triceps Corda','Rope Pushdown','triceps','P','15/12/5-10/5-10',60,'St.57.5 → 57.5/58/58x2'],
-    ['Triceps Testa','EZ Skull Crusher','triceps','S','4x8-12',60,'St.25 → 25x4'],
-    ['Triceps Coice','Kickback','triceps','RestP','3xF+rest-pause',60,'St.17.5 → 17.5x3 (RP 17+10)']
-  ]},
-  D:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','S','2x10wu+3x8',90,'Aq.15 St.65'],
-    ['Afundo com Halteres','DB Lunge','quads','S','4x12 each',60,'St.7.5 → 0,5,7.5x2'],
-    ['Cadeira Extensora','Leg Extension','quads','S','4x10-15',60,'St.110 → 115x2,110x2'],
-    ['Passada com Halteres','DB Walking Lunge','quads','S','4x20 steps',60,'St.0 → 0x4'],
-    ['Leg Press 45','Leg Press','quads','S','3x10-15',90,'St.115 → 135x2,130,115'],
-    ['Cadeira Flexora','Leg Curl','hamstrings','DS','4x8-12+drop',60,'St.120 → 120,125x2 (drop 70F)'],
-    ['Panturrilha Press','Calf on Press','calves','S','3x20-30',45,'St.245 → 255,250,245']
-  ]}
-}},
-ABCD02:{name:'Treino 7',phase:'spe',type:'ABCD',dates:'Jan 27 – Feb 24',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push + Triceps',ex:[
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Crucifixo Adutor na Polia','Cable Fly (PE)','chest','PE','1x10-12wu+6x10-12',60,'St.13 → 12,13,14,15,14,15'],
-    ['Supino Reto com Halteres','DB Flat Bench','chest','P','1x12/2x8-10/2x5-8',90,'St.60 → 60/65,60/60x2'],
-    ['Supino Inclinado Barra','Incline Barbell Bench','chest','S','4x8',90,'St.70 → 70x4'],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8',80,'St.45 → 45x4'],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x10+1x drop',60,'St.105 → 105x3 (drop 45F)']
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull + Biceps',ex:[
-    ['Dragon Flag','Dragon Flag','abs','S','4x15',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Remada Baixa Triangulo','Seated Row (Triangle PE)','back','PE','2x10-12wu+6x10-12',80,'St.125 → 130x3,125,122.5,120'],
-    ['Remada Curvada','Bent Over Row (Pronated)','back','P','1x12/2x8-10/2x5-8',90,'St.100 → 100/105,100/95,100'],
-    ['Puxada','Lat Pulldown','back','S','4x8',80,'St.180 → 180x2,177.5,175'],
-    ['Puxada Pegada Inversa','Underhand Pulldown','back','S','4x8',80,'St.150 → 150,152.5x2,150'],
-    ['Elevacao Lateral com Halteres','DB Lateral Raise','shoulders','P','2x12-15/3x10',60,'St.20 → 22.5x2/17.5x3'],
-    ['Rosca com Halteres','DB Curl','biceps','DS','4x8+drop',60,'St.35 → 30x4 (17.5F)']
-  ]},
-  C:{label:'Bracos',labelEn:'Arms (Dedicated)',ex:[
-    ['Rosca Scott Maquina','Preacher Machine','biceps','Fail','1x10-12+3x failure',60,'St.70 → 70/65,60,55'],
-    ['Rosca Direta','EZ Bar Curl','biceps','S','4x8-12',60,'St.50 → 50x4'],
-    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x6-8 each',60,'St.27.5 → 25x2,27.5x2'],
-    ['Triceps Corda','Rope Pushdown','triceps','Fail','1x10-12+3x failure',60,'St.70 → 67.5/65,62.5,60'],
-    ['Triceps Testa','EZ Skull Crusher','triceps','S','4x8-12',60,'St.35 → 35x4'],
-    ['Triceps Frances Unilateral','Single Arm OH Extension','triceps','S','4x6-8 each',60,'St.30 → 30x4']
-  ]},
-  D:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat / Barbell','quads','P','2x10-12wu+12/10/8',90,'Barra: Aq.15,20 Valid: 25,30,35'],
-    ['Leg Press 45','Leg Press','quads','S','2x10-15wu+3x10',90,'Aq.20'],
-    ['Cadeira Extensora','Leg Extension','quads','DS','3x10+1x drop',60,'St.100 → 80,90,100/110 (55F)'],
-    ['Cadeira Abdutora','Hip Abductor','glutes','S','4x12',60,'St.250 → 240,245,250,255'],
-    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10',60,'St.120 → 90,100,110,120'],
-    ['Panturrilha Press','Calf on Press','calves','P','20/15/10',45,'St.235 → 230/230/235']
-  ]}
-}},
-ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',days:{
-  A:{label:'Peito + Ombros',labelEn:'Push (Chest + Shoulders)',ex:[
-    ['Crucifixo na Maquina','Pec Deck','chest','DS','3x8-12+triple drop',60],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','5x5-8',120],
-    ['Crucifixo na Polia','Cable Fly','chest','S','4x8-12',60],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','Drop-Set',60],
-    ['Elevacao Frontal + Remada Alta','Front Raise + Upright Row','shoulders','BS','Bi-Set',60]
-  ]},
-  B:{label:'Costas',labelEn:'Pull (Back)',ex:[
-    ['Abdominal na Polia','Cable Crunch','abs','S','6x10',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Remada Curvada','Bent Over Row','back','RP','12-15/10/5/10/12-15',120],
-    ['Remada Baixa','Seated Row','back','DS','Drop-Set',80],
-    ['Puxada Frente','Lat Pulldown','back','S','5x5-8',120],
-    ['Remada na Polia Alta','Wide Cable Row','back','S','4x8-12',80],
-    ['Elevacao Lateral','Lateral Raise','shoulders','DS','Drop-Set',60],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-15',60]
-  ]},
-  C:{label:'Bracos + Abdominais',labelEn:'Arms + Abs',ex:[
-    ['Abdominal Crunch','Crunch','abs','TS','3x20-30 Tri-Set',0],
-    ['Abdominal Infra','Lower Abs','abs','TS','3x20-30 Tri-Set',0],
-    ['Prancha','Plank','abs','TS','3x60s Tri-Set',60],
-    ['Rosca Direta','Barbell Curl','biceps','P','Pyramid',60],
-    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x8 each',60],
-    ['Rosca na Polia','Cable Curl','biceps','DS','Drop-Set',60],
-    ['Triceps Corda','Rope Pushdown','triceps','P','Pyramid',60],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x8-12',60],
-    ['Triceps Coice','Kickback','triceps','RestP','Rest-Pause',60]
-  ]},
-  D:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','S','2x10wu+3x8',90],
-    ['Afundo com Halteres','DB Lunge','quads','S','4x12 each',60],
-    ['Cadeira Extensora','Leg Extension','quads','BS','Bi-Set',60],
-    ['Afundo','Walking Lunge','quads','BS','Bi-Set',0],
-    ['Leg Press 45','Leg Press','quads','S','3x10-15',90],
-    ['Cadeira Flexora','Leg Curl','hamstrings','DS','Drop-Set',60],
-    ['Panturrilha Press','Calf on Press','calves','S','3x20-30',45]
-  ]}
-}},
-ABCD07:{name:'ABCD07',phase:'spe',type:'ABCD',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push + Triceps',ex:[
-    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','PE','1x10-12wu+6x10-12',60],
-    ['Supino Reto com Halteres','DB Flat Bench','chest','P','1x12/2x10/2x8',90],
-    ['Supino Inclinado','Incline Barbell','chest','S','4x8',90],
-    ['Supino Inclinado com Halteres','Incline DB','chest','S','4x8',80],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x10+1x drop',60],
-    ['Triceps Testa Halteres','DB Skull Crusher','triceps','S','4x8 (30° incline)',60]
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull + Biceps',ex:[
-    ['Dragon Flag','Dragon Flag','abs','S','4x15',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Remada Baixa','Seated Row','back','PE','2x10-12wu+6x10-12',80],
-    ['Remada Curvada','Bent Over Row','back','P','1x12/2x8-10/2x5-8',90],
-    ['Puxada','Lat Pulldown','back','S','4x8',80],
-    ['Puxada Pegada Inversa','Underhand Pulldown','back','S','4x8',80],
-    ['Elevacao Lateral','Lateral Raise','shoulders','P','2x12-15/3x10',60],
-    ['Rosca com Halteres','DB Curl','biceps','S','4x8',60]
-  ]},
-  C:{label:'Bracos',labelEn:'Arms (Dedicated)',ex:[
-    ['Rosca Scott Maquina','Preacher Machine','biceps','Fail','1x10-12+3x failure',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
-    ['Rosca Alternada','Alternating Curl','biceps','S','4x6-8 each',60],
-    ['Triceps Corda','Rope Pushdown','triceps','Fail','1x10-12+3x failure',60],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x8-12',60],
-    ['Triceps Frances Unilateral','Single Arm OH Extension','triceps','S','4x6-8 each',60]
-  ]},
-  D:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','P','12/10/8',90],
-    ['Leg Press 45','Leg Press','quads','S','2x10-15wu+3x10',90],
-    ['Cadeira Extensora','Leg Extension','quads','DS','3x10+Strip to FFF',60],
-    ['Cadeira Abdutora','Hip Abductor','glutes','S','4x12',60],
-    ['Mesa Flexora','Lying Leg Curl','hamstrings','S','4x10',60],
-    ['Panturrilha Press','Calf on Press','calves','P','20/15/10',45]
-  ]},
-  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
-    ['Abdominal Infra no Solo','Lower Abs on Floor','abs','S','4x15-20',45],
-    ['Prancha Lateral com Rotacao','Side Plank w/ Rotation','abs','S','4x10 each',45],
-    ['Abdominal Obliquo','Oblique Crunch','abs','BS','4x10 each Bi-Set',0],
-    ['Abdominal Crunch','Crunch','abs','BS','4x15-20 Bi-Set',45]
-  ]}
-}},
-ABCD08:{name:'ABCD08',phase:'rea',type:'ABCD',days:{
-  A:{label:'Peito + Ombros',labelEn:'Push',ex:[
-    ['Abdominal Infra no Banco','Decline Crunch','abs','BS','4x20 Bi-Set',0],
-    ['Prancha','Plank','abs','BS','4x60s Bi-Set',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Supino Reto','Barbell Bench','chest','P','12/10/8/6',120],
-    ['Supino Maquina','Machine Bench','chest','DS','3x10-12+drop',80],
-    ['Supino Inclinado com Halteres','Incline DB','chest','P','12/10/8/6',120],
-    ['Crucifixo na Polia','Cable Fly','chest','RestP','4x8-12',60],
-    ['Apoio','Push-Ups','chest','Fail','4x failure',60],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x10+drop',60],
-    ['Elevacao Frontal','Front Raise','shoulders','S','4x10 each alt',60]
-  ]},
-  B:{label:'Costas + Ombros',labelEn:'Pull',ex:[
-    ['Dragon Flag','Dragon Flag','abs','S','4x20',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Remada Curvada com Barra','Barbell Row','back','P','12/10/8/6',120],
-    ['Remada Curvada','Bent Over Row','back','Fail','3x10-12+fail',90],
-    ['Puxada','Lat Pulldown','back','P','12/10/8/6',120],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','RestP','4x8-12',80],
-    ['Remada com Kettlebell','KB Row Pronated','back','S','4x10-15',60],
-    ['Elevacao Unilateral','Unilateral Lateral Raise','shoulders','S','4x10-12',60]
-  ]},
-  C:{label:'Bracos (Antagonist Supersets)',labelEn:'Arms (Antagonist Supersets)',ex:[
-    ['Rosca Direta','Barbell Curl','biceps','ASS','4x10 SS',0],
-    ['Triceps Testa','Skull Crusher','triceps','ASS','4x10 SS',90],
-    ['Triceps Frances','French Press','triceps','ASS','4x10 SS',0],
-    ['Biceps Direto','Barbell Curl','biceps','ASS','4x10 SS',90],
-    ['Biceps Pulley','Cable Curl','biceps','ASS','12-15/10/8/8 SS',0],
-    ['Triceps Pulley','Cable Pushdown','triceps','ASS','12-15/10/8/8 SS',90],
-    ['Abdominal Crunch','Crunch','abs','S','4x20-30',45],
-    ['Prancha na Bola','Plank on Ball','abs','S','4x45-60s',45]
-  ]},
-  D:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Cadeira Extensora','Leg Extension','quads','PE','6x10-12',60],
-    ['Leg Press 45','Leg Press','quads','S','2xwu+4x10',120],
-    ['Agachamento Hack','Hack Squat','quads','S','4x12',90],
-    ['Cadeira Flexora','Seated Leg Curl','hamstrings','P','20/15/3x10',60],
-    ['Mesa Flexora','Lying Leg Curl','hamstrings','S','4x6-8',90],
-    ['Panturrilha Press','Calf on Press','calves','P','20/15/10',45]
-  ]},
-  ABS:{label:'Abdominais',labelEn:'Abs',ex:[
-    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x12-15',45],
-    ['Abdominal Supra Bracos Esticados','Arms Extended Crunch','abs','S','4x12-15',45],
-    ['Abdominal Cruzado','Cross Crunch','abs','S','4x10 each',45]
-  ]}
-}},
-ABCD09:{name:'ABCD09',phase:'peak',type:'ABCD',days:{
-  A:{label:'Peito + Ombros',labelEn:'Push',ex:[
-    ['Prancha na Bola','Plank on Ball','abs','S','4x90s',45],
-    ['Abdominal Canivete','Jackknife','abs','S','4x15-20',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Supino Reto','Barbell Bench','chest','S','2x8wu+4x8',120],
-    ['Supino Inclinado com Halteres','Incline DB','chest','S','4x8',120],
-    ['Paralela','Dips','chest','S','4x8',120],
-    ['Crucifixo Voador','Pec Deck','chest','S','4x8',60],
-    ['Elevacao Lateral','Lateral Raise','shoulders','S','4x8',60]
-  ]},
-  B:{label:'Costas',labelEn:'Pull',ex:[
-    ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
-    ['Dragon Flag','Dragon Flag','abs','S','4x20+10kg',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Barra Fixa','Pull-Ups','back','S','4x8',120],
-    ['Remada Baixa','Seated Row','back','S','4x8',120],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','S','4x8',120],
-    ['Remada Curvada Pronada','Bent Over Row Pronated','back','S','4x8',120],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','DS','3x8+drop',60]
-  ]},
-  C:{label:'Bracos',labelEn:'Arms',ex:[
-    ['Rosca Direta','Barbell Curl','biceps','S','4x8',120],
-    ['Triceps Testa','Skull Crusher','triceps','S','4x8',120],
-    ['Biceps Concentrado','Concentration Curl','biceps','S','4x8',120],
-    ['Triceps Corda','Rope Pushdown','triceps','S','4x8',120],
-    ['Abdominal Remador','Rower Crunch','abs','S','4x30',45],
-    ['Abdominal na Polia Alta','High Cable Crunch','abs','S','4x',45]
-  ]},
-  D:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Agachamento Hack','Hack Squat','quads','S','1x8wu+3x8',120],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','S','1x8wu+3x8',120],
-    ['Cadeira Extensora','Leg Extension','quads','Dead','1x8wu+3x8 Dead Stop',120],
-    ['Cadeira Flexora','Leg Curl','hamstrings','S','1x8wu+3x8',120],
-    ['Passada com Halteres','Walking Lunge','quads','S','3x16 steps',120],
-    ['Panturrilha Press','Calf on Press','calves','Dead','4x12 Dead Stop',60]
-  ]}
-}},
-ABCD10:{name:'ABCD10',phase:'freq',type:'ABCD',days:{
-  A:{label:'Peito + Triceps',labelEn:'Push (with Triceps)',ex:[
-    ['Abdominal Cruzado','Bicycle Crunch','abs','S','3x10 each alt',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Supino Inclinado com Halteres','Incline DB','chest','S','2x8wu+4x8',120],
-    ['Supino Reto','Barbell Bench','chest','S','2x8wu+4x8',120],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
-    ['Elevacao Frontal','Front Raise','shoulders','P','15/12/2x10',60],
-    ['Triceps Frances','French Press','triceps','S','2x8-10light+4x8',90]
-  ]},
-  B:{label:'Costas + Biceps',labelEn:'Pull (with Biceps)',ex:[
-    ['Abdominal Crunch','Crunch','abs','S','3x30',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Remada Curvada Pronada','Bent Over Row Pronated','back','S','2x8wu+4x8',120],
-    ['Remada Baixa','Seated Row','back','S','2x8wu+4x8',120],
-    ['Puxada','Pulldown','back','S','4x8-12',80],
-    ['Elevacao Lateral','Lateral Raise','shoulders','P','12/10/2x8',60],
-    ['Rosca Scott','Preacher Curl','biceps','S','2x8-10light+4x8',90]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Cadeira Extensora','Leg Extension','quads','P','15/12/10/3x8',120],
-    ['Leg Press 45','Leg Press','quads','P','12/10/4x8',120],
-    ['Agachamento Bulgaro','Bulgarian Split Squat','quads','S','4x8',120],
-    ['Cadeira Flexora','Leg Curl','hamstrings','P','12/10/4x8',120],
-    ['Panturrilha Press','Calf on Press','calves','BO','12/10/8/15',60]
-  ]},
-  D:{label:'MMSS',labelEn:'Upper Body',ex:[
-    ['Supino Reto com Halteres','DB Bench','chest','P','12/10/3x8',120],
-    ['Supino Inclinado','Incline Barbell','chest','P','12/10/3x8',120],
-    ['Triceps Testa','Skull Crusher','triceps','P','12/10/3x8',120],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','P','12/10/3x8',120],
-    ['Remada Unilateral com Halter','Single Arm DB Row','back','P','12/10/3x8',120],
-    ['Rosca Direta','Barbell Curl','biceps','P','12/10/3x8',120]
-  ]}
-}},
-ABCD11:{name:'ABCD11',phase:'peak',type:'ABCD',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
-    ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',45],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Supino Reto','Barbell Bench','chest','P','10/8/6/6',180],
-    ['Paralela','Dips','chest','S','2x8BW+4x8 weighted',120],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
-    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x8',80],
-    ['Triceps Frances','French Press','triceps','S','2x8-10light+4x8',90],
-    ['Triceps Frances Unilateral','Single Arm OH Extension','triceps','S','4x6-8',60]
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
-    ['Abdominal Infra no Solo','Lower Abs','abs','S','4x15-20',45],
-    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
-    ['Remada Unilateral com Halter','Single Arm DB Row','back','P','10/8/6/6',180],
-    ['Remada Baixa','Seated Row','back','S','2x8wu+4x8',120],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','DS','12/2x10/1x8+fail',60],
-    ['Elevacao Unilateral','Unilateral Lateral Raise','shoulders','S','4x10-12',60],
-    ['Biceps Concentrado','Concentration Curl','biceps','S','4x6-8',60]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Leg Press 45','Leg Press','quads','P','12/10/4x8-12',120],
-    ['Back Squat','Back Squat','quads','S','2x12wu+4x8-12',120],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','S','2x12wu+4x8-12',120],
-    ['Cadeira Extensora Unilateral','Unilateral Leg Extension','quads','S','3x8',60],
-    ['Cadeira Flexora','Leg Curl','hamstrings','DS','3x8+drop to fail',120],
-    ['Panturrilha Press','Calf on Press','calves','BO','12/10/8/15',60]
-  ]},
-  D:{label:'MMSS',labelEn:'Upper Body',ex:[
-    ['Supino Inclinado com Halteres','Incline DB','chest','P','12/10/8/3x6',120],
-    ['Crucifixo Voador','Pec Deck','chest','DS','3x6-8+drop to fail',120],
-    ['Triceps Testa Halteres','DB Skull Crusher','triceps','P','12/10/3x6-8',120],
-    ['Puxada','Lat Pulldown','back','P','12/10/8/3x6',120],
-    ['Remada Baixa Unilateral','Unilateral Seated Row','back','S','4x8',120],
-    ['Rosca com Halteres','DB Curl','biceps','P','12/10/3x6-8',120]
-  ]}
-}},
-ABCD12:{name:'ABCD12',phase:'int',type:'ABCD',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','3x8',120],
-    ['Supino Reto','Flat Bench','chest','P','Pyramid',180],
-    ['Crucifixo na Polia','Cable Fly','chest','S','3x8',80],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','3x8',80],
-    ['Triceps Testa','Skull Crusher','triceps','S','3x8',80]
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Abdominal Crunch','200 Crunch AFAP','abs','S','200 AFAP',0],
-    ['Puxada','Lat Pulldown','back','S','3x8',120],
-    ['Remada Baixa','Seated Row','back','S','3x8',120],
-    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x8',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','3x8',80]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Avanço Smith','Smith Machine Lunge','quads','S','3x8',120],
-    ['Agachamento Smith','Smith Machine Squat','quads','S','3x8',120],
-    ['Cadeira Extensora','Leg Extension','quads','P','Pyramid',90],
-    ['Cadeira Flexora','Seated Leg Curl','hamstrings','RestP','5x3/10s Rest-Pause',90],
-    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+back-off 15',60]
-  ]},
-  D:{label:'MMSS',labelEn:'Upper Body',ex:[
-    ['Supino Reto com Halteres','DB Bench','chest','S','3x8',120],
-    ['Supino Inclinado','Incline Barbell','chest','S','3x8',120],
-    ['Triceps Frances','French Press','triceps','S','3x8',80],
-    ['Remada Unilateral com Halter','Single Arm DB Row','back','S','3x8',120],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','S','3x8',120],
-    ['Rosca Martelo','Hammer Curl','biceps','S','3x8',80]
-  ]}
-}},
-ABCD13:{name:'ABCD13',phase:'rea',type:'ABCD',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Supino Reto','Flat Bench','chest','P','3x6 Pyramid',180],
-    ['Paralela','Weighted Dips','chest','S','4x8 weighted',120],
-    ['Crucifixo na Polia','Cable Fly','chest','S','3x6',80],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','3x6',80],
-    ['Triceps Testa','Skull Crusher','triceps','S','3x6',80]
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Abdominal Crunch','300 Crunch AFAP','abs','S','300 AFAP',0],
-    ['Puxada','Lat Pulldown','back','S','3x6',120],
-    ['Remada Maquina','Machine Row','back','S','3x6',120],
-    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x6',60],
-    ['Rosca Scott Maquina','Machine Preacher Curl','biceps','S','3x6',80]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Leg Press 45','Leg Press','quads','S','3x6',120],
-    ['Cadeira Extensora','Leg Extension','quads','S','3x6',90],
-    ['Cadeira Flexora','Seated Leg Curl','hamstrings','RestP','Rest-Pause',90],
-    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+back-off 15',60]
-  ]},
-  D:{label:'MMSS',labelEn:'Upper Body',ex:[
-    ['Supino Reto com Halteres','DB Bench','chest','S','3x6',120],
-    ['Supino Inclinado','Incline Barbell','chest','S','3x6',120],
-    ['Triceps Frances','French Press','triceps','S','3x6',80],
-    ['Remada Unilateral com Halter','Single Arm DB Row','back','S','3x6',120],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','S','3x6',120],
-    ['Rosca Direta','Barbell Curl','biceps','S','3x6',80]
-  ]}
-}},
-ABCD14:{name:'ABCD14',phase:'acc',type:'ABCD',days:{
+ABCD09:{name:'ABCD09',phase:'acc',type:'ABCD',days:{
   A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
     ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
     ['Supino Reto','Flat Bench Press','chest','PC','2x8wu+3x10',180],
@@ -1132,86 +561,6 @@ ABCD14:{name:'ABCD14',phase:'acc',type:'ABCD',days:{
     ['Weighted Sit-ups','Weighted Sit-ups','abs','S','3x10',60]
   ]}
 }},
-ABCD15:{name:'ABCD15',phase:'int',type:'ABCD',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Supino Reto','Flat Bench','chest','P','12/10/8/5',180],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','P','12/10/8/5',120],
-    ['Crucifixo na Polia','Cable Fly','chest','S','3x10',80],
-    ['Elevacao Frontal','Front Raise','shoulders','P','12/10/8/5',60],
-    ['Triceps Testa','Skull Crusher','triceps','P','12/10/8/5',80]
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull',ex:[
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Prancha','Plank','abs','S','3x2min',60],
-    ['Puxada','Lat Pulldown','back','P','12/10/8/5',120],
-    ['Remada Baixa','Seated Row','back','P','12/10/8/5',120],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','P','12/10/8/5',60],
-    ['Remada Alta','High Row','shoulders','S','3x10',60],
-    ['Rosca Direta','Barbell Curl','biceps','P','12/10/8/5',80]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Cadeira Extensora','Leg Extension','quads','P','12/10/8/5',90],
-    ['Leg Press 45','Leg Press','quads','P','12/10/8/5',120],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','S','3x10',120],
-    ['Cadeira Flexora','Seated Leg Curl','hamstrings','RestP','Rest-Pause',90],
-    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+15',60]
-  ]},
-  D:{label:'MMSS',labelEn:'Upper Body',ex:[
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','DS','3x10+drop',120],
-    ['Supino Reto com Halteres','DB Bench','chest','S','3x10',120],
-    ['Triceps Frances','French Press','triceps','P','12/10/8/5',80],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','DS','3x10+drop',120],
-    ['Remada Unilateral com Halter','Single Arm DB Row','back','S','3x10',120],
-    ['Rosca Martelo','Hammer Curl','biceps','P','12/10/8/5',80],
-    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x10',60]
-  ]}
-}},
-ABCD16:{name:'ABCD16',phase:'int',type:'ABCD',days:{
-  A:{label:'Peito + Ombros + Triceps',labelEn:'Push (Deep Intensification)',ex:[
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Supino Maquina','Machine Bench','chest','P','12/10/8/5',180],
-    ['Paralela','Weighted Dips','chest','P','12/10/8/5',120],
-    ['Crucifixo na Polia','Cable Fly','chest','S','3x12',90],
-    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','S','3x12',90],
-    ['Triceps Corda','Rope Pushdown','triceps','S','3x12',90],
-    ['Triceps Testa','Skull Crusher','triceps','S','3x12',90],
-    ['Triceps Kickback','Triceps Kickback','triceps','S','3x12',90]
-  ]},
-  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull (Deep Intensification)',ex:[
-    ['Rotacao Externa','External Rotation','shoulders','S','2x10',60],
-    ['Rotacao Interna','Internal Rotation','shoulders','S','2x10',60],
-    ['Escalador Alternado Slide','Sliding Mountain Climbers','abs','BS','Bi-Set',0],
-    ['Abdominal Remador','Rower Crunch','abs','BS','Bi-Set',60],
-    ['Pulldown','Straight-Arm Pulldown','back','P','12/10/8/5',120],
-    ['Puxada Frente Triangulo','Close Grip Pulldown','back','P','12/10/8/5',120],
-    ['Remada Baixa','Seated Row','back','S','3x12',90],
-    ['Crucifixo Inverso','Reverse Fly','shoulders','S','3x12',60],
-    ['Rosca Direta','Barbell Curl','biceps','S','3x12',90],
-    ['Biceps Pulley Corda','Rope Cable Curl','biceps','S','3x12',90],
-    ['Rosca Martelo','Hammer Curl','biceps','S','3x12',90]
-  ]},
-  C:{label:'Pernas',labelEn:'Legs (Deep Intensification)',ex:[
-    ['Cadeira Extensora','Leg Extension','quads','P','12/10/8/5',90],
-    ['Leg Press 45','Leg Press','quads','S','3x10',120],
-    ['Stiff','Stiff Leg Deadlift','hamstrings','S','3x10',120],
-    ['Cadeira Flexora','Seated Leg Curl','hamstrings','P','12/10/8/5+drop',90],
-    ['Panturrilha Press','Calf Press','calves','BO','12/10/8+15',60]
-  ]},
-  D:{label:'MMSS',labelEn:'Upper Body (Drop-Set Gauntlet)',ex:[
-    ['Supino Inclinado Maquina','Incline Machine Press','chest','DS','3x10+drop',120],
-    ['Supino Inclinado com Halteres','Incline DB Press','chest','DS','3x10+drop',120],
-    ['Triceps Frances','French Press','triceps','S','3x12',80],
-    ['Remada Baixa Pegada Aberta','Wide Grip Seated Row','back','DS','3x10+drop',120],
-    ['Puxada','Lat Pulldown','back','S','3x12',90],
-    ['Rosca Direta','Barbell Curl','biceps','S','3x12',80],
-    ['Elevacao Lateral','Lateral Raise','shoulders','S','3x12',60],
-    ['Elevacao Frontal','Front Raise','shoulders','S','3x12',60]
-  ]}
-}}
 };
 
 // ── ABS ROUTINES (7 choosable abs days from PDF) ──
@@ -1519,7 +868,7 @@ function parseSets(str){
 // ── STORAGE ──
 function loadData(){
   try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
-  catch(e){data={activeProgram:'ABCD14',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
+  catch(e){data={activeProgram:'ABCD09',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -1531,23 +880,29 @@ function loadData(){
 }
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 function migrateData(){
-  // Fix ABCD01 seed dates: 2026-01-27 → 2025-01-27
-  if(data.logs){
-    let changed=false;
-    data.logs.forEach(l=>{
-      if(l.id&&l.id.startsWith('abcd01_')&&l.date==='2026-01-27'){l.date='2025-01-27';changed=true;}
-      if(l.id&&l.id.startsWith('abcd02_')&&l.date==='2026-02-24'){l.date='2025-02-24';changed=true;}
-    });
-    if(changed)saveData();
+  // Clean up old programs from localStorage
+  if(data.customPrograms){
+    const keep=['ABCD09'];
+    Object.keys(data.customPrograms).forEach(k=>{if(!keep.includes(k))delete data.customPrograms[k]});
   }
+  // Remove old program logs (keep ABCD09 seeds + real workouts)
+  if(data.logs){
+    data.logs=data.logs.filter(l=>{
+      if(l.id&&(l.id.startsWith('abcd01_')||l.id.startsWith('abcd02_')))return false;
+      return true;
+    });
+  }
+  // Ensure activeProgram is ABCD09
+  if(data.activeProgram&&data.activeProgram!=='ABCD09')data.activeProgram='ABCD09';
+  saveData();
 }
 
-// Pre-populate ABCD14 custom version (user's current bold exercises)
-function initCustomABCD14(){
+// Pre-populate ABCD09 custom version (user's current bold exercises)
+function initCustomABCD09(){
   // Seed last workout weights from PDF so inputs are pre-filled
   if(!data.logs.some(l=>l.id&&l.id.startsWith('seed_'))){
   data.logs.push(
-    {id:'seed_a',date:'2026-03-02',program:'ABCD14',day:'A',exercises:[
+    {id:'seed_a',date:'2026-03-02',program:'ABCD09',day:'A',exercises:[
       {name:'Dumbell Circles',sets:[{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:5,reps:12,type:'working'}]},
       {name:'Reverse Grip Bench Press Smith Machine',sets:[{weight:70,reps:8,type:'warmup'},{weight:70,reps:8,type:'warmup'},{weight:130,reps:10,type:'working'},{weight:130,reps:10,type:'working'},{weight:125,reps:10,type:'working'}]},
       {name:'Paralela',sets:[{weight:0,reps:8,type:'warmup'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'}]},
@@ -1558,7 +913,7 @@ function initCustomABCD14(){
       {name:'Lying Chest Supported Dumbbell Wrist Curl',sets:[{weight:65,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:65,reps:10,type:'working'}]},
       {name:'Abdominal na Polia Alta',sets:[{weight:47,reps:12,type:'working'},{weight:47,reps:12,type:'working'},{weight:47,reps:12,type:'working'},{weight:47,reps:12,type:'working'}]}
     ],duration:0},
-    {id:'seed_b',date:'2026-03-02',program:'ABCD14',day:'B',exercises:[
+    {id:'seed_b',date:'2026-03-02',program:'ABCD09',day:'B',exercises:[
       {name:'Rotação Externa Ombro',sets:[{weight:0,reps:10,type:'working'}]},
       {name:'Rotação Interna Ombro',sets:[{weight:0,reps:10,type:'working'}]},
       {name:'Seated Lat Pull-In',sets:[{weight:12,reps:8,type:'warmup'},{weight:12,reps:8,type:'warmup'},{weight:28,reps:10,type:'working'},{weight:28,reps:10,type:'working'},{weight:28,reps:10,type:'working'}]},
@@ -1570,7 +925,7 @@ function initCustomABCD14(){
       {name:'Zercher Back Curl',sets:[{weight:0,reps:5,type:'warmup'},{weight:15,reps:5,type:'working'},{weight:0,reps:5,type:'working'},{weight:5,reps:5,type:'working'}]},
       {name:'Abdominal Remador Weighted',sets:[{weight:6,reps:12,type:'working'},{weight:6,reps:12,type:'working'},{weight:6,reps:12,type:'working'},{weight:5,reps:12,type:'working'}]}
     ],duration:0},
-    {id:'seed_c',date:'2026-03-02',program:'ABCD14',day:'C',exercises:[
+    {id:'seed_c',date:'2026-03-02',program:'ABCD09',day:'C',exercises:[
       {name:'Barbell Hack Squat',sets:[{weight:50,reps:8,type:'warmup'},{weight:50,reps:8,type:'warmup'},{weight:95,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:105,reps:10,type:'working'}]},
       {name:'Agachamento Smith',sets:[{weight:40,reps:8,type:'warmup'},{weight:40,reps:8,type:'warmup'},{weight:85,reps:10,type:'working'},{weight:85,reps:10,type:'working'},{weight:80,reps:10,type:'working'}]},
       {name:'Single Leg Good Morning (Smith)',sets:[{weight:15,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
@@ -1578,7 +933,7 @@ function initCustomABCD14(){
       {name:'Calves Leg Press',sets:[{weight:100,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:110,reps:10,type:'working'}]},
       {name:'Weighted Crunches (Bosu Ball)',sets:[{weight:26,reps:12,type:'working'},{weight:26,reps:12,type:'working'},{weight:25,reps:12,type:'working'}]}
     ],duration:0},
-    {id:'seed_d',date:'2026-03-02',program:'ABCD14',day:'D',exercises:[
+    {id:'seed_d',date:'2026-03-02',program:'ABCD09',day:'D',exercises:[
       {name:'Supino Inclinado (Smith) (30°)',sets:[{weight:60,reps:8,type:'warmup'},{weight:60,reps:8,type:'warmup'},{weight:120,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:130,reps:10,type:'working'}]},
       {name:'Dumbell Fly (Flat)',sets:[{weight:15,reps:8,type:'warmup'},{weight:15,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
       {name:'JM Press',sets:[{weight:10,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:20,reps:10,type:'working'}]},
@@ -1590,94 +945,8 @@ function initCustomABCD14(){
     ],duration:0}
   );
   }
-  // Seed ABCD01 (Treino ABCD 1) final weights - Jan 27
-  if(!data.logs.some(l=>l.id&&l.id.startsWith('abcd01_'))){
-  data.logs.push(
-    {id:'abcd01_a',date:'2025-01-27',program:'ABCD01',day:'A',exercises:[
-      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Crucifixo na Maquina',sets:[{weight:135,reps:10,type:'working'},{weight:140,reps:10,type:'working'},{weight:145,reps:10,type:'working'},{weight:95,reps:8,type:'working'},{weight:80,reps:10,type:'working'},{weight:75,reps:12,type:'working'}]},
-      {name:'Supino Inclinado com Halteres',sets:[{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'},{weight:60,reps:6,type:'working'}]},
-      {name:'Crucifixo Adutor na Polia',sets:[{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:23,reps:10,type:'working'}]},
-      {name:'Desenvolvimento Maquina',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
-      {name:'Elevacao Frontal com Halteres',sets:[{weight:17.5,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:15,reps:10,type:'working'}]},
-      {name:'Remada Alta',sets:[{weight:32,reps:12,type:'working'},{weight:34,reps:12,type:'working'},{weight:36,reps:12,type:'working'},{weight:36,reps:12,type:'working'}]}
-    ],duration:0},
-    {id:'abcd01_b',date:'2025-01-27',program:'ABCD01',day:'B',exercises:[
-      {name:'Abdominal na Polia Alta',sets:[{weight:32,reps:10,type:'working'},{weight:32,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:28,reps:10,type:'working'},{weight:26,reps:10,type:'working'},{weight:24,reps:10,type:'working'}]},
-      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Remada Curvada',sets:[{weight:122.5,reps:15,type:'working'},{weight:125,reps:10,type:'working'},{weight:127.5,reps:5,type:'working'},{weight:125,reps:10,type:'working'},{weight:120,reps:15,type:'working'}]},
-      {name:'Remada Baixa Triangulo',sets:[{weight:125,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:115,reps:8,type:'working'},{weight:70,reps:10,type:'working'},{weight:45,reps:12,type:'working'}]},
-      {name:'Puxada Aberta Neutra',sets:[{weight:160,reps:6,type:'working'},{weight:160,reps:6,type:'working'},{weight:157.5,reps:6,type:'working'},{weight:155,reps:6,type:'working'},{weight:152.5,reps:6,type:'working'}]},
-      {name:'Remada Baixa Pegada Aberta',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'}]},
-      {name:'Elevacao Lateral com Halteres',sets:[{weight:17.5,reps:12,type:'working'},{weight:17.5,reps:12,type:'working'},{weight:17.5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'}]},
-      {name:'Crucifixo Inverso Maquina',sets:[{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'},{weight:90,reps:12,type:'working'}]}
-    ],duration:0},
-    {id:'abcd01_c',date:'2025-01-27',program:'ABCD01',day:'C',exercises:[
-      {name:'Abdominal Crunch',sets:[{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'}]},
-      {name:'Abdominal Infra no Solo',sets:[{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'},{weight:0,reps:25,type:'working'}]},
-      {name:'Prancha',sets:[{weight:0,reps:60,type:'working'},{weight:0,reps:60,type:'working'},{weight:0,reps:60,type:'working'}]},
-      {name:'Rosca Direta',sets:[{weight:45,reps:15,type:'working'},{weight:50,reps:12,type:'working'},{weight:55,reps:8,type:'working'},{weight:55,reps:8,type:'working'}]},
-      {name:'Rosca Alternada',sets:[{weight:30,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'}]},
-      {name:'Biceps Polia Corda',sets:[{weight:40,reps:10,type:'working'},{weight:38,reps:10,type:'working'},{weight:38,reps:10,type:'working'},{weight:38,reps:10,type:'working'},{weight:17,reps:10,type:'working'}]},
-      {name:'Triceps Corda',sets:[{weight:57.5,reps:15,type:'working'},{weight:58,reps:12,type:'working'},{weight:58,reps:8,type:'working'},{weight:58,reps:8,type:'working'}]},
-      {name:'Triceps Testa',sets:[{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:25,reps:10,type:'working'}]},
-      {name:'Triceps Coice',sets:[{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17,reps:10,type:'working'}]}
-    ],duration:0},
-    {id:'abcd01_d',date:'2025-01-27',program:'ABCD01',day:'D',exercises:[
-      {name:'Agachamento Hack',sets:[{weight:15,reps:10,type:'warmup'},{weight:15,reps:10,type:'warmup'},{weight:65,reps:8,type:'working'},{weight:65,reps:8,type:'working'},{weight:65,reps:8,type:'working'}]},
-      {name:'Afundo com Halteres',sets:[{weight:0,reps:12,type:'working'},{weight:5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'},{weight:7.5,reps:12,type:'working'}]},
-      {name:'Cadeira Extensora',sets:[{weight:115,reps:12,type:'working'},{weight:115,reps:12,type:'working'},{weight:110,reps:12,type:'working'},{weight:110,reps:12,type:'working'}]},
-      {name:'Passada com Halteres',sets:[{weight:0,reps:20,type:'working'},{weight:0,reps:20,type:'working'},{weight:0,reps:20,type:'working'},{weight:0,reps:20,type:'working'}]},
-      {name:'Leg Press 45',sets:[{weight:135,reps:12,type:'working'},{weight:135,reps:12,type:'working'},{weight:130,reps:12,type:'working'},{weight:115,reps:12,type:'working'}]},
-      {name:'Cadeira Flexora',sets:[{weight:120,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:70,reps:10,type:'working'}]},
-      {name:'Panturrilha Press',sets:[{weight:255,reps:25,type:'working'},{weight:250,reps:25,type:'working'},{weight:245,reps:25,type:'working'}]}
-    ],duration:0}
-  );
-  }
-  // Seed ABCD02 (Treino 7) final weights - Feb 24
-  if(!data.logs.some(l=>l.id&&l.id.startsWith('abcd02_'))){
-  data.logs.push(
-    {id:'abcd02_a',date:'2025-02-24',program:'ABCD02',day:'A',exercises:[
-      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Crucifixo Adutor na Polia',sets:[{weight:5,reps:10,type:'warmup'},{weight:12,reps:10,type:'working'},{weight:13,reps:10,type:'working'},{weight:14,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:14,reps:10,type:'working'},{weight:15,reps:10,type:'working'}]},
-      {name:'Supino Reto com Halteres',sets:[{weight:60,reps:12,type:'working'},{weight:65,reps:10,type:'working'},{weight:60,reps:10,type:'working'},{weight:60,reps:8,type:'working'},{weight:60,reps:8,type:'working'}]},
-      {name:'Supino Inclinado Barra',sets:[{weight:70,reps:8,type:'working'},{weight:70,reps:8,type:'working'},{weight:70,reps:8,type:'working'},{weight:70,reps:8,type:'working'}]},
-      {name:'Supino Inclinado com Halteres',sets:[{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'}]},
-      {name:'Desenvolvimento Maquina',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:45,reps:10,type:'working'}]}
-    ],duration:0},
-    {id:'abcd02_b',date:'2025-02-24',program:'ABCD02',day:'B',exercises:[
-      {name:'Dragon Flag',sets:[{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'}]},
-      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
-      {name:'Remada Baixa Triangulo',sets:[{weight:40,reps:10,type:'warmup'},{weight:80,reps:10,type:'warmup'},{weight:130,reps:10,type:'working'},{weight:130,reps:10,type:'working'},{weight:130,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:122.5,reps:10,type:'working'},{weight:120,reps:10,type:'working'}]},
-      {name:'Remada Curvada',sets:[{weight:100,reps:12,type:'working'},{weight:105,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:95,reps:8,type:'working'},{weight:100,reps:8,type:'working'}]},
-      {name:'Puxada',sets:[{weight:180,reps:8,type:'working'},{weight:180,reps:8,type:'working'},{weight:177.5,reps:8,type:'working'},{weight:175,reps:8,type:'working'}]},
-      {name:'Puxada Pegada Inversa',sets:[{weight:150,reps:8,type:'working'},{weight:152.5,reps:8,type:'working'},{weight:152.5,reps:8,type:'working'},{weight:150,reps:8,type:'working'}]},
-      {name:'Elevacao Lateral com Halteres',sets:[{weight:22.5,reps:12,type:'working'},{weight:22.5,reps:12,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'}]},
-      {name:'Rosca com Halteres',sets:[{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:17.5,reps:8,type:'working'}]}
-    ],duration:0},
-    {id:'abcd02_c',date:'2025-02-24',program:'ABCD02',day:'C',exercises:[
-      {name:'Rosca Scott Maquina',sets:[{weight:70,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:60,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
-      {name:'Rosca Direta',sets:[{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'}]},
-      {name:'Rosca Alternada',sets:[{weight:25,reps:8,type:'working'},{weight:25,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'}]},
-      {name:'Triceps Corda',sets:[{weight:67.5,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:62.5,reps:10,type:'working'},{weight:60,reps:10,type:'working'}]},
-      {name:'Triceps Testa',sets:[{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'}]},
-      {name:'Triceps Frances Unilateral',sets:[{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'}]}
-    ],duration:0},
-    {id:'abcd02_d',date:'2025-02-24',program:'ABCD02',day:'D',exercises:[
-      {name:'Agachamento Hack',sets:[{weight:15,reps:10,type:'warmup'},{weight:20,reps:10,type:'warmup'},{weight:25,reps:12,type:'working'},{weight:30,reps:10,type:'working'},{weight:35,reps:8,type:'working'}]},
-      {name:'Cadeira Extensora',sets:[{weight:80,reps:10,type:'working'},{weight:90,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:110,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
-      {name:'Cadeira Abdutora',sets:[{weight:240,reps:12,type:'working'},{weight:245,reps:12,type:'working'},{weight:250,reps:12,type:'working'},{weight:255,reps:12,type:'working'}]},
-      {name:'Cadeira Flexora',sets:[{weight:90,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:110,reps:10,type:'working'},{weight:120,reps:10,type:'working'}]},
-      {name:'Panturrilha Press',sets:[{weight:230,reps:20,type:'working'},{weight:230,reps:15,type:'working'},{weight:235,reps:10,type:'working'}]}
-    ],duration:0}
-  );
-  }
-  if(data.customPrograms.ABCD14){saveData();return;}
-  data.customPrograms.ABCD14={days:{
+  if(data.customPrograms.ABCD09){saveData();return;}
+  data.customPrograms.ABCD09={days:{
     A:{ex:[
       ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
       ['Reverse Grip Bench Press Smith Machine','Reverse Grip Smith Bench','chest','PC','2x8wu+3x10',180],
@@ -1840,7 +1109,7 @@ function showView(name,btn){
 }
 
 function getNextDay(){
-  const prog=getProgram(data.activeProgram)||getProgram('ABC01');
+  const prog=getProgram(data.activeProgram)||getProgram('ABCD09');
   const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
@@ -3843,7 +3112,7 @@ function importATH(){
 // ── INIT ──
 loadData();
 migrateData();
-initCustomABCD14();
+initCustomABCD09();
 // ABS days exist in some programs — they show as tabs but aren't in ABCD rotation
 // Load custom exercises into hidden program
 if(data.customExercises&&data.customExercises.length){
