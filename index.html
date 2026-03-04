@@ -155,10 +155,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .session-trend.down{background:rgba(212,90,90,0.15);color:var(--red)}
 .session-trend.flat{background:rgba(232,200,74,0.15);color:var(--yellow)}
 
-/* PR BOARD */
-.pr-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-.pr-card .pr-exercise{font-size:0.95rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
-.pr-card .pr-1rm{font-size:0.75rem;color:var(--gold);float:right}
+/* PR TABLE (inside progress cards) */
 .pr-table{width:100%;margin-top:8px;font-size:0.8rem}
 .pr-table td{padding:4px 8px}
 .pr-table .rep-col{color:var(--green-bright);width:60px}
@@ -166,6 +163,24 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .pr-table .date-col{color:var(--green);font-size:0.7rem;text-align:right}
 .pr-table .crown{color:var(--gold)}
 .pr-table .recent{color:var(--green)}
+
+/* PROGRESS CARDS (merged PR + chart) */
+.progress-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:border-color 0.2s}
+.progress-card:active{border-color:var(--iron)}
+.progress-card.expanded{border-color:rgba(128,144,168,0.3);cursor:default}
+.progress-card .pc-header{display:flex;justify-content:space-between;align-items:flex-start}
+.progress-card .pc-name{font-size:0.95rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
+.progress-card .pc-name-en{font-size:0.7rem;color:var(--iron);margin-left:6px}
+.progress-card .pc-stats{text-align:right;font-size:0.72rem}
+.progress-card .pc-1rm{color:var(--gold);font-weight:600}
+.progress-card .pc-ath{color:var(--gold);opacity:0.7}
+.progress-card .pc-compact{font-size:0.75rem;color:var(--green-bright);margin-top:6px}
+.progress-card .pc-compact .pc-crown{color:var(--gold)}
+.progress-card .pc-expand-icon{color:var(--text-dim);font-size:0.7rem;margin-left:4px;transition:transform 0.2s}
+.progress-card.expanded .pc-expand-icon{transform:rotate(90deg)}
+.pc-detail{display:none;padding-top:12px;border-top:1px solid var(--border);margin-top:10px}
+.progress-card.expanded .pc-detail{display:block}
+.pc-detail .range-tabs{margin-bottom:8px}
 
 /* MUSCLE TABS */
 .muscle-tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
@@ -288,7 +303,6 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <header class="app-header">
   <h1><span>ZER</span>CHER</h1>
   <div class="header-actions">
-    <button class="add-pr-btn" id="headerAddPR" style="display:none" onclick="openAddPR()">+ PR</button>
     <span class="sync-dot" id="syncDot" title="Sync status"></span>
     <button class="header-btn" onclick="openSettings()" title="Settings">&#9881;</button>
   </div>
@@ -309,23 +323,12 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: PROGRESS -->
 <div id="view-progress" class="view">
-  <input type="text" class="view-select" id="progressSearch" placeholder="Search exercises..." oninput="filterProgressExercises()" style="margin-bottom:6px">
-  <select class="view-select" id="progressExSelect" onchange="renderProgressChart()"></select>
-  <div class="range-tabs" id="rangeTabs">
-    <button class="range-tab active" onclick="setRange(4,this)">4W</button>
-    <button class="range-tab" onclick="setRange(8,this)">8W</button>
-    <button class="range-tab" onclick="setRange(12,this)">12W</button>
-    <button class="range-tab" onclick="setRange(0,this)">All</button>
-  </div>
-  <div class="chart-container"><canvas id="progressChart" width="600" height="200"></canvas></div>
-  <div class="card-sub" style="margin:12px 0 8px">Session History</div>
-  <div id="sessionHistory"></div>
-</div>
-
-<!-- VIEW: PRS -->
-<div id="view-prs" class="view">
   <div class="muscle-tabs" id="prMuscleTabs"></div>
-  <div id="prBoard"></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <input type="text" class="search-bar" id="progressSearch" placeholder="Search exercises..." oninput="renderProgress()" style="margin-bottom:0;flex:1">
+    <button class="add-pr-btn" onclick="openAddPR()">+ PR</button>
+  </div>
+  <div id="progressCards"></div>
 </div>
 
 <!-- VIEW: LIBRARY -->
@@ -374,8 +377,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="showView('workout',this)"><span class="nav-icon">&#128170;</span><span>Workout</span></button>
-  <button class="nav-btn" onclick="showView('progress',this)"><span class="nav-icon">&#128200;</span><span>Progress</span></button>
-  <button class="nav-btn" onclick="showView('prs',this)"><span class="nav-icon">&#127942;</span><span>PRs</span></button>
+  <button class="nav-btn" onclick="showView('progress',this)"><span class="nav-icon">&#127942;</span><span>Progress</span></button>
   <button class="nav-btn" onclick="showView('library',this)"><span class="nav-icon">&#128214;</span><span>Library</span></button>
   <button class="nav-btn" onclick="showView('programs',this)"><span class="nav-icon">&#128203;</span><span>Programs</span></button>
 </nav>
@@ -1654,6 +1656,18 @@ function getExerciseEnglish(name){
   for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[1]}
   return name;
 }
+function getExerciseEquip(name){
+  for(const g of SUBS_DATA){for(const c of g.subs){if(c.ex.includes(name))return c.cat}}
+  const n=name.toLowerCase();
+  if(n.includes('cable')||n.includes('pulldown')||n.includes('facepull'))return'Cable';
+  if(n.includes('dumbbell')||n.includes('db '))return'Dumbbell';
+  if(n.includes('barbell')||n.includes('ez bar'))return'Barbell / EZ Bar';
+  if(n.includes('machine')||n.includes('smith'))return'Machine';
+  if(n.includes('t-bar')||n.includes('t bar')||n.includes('landmine'))return'T-Bar';
+  if(n.includes('trap bar'))return'Trap Bar';
+  if(n.includes('kettlebell'))return'Kettlebell';
+  return'Other';
+}
 function getUsedInPrograms(exName){
   const progs=[];
   for(const pid in PROGRAMS){
@@ -1671,10 +1685,8 @@ function showView(name,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   currentView=name;
-  document.getElementById('headerAddPR').style.display=name==='prs'?'inline-block':'none';
   if(name==='workout')renderWorkout();
   if(name==='progress')renderProgress();
-  if(name==='prs')renderPRBoard();
   if(name==='library')renderLibrary();
   if(name==='programs')renderPrograms();
 }
@@ -2263,48 +2275,144 @@ function finishWorkout(){
   showView('workout',document.querySelectorAll('.nav-btn')[0]);
 }
 
-// ── PROGRESS VIEW ──
+// ── PROGRESS VIEW (unified PR + chart) ──
+var expandedExercise=null;
+var cardRanges={};
+
 function getLoggedExerciseNames(){
   const names=new Set();
   (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>names.add(ex.name)));
   return[...names].sort();
 }
-var _progressNames=[];
+
 function renderProgress(){
-  const sel=document.getElementById('progressExSelect');
-  _progressNames=getLoggedExerciseNames();
-  sel.innerHTML='<option value="">Select exercise...</option>'+_progressNames.map(n=>`<option value="${n}">${n}</option>`).join('');
-  document.getElementById('progressSearch').value='';
-  renderProgressChart();
-}
-function filterProgressExercises(){
-  const q=document.getElementById('progressSearch').value.toLowerCase();
-  const sel=document.getElementById('progressExSelect');
-  const filtered=q?_progressNames.filter(n=>n.toLowerCase().includes(q)):_progressNames;
-  sel.innerHTML='<option value="">Select exercise...</option>'+filtered.map(n=>`<option value="${n}">${n}</option>`).join('');
+  // Muscle tabs
+  const tabs=document.getElementById('prMuscleTabs');
+  tabs.innerHTML='<button class="muscle-tab'+(currentPrMuscle==='all'?' active':'')+'" onclick="setPrMuscle(\'all\')">All</button>'+
+    MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentPrMuscle===m?' active':''}" onclick="setPrMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
+
+  const query=(document.getElementById('progressSearch').value||'').toLowerCase();
+  const allNames=getAllExerciseNames();
+
+  // Build list of exercises with data, grouped by equipment
+  const exerciseData=[];
+  allNames.forEach((name,idx)=>{
+    const muscle=getExerciseMuscle(name);
+    if(currentPrMuscle!=='all'&&muscle!==currentPrMuscle)return;
+    if(query&&!name.toLowerCase().includes(query)&&!(getExerciseEnglish(name)||'').toLowerCase().includes(query))return;
+    const id=exId(name);
+    const prs=data.prs[id]||{};
+    const athVal=findATH(name);
+    const repCounts=Object.keys(prs).map(Number).sort((a,b)=>a-b);
+    if(repCounts.length===0&&!athVal)return;
+    let best1rm=0;
+    repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
+    const equip=getExerciseEquip(name);
+    exerciseData.push({name,idx,prs,athVal,repCounts,best1rm,equip,muscle});
+  });
+
+  // Group by equipment
+  const equipGroups={};
+  exerciseData.forEach(ex=>{
+    if(!equipGroups[ex.equip])equipGroups[ex.equip]=[];
+    equipGroups[ex.equip].push(ex);
+  });
+
+  let html='';
+  const equipOrder=Object.keys(equipGroups).sort();
+  equipOrder.forEach(equip=>{
+    html+=`<div class="card-sub" style="margin:14px 0 8px;color:var(--iron);font-size:0.7rem;letter-spacing:2px">${equip.toUpperCase()}</div>`;
+    equipGroups[equip].forEach(ex=>{
+      const{name,idx,prs,athVal,repCounts,best1rm}=ex;
+      const isExpanded=expandedExercise===name;
+      const enName=getExerciseEnglish(name);
+      const esc=name.replace(/'/g,"\\'");
+
+      // Compact PR summary
+      const compactPrs=repCounts.map(r=>{
+        const isBest=repCounts.length>1&&calcE1RM(prs[r].weight,r)===best1rm;
+        return(isBest?'<span class="pc-crown">&#x1f451;</span>':'')+r+'&times;'+fmt(prs[r].weight);
+      }).join('&nbsp;&nbsp;');
+
+      html+=`<div class="progress-card${isExpanded?' expanded':''}" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
+        <div class="pc-header">
+          <div>
+            <span class="pc-name">${name}</span>
+            ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
+          </div>
+          <div class="pc-stats">
+            ${best1rm?`<div class="pc-1rm">1RM: ${fmt(best1rm)} lbs</div>`:''}
+            ${athVal?`<div class="pc-ath">ATH: ${athVal} lbs</div>`:''}
+          </div>
+        </div>
+        <div class="pc-compact">${compactPrs}</div>
+
+        <div class="pc-detail" onclick="event.stopPropagation()">
+          <table class="pr-table">`;
+
+      repCounts.forEach(r=>{
+        const pr=prs[r];
+        const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
+        const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
+        html+=`<tr>
+          <td class="rep-col">${r} reps</td>
+          <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
+          <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
+        </tr>`;
+      });
+
+      html+=`</table>
+          <div style="margin-top:12px">
+            <div class="range-tabs">
+              <button class="range-tab${(cardRanges[name]||4)===4?' active':''}" onclick="setCardRange('${esc}',4,this)">4W</button>
+              <button class="range-tab${(cardRanges[name]||4)===8?' active':''}" onclick="setCardRange('${esc}',8,this)">8W</button>
+              <button class="range-tab${(cardRanges[name]||4)===12?' active':''}" onclick="setCardRange('${esc}',12,this)">12W</button>
+              <button class="range-tab${(cardRanges[name]||4)===0?' active':''}" onclick="setCardRange('${esc}',0,this)">All</button>
+            </div>
+            <div class="chart-container" style="margin-top:0"><canvas id="chart-${idx}" width="600" height="200"></canvas></div>
+          </div>
+          <div class="card-sub" style="margin:8px 0 6px">Session History</div>
+          <div id="history-${idx}"></div>
+        </div>
+      </div>`;
+    });
+  });
+
+  document.getElementById('progressCards').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises logged yet. Start a workout!</div>';
+
+  // If a card is expanded, draw its chart
+  if(expandedExercise){
+    const cardIdx=allNames.indexOf(expandedExercise);
+    if(cardIdx>=0)drawCardChart(expandedExercise,cardIdx);
+  }
 }
 
-function setRange(w,btn){
-  chartRange=w;
-  document.querySelectorAll('.range-tab').forEach(b=>b.classList.remove('active'));
+function toggleProgressCard(name,idx){
+  if(expandedExercise===name){
+    expandedExercise=null;
+  } else {
+    expandedExercise=name;
+  }
+  renderProgress();
+}
+
+function setCardRange(name,weeks,btn){
+  cardRanges[name]=weeks;
+  const allNames=getAllExerciseNames();
+  const idx=allNames.indexOf(name);
+  // Update active tab
+  btn.parentElement.querySelectorAll('.range-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderProgressChart();
+  if(idx>=0)drawCardChart(name,idx);
 }
 
-function renderProgressChart(){
-  const exName=document.getElementById('progressExSelect').value;
-  const canvas=document.getElementById('progressChart');
+function drawCardChart(exName,idx){
+  const canvas=document.getElementById('chart-'+idx);
+  if(!canvas)return;
   const ctx=canvas.getContext('2d');
   const W=canvas.width=canvas.parentElement.offsetWidth-24;
   const H=canvas.height=200;
   ctx.clearRect(0,0,W,H);
-
-  if(!exName){
-    ctx.fillStyle='#6b7280';ctx.font='14px sans-serif';ctx.textAlign='center';
-    ctx.fillText('Select an exercise to see progress',W/2,H/2);
-    document.getElementById('sessionHistory').innerHTML='';
-    return;
-  }
 
   // Get all logs for this exercise
   let entries=[];
@@ -2320,15 +2428,16 @@ function renderProgressChart(){
   });
 
   // Filter by range
-  if(chartRange>0){
-    const cutoff=new Date(Date.now()-chartRange*7*86400000);
+  const range=cardRanges[exName]||4;
+  if(range>0){
+    const cutoff=new Date(Date.now()-range*7*86400000);
     entries=entries.filter(e=>new Date(e.date)>=cutoff);
   }
 
   if(entries.length<2){
-    ctx.fillStyle='#6b7280';ctx.font='14px sans-serif';ctx.textAlign='center';
-    ctx.fillText(entries.length===0?'No data yet':'Need 2+ sessions for chart',W/2,H/2);
-    renderSessionHistory(exName);
+    ctx.fillStyle='#6b7280';ctx.font='13px Oswald,sans-serif';ctx.textAlign='center';
+    ctx.fillText(entries.length===0?'No data in this range':'Need 2+ sessions for chart',W/2,H/2);
+    renderCardHistory(exName,idx);
     return;
   }
 
@@ -2336,9 +2445,9 @@ function renderProgressChart(){
   const pad={t:20,r:10,b:30,l:50};
   const cW=W-pad.l-pad.r;
   const cH=H-pad.t-pad.b;
-  const minW=Math.min(...entries.map(e=>e.maxWeight))*0.9;
-  const maxW=Math.max(...entries.map(e=>e.maxWeight))*1.05;
-  const range=maxW-minW||1;
+  const minWt=Math.min(...entries.map(e=>e.maxWeight))*0.9;
+  const maxWt=Math.max(...entries.map(e=>e.maxWeight))*1.05;
+  const wRange=maxWt-minWt||1;
 
   // Grid
   ctx.strokeStyle='#2d3238';ctx.lineWidth=1;
@@ -2346,14 +2455,14 @@ function renderProgressChart(){
     const y=pad.t+cH*(i/4);
     ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
     ctx.fillStyle='#6b7280';ctx.font='10px sans-serif';ctx.textAlign='right';
-    ctx.fillText(fmt(maxW-range*(i/4)),pad.l-5,y+3);
+    ctx.fillText(fmt(maxWt-wRange*(i/4)),pad.l-5,y+3);
   }
 
   // Line
   ctx.strokeStyle='#4a90d9';ctx.lineWidth=2;ctx.beginPath();
   entries.forEach((e,i)=>{
     const x=pad.l+cW*(i/(entries.length-1));
-    const y=pad.t+cH*(1-(e.maxWeight-minW)/range);
+    const y=pad.t+cH*(1-(e.maxWeight-minWt)/wRange);
     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   });
   ctx.stroke();
@@ -2361,7 +2470,7 @@ function renderProgressChart(){
   // Points
   entries.forEach((e,i)=>{
     const x=pad.l+cW*(i/(entries.length-1));
-    const y=pad.t+cH*(1-(e.maxWeight-minW)/range);
+    const y=pad.t+cH*(1-(e.maxWeight-minWt)/wRange);
     ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
     ctx.fillStyle=i>0&&e.maxWeight>entries[i-1].maxWeight?'#4aaa6a':i>0&&e.maxWeight<entries[i-1].maxWeight?'#d45a5a':'#4a90d9';
     ctx.fill();
@@ -2386,10 +2495,10 @@ function renderProgressChart(){
   const pct=((last-first)/first*100).toFixed(1);
   ctx.fillText((trend==='up'?'+':'')+pct+'%',W-pad.r,pad.t-5);
 
-  renderSessionHistory(exName);
+  renderCardHistory(exName,idx);
 }
 
-function renderSessionHistory(exName){
+function renderCardHistory(exName,idx){
   let entries=[];
   data.logs.forEach(log=>{
     const ex=log.exercises.find(e=>e.name===exName);
@@ -2397,71 +2506,27 @@ function renderSessionHistory(exName){
   });
   entries.reverse();
 
-  const html=entries.slice(0,20).map((e,i)=>{
+  const container=document.getElementById('history-'+idx);
+  if(!container)return;
+  const html=entries.slice(0,10).map((e,i)=>{
     const ws=e.sets.filter(s=>s.type==='working');
     const weights=ws.map(s=>s.weight).join('/');
     const reps=ws.map(s=>s.reps).join('/');
     let trend='';
     if(i<entries.length-1){
-      const prevMax=Math.max(...entries[i+1].sets.filter(s=>s.type==='working').map(s=>s.weight));
-      const curMax=Math.max(...ws.map(s=>s.weight));
-      trend=curMax>prevMax?'<span class="session-trend up">UP</span>':curMax<prevMax?'<span class="session-trend down">DOWN</span>':'<span class="session-trend flat">FLAT</span>';
+      const prevWs=entries[i+1].sets.filter(s=>s.type==='working');
+      if(prevWs.length){
+        const prevMax=Math.max(...prevWs.map(s=>s.weight));
+        const curMax=ws.length?Math.max(...ws.map(s=>s.weight)):0;
+        trend=curMax>prevMax?'<span class="session-trend up">UP</span>':curMax<prevMax?'<span class="session-trend down">DOWN</span>':'<span class="session-trend flat">FLAT</span>';
+      }
     }
-    return`<div class="session-item"><span class="session-date">${e.date}</span> ${trend}<div class="session-weights">${weights} lbs &middot; ${reps} reps &middot; ${e.program}</div></div>`;
+    return`<div class="session-item"><span class="session-date">${e.date}</span> ${trend}<div class="session-weights">${weights} lbs &middot; ${reps} reps</div></div>`;
   }).join('');
-  document.getElementById('sessionHistory').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:20px">No sessions logged yet</div>';
+  container.innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:12px;font-size:0.8rem">No sessions yet</div>';
 }
 
-// ── PR BOARD ──
-function renderPRBoard(){
-  // Muscle tabs
-  const tabs=document.getElementById('prMuscleTabs');
-  tabs.innerHTML='<button class="muscle-tab'+(currentPrMuscle==='all'?' active':'')+'" onclick="setPrMuscle(\'all\')">All</button>'+
-    MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentPrMuscle===m?' active':''}" onclick="setPrMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
-
-  // Build PR cards
-  const allNames=getAllExerciseNames();
-  let html='';
-  allNames.forEach(name=>{
-    const muscle=getExerciseMuscle(name);
-    if(currentPrMuscle!=='all'&&muscle!==currentPrMuscle)return;
-
-    const id=exId(name);
-    const prs=data.prs[id]||{};
-    const athVal=findATH(name);
-    const repCounts=Object.keys(prs).map(Number).sort((a,b)=>a-b);
-    if(repCounts.length===0&&!athVal)return;
-
-    // Calc e1RM
-    let best1rm=0;
-    repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
-
-    html+=`<div class="pr-card">
-      <div class="pr-exercise">${name} <span style="font-size:0.7rem;color:var(--iron)">${getExerciseEnglish(name)}</span></div>
-      ${best1rm?`<div class="pr-1rm">est. 1RM: ${fmt(best1rm)} lbs</div>`:''}
-      ${athVal?`<div style="font-size:0.75rem;color:var(--gold);margin-top:4px">ATH: ${athVal} lbs</div>`:''}
-      <table class="pr-table">`;
-
-    repCounts.forEach(r=>{
-      const pr=prs[r];
-      const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
-      const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
-      const rowE1rm=r>1?calcE1RM(pr.weight,r):0;
-      html+=`<tr>
-        <td class="rep-col">${r} reps</td>
-        <td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td>
-        <td style="font-size:0.7rem;color:var(--green);text-align:center;min-width:60px">${rowE1rm?'~'+fmt(rowE1rm):''}</td>
-        <td class="date-col${isRecent?' recent':''}">${pr.date||''}</td>
-      </tr>`;
-    });
-
-    html+=`</table></div>`;
-  });
-
-  document.getElementById('prBoard').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No PRs recorded yet. Start logging workouts!</div>';
-}
-
-function setPrMuscle(m){currentPrMuscle=m;renderPRBoard()}
+function setPrMuscle(m){currentPrMuscle=m;expandedExercise=null;renderProgress()}
 
 function openAddPR(){
   const names=getAllExerciseNames();
@@ -2494,7 +2559,7 @@ function saveManualPR(){
   saveData();
   closeModal();
   toast('PR saved: '+name+' '+fmt(weight)+'lbs x'+reps);
-  renderPRBoard();
+  renderProgress();
 }
 
 function openAddExercise(){
