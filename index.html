@@ -173,14 +173,14 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 /* LIB CARD */
 .lib-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
 .lib-card .lib-name{font-size:0.9rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
-.lib-card .lib-name-en{font-size:0.75rem;color:var(--text-dim)}
+.lib-card .lib-name-en{font-size:0.75rem;color:var(--iron)}
 .lib-card .lib-equip{font-size:0.65rem;color:var(--iron);margin-top:2px}
 .lib-card .lib-ath{font-size:0.8rem;color:var(--gold);font-weight:600;float:right}
 .lib-subs{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
-.lib-subs-title{font-size:0.7rem;color:var(--text-dim);margin-bottom:4px}
+.lib-subs-title{font-size:0.7rem;color:var(--iron);margin-bottom:4px}
 .lib-sub-item{font-size:0.75rem;color:var(--text);padding:3px 0;display:flex;justify-content:space-between;align-items:center}
 .lib-sub-item a{color:var(--iron);text-decoration:none;font-size:0.7rem}
-.lib-programs{font-size:0.65rem;color:var(--text-dim);margin-top:6px}
+.lib-programs{font-size:0.65rem;color:var(--green);margin-top:6px}
 
 /* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;display:none;justify-content:center;align-items:flex-end}
@@ -262,6 +262,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <header class="app-header">
   <h1><span>IRON</span> LOG</h1>
   <div class="header-actions">
+    <button class="add-pr-btn" id="headerAddPR" style="display:none" onclick="openAddPR()">+ PR</button>
     <span class="sync-dot" id="syncDot" title="Sync status"></span>
     <button class="header-btn" onclick="openSettings()" title="Settings">&#9881;</button>
   </div>
@@ -295,10 +296,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: PRS -->
 <div id="view-prs" class="view">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <div class="muscle-tabs" id="prMuscleTabs" style="flex:1;margin-bottom:0"></div>
-    <button class="add-pr-btn" onclick="openAddPR()">+ Add PR</button>
-  </div>
+  <div class="muscle-tabs" id="prMuscleTabs"></div>
   <div id="prBoard"></div>
 </div>
 
@@ -1342,6 +1340,7 @@ function showView(name,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   currentView=name;
+  document.getElementById('headerAddPR').style.display=name==='prs'?'inline-block':'none';
   if(name==='workout')renderWorkout();
   if(name==='progress')renderProgress();
   if(name==='prs')renderPRBoard();
