@@ -2273,7 +2273,7 @@ function renderLibrary(){
     const isFav=favExercises.has(name);
 
     html+=`<div class="lib-card">
-      <div class="lib-name">${name} ${athVal?`<span class="lib-ath">${athVal} lbs ATH</span>`:''}<span style="float:right;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${name.replace(/'/g,"\\'")}')">${isFav?'&#9733;':'&#9734;'}</span></div>
+      <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${name.replace(/'/g,"\\'")}')">${isFav?'&#9733;':'&#9734;'}</span></div>
       <div class="lib-name-en">${getExerciseEnglish(name)}</div>
       <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
     </div>`;
