@@ -143,7 +143,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 /* SESSION HISTORY */
 .session-item{padding:10px;border-bottom:1px solid var(--border);font-size:0.8rem}
 .session-date{color:var(--iron);font-weight:600}
-.session-weights{color:var(--text);margin-top:2px}
+.session-weights{color:var(--text-bright);margin-top:2px}
 .session-trend{display:inline-block;padding:1px 6px;border-radius:8px;font-size:0.65rem;font-weight:600}
 .session-trend.up{background:rgba(74,170,106,0.15);color:var(--green)}
 .session-trend.down{background:rgba(212,90,90,0.15);color:var(--red)}
@@ -194,8 +194,12 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .sub-group.expanded .sub-group-body{display:block}
 .sub-subcat{font-size:0.7rem;font-weight:700;color:var(--iron);text-transform:uppercase;letter-spacing:1px;margin:10px 0 6px;padding-top:8px;border-top:1px solid var(--border)}
 .sub-subcat:first-child{border-top:none;margin-top:4px}
-.sub-item{font-size:0.8rem;color:var(--text);padding:4px 0;display:flex;justify-content:space-between;align-items:center}
+.sub-item{font-size:0.8rem;color:var(--text);padding:4px 0;display:flex;justify-content:space-between;align-items:center;gap:6px}
 .sub-item .sub-link-btn{font-size:0.65rem;color:var(--green);text-decoration:none;border:1px solid rgba(106,136,112,0.3);border-radius:var(--radius-sm);padding:2px 8px}
+.sub-item .sub-del{font-size:0.65rem;color:var(--red);cursor:pointer;border:1px solid rgba(144,80,80,0.3);border-radius:var(--radius-sm);padding:2px 6px;white-space:nowrap;opacity:0.7}
+.sub-item .sub-del:hover{opacity:1}
+.sub-restore-btn{font-size:0.7rem;color:var(--gold);cursor:pointer;text-align:center;padding:8px;opacity:0.7}
+.sub-restore-btn:hover{opacity:1}
 
 /* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;display:none;justify-content:center;align-items:flex-end}
@@ -677,6 +681,44 @@ ABCD01:{name:'Treino ABCD 1',phase:'int',type:'ABCD',dates:'Dec 16 – Jan 27',d
     ['Leg Press 45','Leg Press','quads','S','3x10-15',90,'St.115 → 135x2,130,115'],
     ['Cadeira Flexora','Leg Curl','hamstrings','DS','4x8-12+drop',60,'St.120 → 120,125x2 (drop 70F)'],
     ['Panturrilha Press','Calf on Press','calves','S','3x20-30',45,'St.245 → 255,250,245']
+  ]}
+}},
+ABCD02:{name:'Treino 7',phase:'spe',type:'ABCD',dates:'Jan 27 – Feb 24',days:{
+  A:{label:'Peito + Ombros + Triceps',labelEn:'Push + Triceps',ex:[
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Crucifixo Adutor na Polia','Cable Fly (PE)','chest','PE','1x10-12wu+6x10-12',60,'St.13 → 12,13,14,15,14,15'],
+    ['Supino Reto com Halteres','DB Flat Bench','chest','P','1x12/2x8-10/2x5-8',90,'St.60 → 60/65,60/60x2'],
+    ['Supino Inclinado Barra','Incline Barbell Bench','chest','S','4x8',90,'St.70 → 70x4'],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8',80,'St.45 → 45x4'],
+    ['Desenvolvimento Maquina','Machine Shoulder Press','shoulders','DS','3x10+1x drop',60,'St.105 → 105x3 (drop 45F)']
+  ]},
+  B:{label:'Costas + Ombros + Biceps',labelEn:'Pull + Biceps',ex:[
+    ['Dragon Flag','Dragon Flag','abs','S','4x15',45],
+    ['Rotacao Interna','Internal Rotation','shoulders','S','1x10',60],
+    ['Rotacao Externa','External Rotation','shoulders','S','1x10',60],
+    ['Remada Baixa Triangulo','Seated Row (Triangle PE)','back','PE','2x10-12wu+6x10-12',80,'St.125 → 130x3,125,122.5,120'],
+    ['Remada Curvada','Bent Over Row (Pronated)','back','P','1x12/2x8-10/2x5-8',90,'St.100 → 100/105,100/95,100'],
+    ['Puxada','Lat Pulldown','back','S','4x8',80,'St.180 → 180x2,177.5,175'],
+    ['Puxada Pegada Inversa','Underhand Pulldown','back','S','4x8',80,'St.150 → 150,152.5x2,150'],
+    ['Elevacao Lateral com Halteres','DB Lateral Raise','shoulders','P','2x12-15/3x10',60,'St.20 → 22.5x2/17.5x3'],
+    ['Rosca com Halteres','DB Curl','biceps','DS','4x8+drop',60,'St.35 → 30x4 (17.5F)']
+  ]},
+  C:{label:'Bracos',labelEn:'Arms (Dedicated)',ex:[
+    ['Rosca Scott Maquina','Preacher Machine','biceps','Fail','1x10-12+3x failure',60,'St.70 → 70/65,60,55'],
+    ['Rosca Direta','EZ Bar Curl','biceps','S','4x8-12',60,'St.50 → 50x4'],
+    ['Rosca Alternada','Alternating DB Curl','biceps','S','4x6-8 each',60,'St.27.5 → 25x2,27.5x2'],
+    ['Triceps Corda','Rope Pushdown','triceps','Fail','1x10-12+3x failure',60,'St.70 → 67.5/65,62.5,60'],
+    ['Triceps Testa','EZ Skull Crusher','triceps','S','4x8-12',60,'St.35 → 35x4'],
+    ['Triceps Frances Unilateral','Single Arm OH Extension','triceps','S','4x6-8 each',60,'St.30 → 30x4']
+  ]},
+  D:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Agachamento Hack','Hack Squat / Barbell','quads','P','2x10-12wu+12/10/8',90,'Barra: Aq.15,20 Valid: 25,30,35'],
+    ['Leg Press 45','Leg Press','quads','S','2x10-15wu+3x10',90,'Aq.20'],
+    ['Cadeira Extensora','Leg Extension','quads','DS','3x10+1x drop',60,'St.100 → 80,90,100/110 (55F)'],
+    ['Cadeira Abdutora','Hip Abductor','glutes','S','4x12',60,'St.250 → 240,245,250,255'],
+    ['Cadeira Flexora','Leg Curl','hamstrings','S','4x10',60,'St.120 → 90,100,110,120'],
+    ['Panturrilha Press','Calf on Press','calves','P','20/15/10',45,'St.235 → 230/230/235']
   ]}
 }},
 ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',days:{
@@ -1415,6 +1457,46 @@ function initCustomABCD14(){
     ],duration:0}
   );
   }
+  // Seed ABCD02 (Treino 7) final weights - Feb 24
+  if(!data.logs.some(l=>l.id&&l.id.startsWith('abcd02_'))){
+  data.logs.push(
+    {id:'abcd02_a',date:'2026-02-24',program:'ABCD02',day:'A',exercises:[
+      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Crucifixo Adutor na Polia',sets:[{weight:5,reps:10,type:'warmup'},{weight:12,reps:10,type:'working'},{weight:13,reps:10,type:'working'},{weight:14,reps:10,type:'working'},{weight:15,reps:10,type:'working'},{weight:14,reps:10,type:'working'},{weight:15,reps:10,type:'working'}]},
+      {name:'Supino Reto com Halteres',sets:[{weight:60,reps:12,type:'working'},{weight:65,reps:10,type:'working'},{weight:60,reps:10,type:'working'},{weight:60,reps:8,type:'working'},{weight:60,reps:8,type:'working'}]},
+      {name:'Supino Inclinado Barra',sets:[{weight:70,reps:8,type:'working'},{weight:70,reps:8,type:'working'},{weight:70,reps:8,type:'working'},{weight:70,reps:8,type:'working'}]},
+      {name:'Supino Inclinado com Halteres',sets:[{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'},{weight:45,reps:8,type:'working'}]},
+      {name:'Desenvolvimento Maquina',sets:[{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:45,reps:10,type:'working'}]}
+    ],duration:0},
+    {id:'abcd02_b',date:'2026-02-24',program:'ABCD02',day:'B',exercises:[
+      {name:'Dragon Flag',sets:[{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'},{weight:0,reps:15,type:'working'}]},
+      {name:'Rotacao Interna',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Rotacao Externa',sets:[{weight:0,reps:10,type:'warmup'}]},
+      {name:'Remada Baixa Triangulo',sets:[{weight:40,reps:10,type:'warmup'},{weight:80,reps:10,type:'warmup'},{weight:130,reps:10,type:'working'},{weight:130,reps:10,type:'working'},{weight:130,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:122.5,reps:10,type:'working'},{weight:120,reps:10,type:'working'}]},
+      {name:'Remada Curvada',sets:[{weight:100,reps:12,type:'working'},{weight:105,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:95,reps:8,type:'working'},{weight:100,reps:8,type:'working'}]},
+      {name:'Puxada',sets:[{weight:180,reps:8,type:'working'},{weight:180,reps:8,type:'working'},{weight:177.5,reps:8,type:'working'},{weight:175,reps:8,type:'working'}]},
+      {name:'Puxada Pegada Inversa',sets:[{weight:150,reps:8,type:'working'},{weight:152.5,reps:8,type:'working'},{weight:152.5,reps:8,type:'working'},{weight:150,reps:8,type:'working'}]},
+      {name:'Elevacao Lateral com Halteres',sets:[{weight:22.5,reps:12,type:'working'},{weight:22.5,reps:12,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'},{weight:17.5,reps:10,type:'working'}]},
+      {name:'Rosca com Halteres',sets:[{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:17.5,reps:8,type:'working'}]}
+    ],duration:0},
+    {id:'abcd02_c',date:'2026-02-24',program:'ABCD02',day:'C',exercises:[
+      {name:'Rosca Scott Maquina',sets:[{weight:70,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:60,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
+      {name:'Rosca Direta',sets:[{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'},{weight:50,reps:10,type:'working'}]},
+      {name:'Rosca Alternada',sets:[{weight:25,reps:8,type:'working'},{weight:25,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'},{weight:27.5,reps:8,type:'working'}]},
+      {name:'Triceps Corda',sets:[{weight:67.5,reps:10,type:'working'},{weight:65,reps:10,type:'working'},{weight:62.5,reps:10,type:'working'},{weight:60,reps:10,type:'working'}]},
+      {name:'Triceps Testa',sets:[{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'}]},
+      {name:'Triceps Frances Unilateral',sets:[{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'},{weight:30,reps:8,type:'working'}]}
+    ],duration:0},
+    {id:'abcd02_d',date:'2026-02-24',program:'ABCD02',day:'D',exercises:[
+      {name:'Agachamento Hack',sets:[{weight:15,reps:10,type:'warmup'},{weight:20,reps:10,type:'warmup'},{weight:25,reps:12,type:'working'},{weight:30,reps:10,type:'working'},{weight:35,reps:8,type:'working'}]},
+      {name:'Cadeira Extensora',sets:[{weight:80,reps:10,type:'working'},{weight:90,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:110,reps:10,type:'working'},{weight:55,reps:10,type:'working'}]},
+      {name:'Cadeira Abdutora',sets:[{weight:240,reps:12,type:'working'},{weight:245,reps:12,type:'working'},{weight:250,reps:12,type:'working'},{weight:255,reps:12,type:'working'}]},
+      {name:'Cadeira Flexora',sets:[{weight:90,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:110,reps:10,type:'working'},{weight:120,reps:10,type:'working'}]},
+      {name:'Panturrilha Press',sets:[{weight:230,reps:20,type:'working'},{weight:230,reps:15,type:'working'},{weight:235,reps:10,type:'working'}]}
+    ],duration:0}
+  );
+  }
   if(data.customPrograms.ABCD14){saveData();return;}
   data.customPrograms.ABCD14={days:{
     A:{ex:[
@@ -1486,8 +1568,9 @@ function getAllExerciseNames(){
   }
   // Also include abs routine exercises
   for(const ak in ABS_ROUTINES){ABS_ROUTINES[ak].ex.forEach(e=>names.add(e[0]))}
-  // Include substitution exercises
-  SUBS_DATA.forEach(g=>g.subs.forEach(c=>c.ex.forEach(n=>names.add(n))));
+  // Include substitution exercises (excluding deleted)
+  const delSubs=new Set(data.deletedSubs||[]);
+  SUBS_DATA.forEach(g=>g.subs.forEach(c=>c.ex.forEach(n=>{if(!delSubs.has(n))names.add(n)})));
   // Include custom program exercises
   for(const pid in data.customPrograms){
     const cp=data.customPrograms[pid];
@@ -2635,11 +2718,12 @@ function toggleFav(name){
 function renderSubs(){
   const search=(document.getElementById('subSearch').value||'').toLowerCase();
   const userLinks=data.subLinks||{};
+  const deleted=new Set(data.deletedSubs||[]);
   let html='';
   SUBS_DATA.forEach((group,gi)=>{
     let groupExes=[];
     group.subs.forEach(sub=>{
-      const filtered=search?sub.ex.filter(e=>e.toLowerCase().includes(search)):sub.ex;
+      const filtered=sub.ex.filter(e=>!deleted.has(e)&&(!search||e.toLowerCase().includes(search)));
       if(filtered.length)groupExes.push({cat:sub.cat,ex:filtered});
     });
     if(!groupExes.length)return;
@@ -2657,14 +2741,32 @@ function renderSubs(){
             const link=SUB_LINKS[e]||userLinks[key]||'';
             return `<div class="sub-item">
               <span>${e}</span>
-              ${link?`<a class="sub-link-btn" href="${link}" target="_blank" rel="noopener">Video</a>`:``}
+              <span style="display:flex;gap:4px;align-items:center">
+                ${link?`<a class="sub-link-btn" href="${link}" target="_blank" rel="noopener">Video</a>`:``}
+                <span class="sub-del" onclick="deleteSub('${e.replace(/'/g,"\\'")}')">X</span>
+              </span>
             </div>`;
           }).join('')}
         `).join('')}
       </div>
     </div>`;
   });
+  if(deleted.size){
+    html+=`<div class="sub-restore-btn" onclick="restoreAllSubs()">${deleted.size} hidden — tap to restore all</div>`;
+  }
   document.getElementById('subsList').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No matches</div>';
+}
+function deleteSub(name){
+  if(!data.deletedSubs)data.deletedSubs=[];
+  if(!data.deletedSubs.includes(name))data.deletedSubs.push(name);
+  saveData();renderSubs();
+  toast('Removed: '+name);
+}
+function restoreAllSubs(){
+  if(!confirm('Restore all hidden substitutions?'))return;
+  data.deletedSubs=[];
+  saveData();renderSubs();
+  toast('All substitutions restored');
 }
 
 function addSubLink(key,name){
@@ -2745,13 +2847,14 @@ function openSwapModal(ei){
       if(e[2]===muscle&&e[0]!==ex.name)options.add(e[0]+'|'+e[1]);
     });
   }
-  // Also include substitution exercises from Library
+  // Also include substitution exercises from Library (excluding deleted)
+  const deleted=new Set(data.deletedSubs||[]);
   const muscleMap={chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs'};
   const subsMuscleName=muscleMap[muscle]||muscle;
   SUBS_DATA.forEach(g=>{
     if(g.muscle===subsMuscleName||g.muscle==='Legs (Full)'&&(muscle==='quads'||muscle==='hamstrings'||muscle==='glutes')){
       g.subs.forEach(s=>s.ex.forEach(name=>{
-        if(name!==ex.name&&name!==ex.nameEn)options.add(name+'|'+name);
+        if(name!==ex.name&&name!==ex.nameEn&&!deleted.has(name))options.add(name+'|'+name);
       }));
     }
   });
