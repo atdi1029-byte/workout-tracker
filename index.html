@@ -92,7 +92,10 @@ body{padding-bottom:70px}
 
 /* EXERCISE CARD (WORKOUT) */
 .ex-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
-.ex-card.all-done{border-color:rgba(74,170,106,0.3)}
+.ex-card.all-done{border-color:rgba(74,170,106,0.3);max-height:48px;overflow:hidden;opacity:0.5;cursor:pointer;transition:max-height 0.3s,opacity 0.3s;padding:10px 14px}
+.ex-card.all-done .ex-done-label{display:inline}
+.ex-card.all-done.expanded{max-height:800px;opacity:1;padding:14px}
+.ex-done-label{display:none;color:var(--green);font-size:0.75rem;margin-left:8px}
 .ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .ex-name{font-size:0.9rem;font-weight:600;color:var(--text-bright)}
 .ex-name-en{font-size:0.7rem;color:var(--text-dim)}
@@ -1099,6 +1102,33 @@ let currentPrMuscle = 'all';
 let currentLibMuscle = 'all';
 
 // ── HELPERS ──
+// ── SYNC ──
+const SYNC_ENDPOINT = ''; // Set Apps Script URL to enable cloud sync
+function fireGet(url){const img=new Image();img.src=url}
+function syncToCloud(){
+  if(!SYNC_ENDPOINT)return;
+  try{
+    const payload={logs:data.logs.slice(-50),prs:data.prs,activeProgram:data.activeProgram,customPrograms:data.customPrograms};
+    const encoded=encodeURIComponent(JSON.stringify(payload));
+    if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encoded)}
+    else{
+      // Chunk: just send recent logs + PRs
+      const small={logs:data.logs.slice(-20),prs:data.prs,activeProgram:data.activeProgram};
+      fireGet(SYNC_ENDPOINT+'?action=save_workout&data='+encodeURIComponent(JSON.stringify(small)));
+    }
+  }catch(e){console.warn('Sync failed',e)}
+}
+function loadFromCloud(){
+  if(!SYNC_ENDPOINT)return;
+  fetch(SYNC_ENDPOINT+'?action=load_workout').then(r=>r.json()).then(d=>{
+    if(d&&d.logs&&d.logs.length>data.logs.length){
+      data.logs=d.logs;data.prs=d.prs||data.prs;
+      if(d.customPrograms)data.customPrograms=d.customPrograms;
+      saveData();toast('Synced from cloud');renderHome();
+    }
+  }).catch(()=>{});
+}
+
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
 function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
@@ -1377,10 +1407,10 @@ function renderExerciseCards(){
     const lastLog=getLastLog(ex.name);
     const techLabel=TECH_LABELS[ex.technique]||ex.technique;
 
-    html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}">
+    html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
         <div>
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name">${ex.name}<span class="ex-done-label">&#10003; DONE</span></div>
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
       </div>
@@ -1595,6 +1625,7 @@ function finishWorkout(){
   });
 
   saveData();
+  syncToCloud();
   currentWorkout=null;
   workoutStartTime=null;
   skipRest();
@@ -2121,6 +2152,7 @@ function importATH(){
 loadData();
 initCustomABCD14();
 renderHome();
+loadFromCloud();
 if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js')}
 
 </script>
