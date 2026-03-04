@@ -184,11 +184,18 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .lib-mode-tabs{display:flex;gap:6px;margin-bottom:12px}
 .lib-mode-tab{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;font-size:0.8rem;color:var(--text-dim);cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;text-align:center}
 .lib-mode-tab.active{background:linear-gradient(135deg,var(--iron-deep),var(--iron));border-color:var(--iron);color:#fff}
-.sub-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
-.sub-card .sub-name{font-size:0.9rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
-.sub-card .sub-original{font-size:0.7rem;color:var(--iron);margin-top:2px}
-.sub-card .sub-link{display:inline-block;margin-top:6px;font-size:0.75rem;color:var(--green);text-decoration:none;border:1px solid var(--green);border-radius:var(--radius-sm);padding:3px 10px}
-.sub-card .sub-delete{float:right;background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;padding:0 4px}
+.sub-group{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,0.3);overflow:hidden}
+.sub-group-head{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.sub-group-head .sub-muscle{font-size:0.95rem;font-weight:700;color:var(--text-bright);font-family:'Playfair Display',serif;text-transform:uppercase;letter-spacing:1px}
+.sub-group-head .sub-count{font-size:0.7rem;color:var(--text-dim)}
+.sub-group-head .sub-arrow{color:var(--text-dim);transition:transform 0.2s}
+.sub-group.expanded .sub-arrow{transform:rotate(90deg)}
+.sub-group-body{display:none;padding:0 14px 12px}
+.sub-group.expanded .sub-group-body{display:block}
+.sub-subcat{font-size:0.7rem;font-weight:700;color:var(--iron);text-transform:uppercase;letter-spacing:1px;margin:10px 0 6px;padding-top:8px;border-top:1px solid var(--border)}
+.sub-subcat:first-child{border-top:none;margin-top:4px}
+.sub-item{font-size:0.8rem;color:var(--text);padding:4px 0;display:flex;justify-content:space-between;align-items:center}
+.sub-item .sub-link-btn{font-size:0.65rem;color:var(--green);text-decoration:none;border:1px solid rgba(106,136,112,0.3);border-radius:var(--radius-sm);padding:2px 8px}
 
 /* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:200;display:none;justify-content:center;align-items:flex-end}
@@ -2172,6 +2179,220 @@ function renderLibrary(){
 function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
 
 // ── LIBRARY: SUBSTITUTIONS TAB ──
+const SUBS_DATA=[
+{muscle:'Chest',subs:[
+{cat:'Upper',ex:['Reeves Chest Fly (Upper)','Standing Incline Fly','Incline Dumbbell Fly','Reverse Grip Incline Dumbbell Press','Neutral Grip Incline Dumbbell Press','Neutral To Twisting Dumbbell Press','Reverse Grip Bench Press Barbell','Reverse Grip Bench Press Incline (Smith)','Guillotine Press','Low-Incline Guillotine Press','Vince Gironda Neck Press','Incline Seated Cable Fly Supinated','Incline Cable Press','21 Flys (High, Mid, Low)','Maltese Fly']},
+{cat:'Mid / Inner / Outer',ex:['Dumbbell Fly on Floor','Dumbbell Flyes Straight-Arm (High Rep)','Hex Press Dumbbell','Hex Press Single Dumbbell','Wide Grip Bench Press','Paused Bench Press','Pullover Press','Floor Press (Barbell)','Floor Press (Dumbbell)','Smith Machine Flat Bench','Bench Holds','Dead Press','Pin Press','Close Grip Bench (Inner Chest)','Bayesian Cable Fly','Serratus Dip']},
+{cat:'Lower',ex:['High To Low Seated Incline Cable Fly','Cable Cross Over','Decline Cable Chest Press','Dip Machine','Gironda Dip','Decline Fly','Decline Smith Machine Bench','Decline Bench Press']}
+]},
+{muscle:'Back',subs:[
+{cat:'Barbell / EZ Bar',ex:['Barbell Pullover (Lying Horizontal)','Bridged Barbell Pullover','Decline Pullover','Floor Pullover','Chest Supported Barbell Row (Pronated)','Chest Supported Barbell Row (Supinated)','Snatch Grip Chest Supported Row','Jefferson Curl (Kettlebell, Deficit)','Pendlay Row','Zercher Back Extension','Deficit Barbell Rows','Hater Row','Smith Machine Row','Smith Machine Incline Rows','Snatch-Grip Rack Pull','Snatch Grip Deadlift']},
+{cat:'Cable',ex:['High Cable Row','Rope Lat Pulldown','Lying Incline Straight Arm Pulldown','1 Arm Lat Pulldown','Dante Row / Rounded Back Cable Row','Knee Single Arm Low Row','Behind The Neck Pulldown','Y Fly','Cable Row with Rope','Lying Cable Pullover','Incline Straight Arm Pulldown','Super ROM Kneeling Lat Pulldown','Rope Straight Arm Pulldown','Rope Crossover Seated Row','Seated High Cable Row','Close Grip Pulldown (Chinup)','Seated Wide-Grip Rows','Supinated Wide Grip Pulldown','Reverse Grip Triangle Row','Rope Spread Arm Pulldown']},
+{cat:'Machine',ex:['Seated Machine Row (Close Grip)','Articulated Pulldown Machine','Kelso Shrug (Chest Supported)']},
+{cat:'Dumbbell',ex:['Incline Close Grip Row','Incline Reverse Grip Dumbbell Row','Humble Row','Bent Over Dumbbell Row (Pronated)','Bent Over Dumbbell Row (Supinated)','Dead Stop Dumbbell Row']},
+{cat:'T-Bar / Trap Bar',ex:['1 Arm Landmine Row','T Bar Row With Attachment','Trap Bar Row','T Bar Row Wide Grip']},
+{cat:'Body Weight',ex:['Weighted Chin Ups','Neutral Grip Pull Up','Behind The Neck Pullups','Weighted Pull Ups Rope','Weighted Dead Hang','One-Arm Assisted Pull-Up','Muscle Up']}
+]},
+{muscle:'Shoulders',subs:[
+{cat:'Barbell / EZ Bar',ex:['Overhead Press Barbell (Standing)','Seated Barbell Shoulder Press','Behind The Back Shoulder Press (Standing)','Behind The Back Shoulder Press (Seated)','Rocky Press','EZ Bar Upright Rows','Smith Machine Upright Row','Smith Machine Overhead Press (Seated)','Reeves Front Raise','EZ Bar Underhand Press','Ad Press','Reeves Deadlift (Wide Grip Lateral)','Bent Over Rear Delt Extension Barbell','Barbell Upright Row','Barbell Facepull','Smith Machine Behind The Neck Press','Barbell Cuban Press','Hang Clean And Press','Chest Supported EZ Bar Row']},
+{cat:'Cable',ex:['Rope Upright Row (Rear Delt)','Facepulls','Low Pulley Bent Over Lateral Raise','Behind The Back Upright Row Cable','Lying Cable Lateral']},
+{cat:'Dumbbell',ex:['Dumbbell Standing Palms In Press','Around The Worlds','Lu Lateral Raise (Plates)','Kettlebell Shoulder Press','1 Arm Dumbbell Press','Thumbs Down Lateral Raises','Lying Front Reverse Fly Incline (Rear)','Lying Side Lateral Raise','Incline Dumbbell Y Raise','Dumbbell Upright Row','Incline Cuban Press','Skier','Dumbbell Push Away']},
+{cat:'Trap Bar / T-Bar',ex:['Trap Bar Overhead Press','T Bar Shoulder Press','Half-Kneeling Landmine Press']},
+{cat:'Machine',ex:['Hammer Shoulder Press Machine','Standing Viking Press','Single Arm Viking Press']},
+{cat:'Body Weight',ex:['Bodyweight Shoulder Press (Handstand)','Tiger\'s Bend']}
+]},
+{muscle:'Traps',subs:[
+{cat:'All',ex:['Kettlebell Upright Row','Shrugs','Power Shrugs','Overhead Shrug','Trap Bar Shrug','Smith Machine Shrug']}
+]},
+{muscle:'Biceps',subs:[
+{cat:'Barbell / EZ Bar',ex:['Reverse Barbell Curls','Barbell Curls (Wide Grip)','Standing Barbell Concentration Curl','Drag Curl EZ Bar','Seated EZ Barbell Curl','Seated Barbell Curl','Hammer Bar Curl','Strict EZ Bar Curls','Reverse Preacher Curl','Creature Curl','Concentration Hammer Curl']},
+{cat:'Cable',ex:['Reverse Curl Cable','Bayesian Curl','Seated Cable Concentration Curl','Cable Drag Curl','Seated Incline Cable Curl','Lying Cable Curl','Lateral Pulldown Bicep Curl','One Arm Behind The Back Curls','Single Arm Rope Cable Curls','Kneeling Cable Preacher Curl','Supinated Chest To Bar Lat Pulldown']},
+{cat:'Dumbbell',ex:['Pinwheel Curl','Single Arm Preacher Curl','Leaning Incline Bicep Curl','Preacher Hammer Curl Two Hand','Meadows Curl','21s','Supinated Incline Curl']}
+]},
+{muscle:'Triceps',subs:[
+{cat:'Barbell / EZ Bar',ex:['Tricep Testa (Floor Style)','Smith Machine Seated Overhead Tricep Extension','Smith Machine Incline Tricep Extension','Smith Machine JM Press','Incline Close Grip Bench Press','Reverse Grip Skull Crusher','Tricep Barbell Kickback','Neutral Grip Overhead Extensions (Hammer Bar)','Hammer Bar Close Grip Bench Press','Smith Machine Close Grip Bench Press','Elbows Out Tricep Press']},
+{cat:'Cable',ex:['Pushdown Facing Away','Single Cable Extension','Incline Tricep Pushdown','Katana Tricep Extension','Cable Concentration Tricep','Cross-Body Cable Extensions','Tricep Frances Cable Closer Grip (Seated)','Long Rope Tricep Extension','Tricep Pulldown 21s','Behind The Back Tricep Pushdown','Reverse Grip Pushdown']},
+{cat:'Dumbbell',ex:['Lying Cross Face Extension','Dumbbell Tate Press','Incline Two Dumbbell Extension','Dumbbell Kickbacks Lying','Decline Tricep Skull Crusher','Rolling Dumbbell Tricep Extension','Incline Rolling Tricep Extension','Dumbbell JM Press','Kettlebell Tricep Extensions','Lying Tricep Kettlebell Extensions']},
+{cat:'Body Weight',ex:['Weighted Behind The Back Dips','Tricep Extension Dip / Impossible Dip']},
+{cat:'Machine',ex:['Tricep Machine Articulada','Tricep Machine Pin Loaded']}
+]},
+{muscle:'Forearms',subs:[
+{cat:'All',ex:['Behind The Back Wrist Curl (Supinated) Barbell','Dumbbell Finger Wrist Curl','T-Bar Forearm Curl','Wrist Curl (Supinated)','Barbell Reverse Wrist Curl','Behind-The-Back Cable Wrist Curl','Neutral Grip Dumbbell Wrist Curl','Finger Curl','Ulnar Deviation','Radial Deviation','Book Finger Curl (Dumbbell)','Forearm Sledgehammer EZ Bar']}
+]},
+{muscle:'Legs (Full)',subs:[
+{cat:'Barbell',ex:['Feet Forward Close Stance Squats','Heel Elevated Near Stance Squat','Front Squat','Lateral Split Squat','Smith Machine Step Up','Smith Machine Bulgarian','Zercher Squat','Zercher Deadlift','Cyclist Squat','Frankenstein Squat','Sumo Deadlift','Barbell Walking Lunges','Zercher Lunge']},
+{cat:'Machine',ex:['Reverse Lunge (Deadlift Machine)','Step Up On V Squat','Unilateral Leg Press']},
+{cat:'Dumbbell',ex:['Dumbbell Step Up','Dumbbell Sumo Squat','Deficit Dumbbell Sumo Squat','Avanço Dumbbell Deficit','Dumbbell Squat']},
+{cat:'Trap Bar / T-Bar',ex:['Belt Squat with Dip Belt','T-Bar Reverse Lunge','Deficit Trap Bar','T-Bar Squat (Behind Back)','Landmine Goblet Squat']}
+]},
+{muscle:'Quads',subs:[
+{cat:'Barbell',ex:['Deep Knee Squat','Hackenschmidt Style Squat','Squat Tom Platz Style','Vince Gironda Hack Slide','Smith Machine Deficit Split Squat','Smith Machine Sissy Squat','Smith Machine Bulgarian Split Squat','Heel Elevated Hack Deadlift','Behind The Back Romanian Deadlift','Somersault Squat']},
+{cat:'Dumbbell',ex:['Reverse Nordic','Dumbbell Sissy Squats','Sissy Squat Against The Wall','Alternative Sissy Squat','Kickstand Squat','Kettlebell Face The Wall Hack Squat']},
+{cat:'Machine',ex:['Leg Extension with Pad','V Squat (Feet Forward / Quads)','Glute Press (Reclined / Hack Squat)']},
+{cat:'Trap Bar / T-Bar',ex:['Heel Elevated Trap Bar Deadlift','Landmine Sissy Squat','Kickstand Squat Trap Bar']}
+]},
+{muscle:'Hamstrings',subs:[
+{cat:'Barbell',ex:['Seated Good Morning','Single Leg Good Morning','Decline Smith Machine Lunge']},
+{cat:'Machine',ex:['Hamstring Hyperextension','45 Degree Back Raise','GHD Machine','Razor Curl','Single Leg Curl','Mesa Flexora','Hip Extension (GluteBuilder) Hamstring','V Squat Good Morning']},
+{cat:'Dumbbell',ex:['Single Leg Romanian Deadlift','Toe Elevated Dumbbell Romanian Deadlift','Nordic Curl','Dumbbell Lateral Lunge','B Stance Romanian Deadlifts','Wrapped Barbell Romanian Deadlift']},
+{cat:'Cable',ex:['Cable Romanian Deadlift (Low Cable, Long Bar)']},
+{cat:'T-Bar / Trap Bar',ex:['Landmine RDL','Trap Bar Romanian Deadlift']}
+]},
+{muscle:'Glutes',subs:[
+{cat:'All',ex:['Barbell Hip Thrust','Hip Thruster Machine','Hip Thruster (Glute Builder)','Frog Pumps','Glute Kickback (Pulley)','Glute Kickback Machine','V Squat (Facing Machine / Glutes)','Hip Extension (GluteBuilder)','Side Bend Romanian Deadlift','Zercher Reverse Lunge']}
+]},
+{muscle:'Calves',subs:[
+{cat:'All',ex:['Calves on Leg Press','Tibialis Curl','Hack Squat Calf Raise','Tibialis Raises Against Wall','Dumbbell Calf Jump','V Squat Calf Raise']}
+]},
+{muscle:'Neck',subs:[
+{cat:'All',ex:['Neck Curls','Neck Extension']}
+]},
+{muscle:'Abs',subs:[
+{cat:'All',ex:['Weighted Crunches','Lower Ab Raises','GHD Sit-Up','Stomach Vacuum','Bench Kickbacks']}
+]},
+{muscle:'Olympic Weightlifting',subs:[
+{cat:'All',ex:['Push Press','Hang Power Clean','Clean and Press']}
+]},
+{muscle:'Old Time Lifts',subs:[
+{cat:'All',ex:['Barbell 1 Arm Snatch','Arthur Lift Clean And Press','Bent Press','Deficit Handstand Pushup','Windmill','One Hand Deadlift','Kelly Snatch']}
+]},
+{muscle:'Rings',subs:[
+{cat:'All',ex:['Weighted Ring Push Ups','Weighted Ring Dips','Weighted Body Weight Fly','Pull Ups']}
+]},
+{muscle:'Maybe',subs:[
+{cat:'All',ex:['Barbell Turns','Hanging Barbell Sissy Squat Dip Belt','Behind The Neck Triangle Pulldown Curl','Herculean Press','Shotgun Row','Incline Cable Row','Hercules Curl','Cable Pulldown Biceps Curl','Zottman Curl','Cable Concentration Tricep Extension','Jefferson Squat','Dumbbell Goblet Curtsey Lunge','Barbell Lateral Lunge','Barbell Seated Calf Raise','Waiter Curl','Reverse Grip Tricep Pushdown','Lying High Pulley Close Grip Cable Curl','Barbell Side Bends','Thibaudeau Kayak Row','Incline Bench Cable Row','Z Press','Bradford Press','Smith Machine Seated Z Press','Sled Pushing','Crush Press','Dip Belt Cable Hack Squat','Cuban Shoulder Press','Seated Incline Cable Curl','Gironda Supine Bench Curl','Jefferson Deadlift','Pancake Good Morning','Cossack Squats','Weighted Inverted Row','Trap 3 Raise','Single-Arm Cable Shoulder Press','Keenan Flap','Rack Chins','Hanging Serratus Crunch','Chest Supported Incline Shrug','Reverse Hyper on GHD','Rocking Pulldown','Spoto Press','Wide-Grip Floor Press','Shovel Deadlifts','Cable Split Squat','Scott Press']}
+]}
+];
+const SUB_LINKS={
+'Standing Incline Fly':'https://youtu.be/MOa-5pL3B2w?t=7m36s',
+'Reverse Grip Incline Dumbbell Press':'https://fitnessprogramer.com/exercise/reverse-grip-incline-dumbbell-press/',
+'Neutral Grip Incline Dumbbell Press':'https://www.muscleandstrength.com/exercises/palms-in-incline-dumbbell-bench-press.html',
+'Incline Seated Cable Fly Supinated':'https://youtu.be/BR8XAwQ02eg?t=26m16s',
+'Incline Cable Press':'https://www.muscleandstrength.com/exercises/incline-cable-chest-press',
+'Maltese Fly':'https://youtu.be/EE3Bp-wfhgY?t=2m26s',
+'Dead Press':'https://youtu.be/tPc52rxOo_0',
+'Bayesian Cable Fly':'https://youtu.be/HtV1FIPyTEw?si=JwoW-pZHWGTkLgpp&t=344',
+'Serratus Dip':'https://youtu.be/WqG5AtxhHV4?t=37s',
+'Decline Cable Chest Press':'https://www.muscleandstrength.com/exercises/decline-cable-chest-press',
+'Decline Fly':'https://youtu.be/BR8XAwQ02eg',
+'Decline Smith Machine Bench':'https://www.muscleandstrength.com/exercises/decline-smith-machine-bench-press.html',
+'Bridged Barbell Pullover':'https://youtube.com/shorts/VpQgqo_2Dyc?si=IUk4V3WqOkr55U7M',
+'Floor Pullover':'https://youtu.be/AO095d56KCA?t=3m18s',
+'Deficit Barbell Rows':'https://youtu.be/EHlp_60x15A?t=16m6s',
+'Hater Row':'https://youtu.be/66FS2mZv6TA',
+'Smith Machine Row':'https://youtu.be/I23SQqH50qA?t=15m20s',
+'Smith Machine Incline Rows':'https://youtu.be/iZG_HnWApBg?t=2m14s',
+'High Cable Row':'https://youtu.be/vms29bCmsZk?t=1m13s',
+'Dante Row / Rounded Back Cable Row':'https://youtu.be/vOpbIbNj75w',
+'Knee Single Arm Low Row':'https://youtu.be/aetDaN5ZJLc?t=14m27s',
+'Y Fly':'https://youtu.be/sGcyMtiTJfE?t=3m8s',
+'Cable Row with Rope':'https://youtu.be/yfJ88n16AZs?t=5m1s',
+'Lying Cable Pullover':'https://www.muscleandstrength.com/exercises/lying-cable-pullover.html',
+'Incline Straight Arm Pulldown':'https://youtu.be/nUr7ZRSxWZw',
+'Super ROM Kneeling Lat Pulldown':'https://youtu.be/9B-5irFdB3c?si=BMO3FCPA5tj9HEHl&t=338',
+'Rope Straight Arm Pulldown':'https://www.muscleandstrength.com/exercises/rope-straight-arm-pull-down',
+'Rope Crossover Seated Row':'https://www.muscleandstrength.com/exercises/rope-crossover-seated-row.html',
+'Seated High Cable Row':'https://www.muscleandstrength.com/exercises/seated-high-cable-row.html',
+'Rope Spread Arm Pulldown':'https://youtu.be/t4b2BqXFgiA?t=29s',
+'Kelso Shrug (Chest Supported)':'https://youtu.be/qpRGnTTcLpo?t=12m42s',
+'Incline Reverse Grip Dumbbell Row':'https://fitnessprogramer.com/exercise/incline-reverse-grip-dumbbell-row/',
+'Humble Row':'https://youtu.be/didU4ZwAkPI?si=p2PWqDcfL-cmyNp4&t=182',
+'T Bar Row With Attachment':'https://youtu.be/ctCQnn84ZWg?t=6m38s',
+'Trap Bar Row':'https://youtu.be/lXl8AsZdeqU?t=14m48s',
+'Rocky Press':'https://www.muscleandstrength.com/exercises/standing-alternating-front-back-barbell-press.html',
+'EZ Bar Upright Rows':'https://youtube.com/shorts/2HAO0BjWELc',
+'Ad Press':'https://youtu.be/puxOweptIMs?t=8s',
+'Bent Over Rear Delt Extension Barbell':'https://youtu.be/OMg8GlND-V4',
+'Barbell Cuban Press':'https://youtu.be/zz2TVir1IkY',
+'Hang Clean And Press':'https://youtu.be/r09pi6exuRM?t=35m25s',
+'Chest Supported EZ Bar Row':'https://youtu.be/XRpbCDUc3cY?t=8m52s',
+'Rope Upright Row (Rear Delt)':'https://youtu.be/k8IwhjE8rHQ?si=BPe0aEw2W6YQRea8&t=262',
+'Behind The Back Upright Row Cable':'https://youtube.com/shorts/I9yfkHiIDTk?si=6muiPkz6fbJxusjC',
+'Lying Cable Lateral':'https://youtu.be/eB2uZmRQU3U?t=7m50s',
+'Dumbbell Standing Palms In Press':'https://fitnessprogramer.com/exercise/dumbbell-standing-palms-in-press/',
+'Incline Dumbbell Y Raise':'https://youtu.be/qpRGnTTcLpo?t=6m30s',
+'Skier':'https://youtu.be/QIlqkkJPGzc?t=27m30s',
+'Dumbbell Push Away':'https://youtu.be/U8QEt_dEFsc',
+'Standing Barbell Concentration Curl':'https://fitnessprogramer.com/exercise/standing-barbell-concentration-curl/',
+'Reverse Preacher Curl':'https://youtu.be/h43bxdtriTo?t=13m31s',
+'Creature Curl':'https://youtu.be/LRu0-VuxDTE',
+'Reverse Curl Cable':'https://youtube.com/shorts/wNPIxoAASR8',
+'Seated Cable Concentration Curl':'https://fitnessprogramer.com/exercise/cable-concentration-curl/',
+'Cable Drag Curl':'https://youtu.be/dkZM6Eia9ig?t=16m21s',
+'Lying Cable Curl':'https://youtu.be/VPHGcZuXT30?t=4m',
+'Lateral Pulldown Bicep Curl':'https://www.muscleandstrength.com/exercises/cable-underhand-pull-down.html',
+'Kneeling Cable Preacher Curl':'https://youtu.be/GK8uh6lhJ2o',
+'Leaning Incline Bicep Curl':'https://youtu.be/_ryi82eaXZY?t=1m35s',
+'Preacher Hammer Curl Two Hand':'https://www.muscleandstrength.com/exercises/dumbbell-hammer-preacher-curl.html',
+'Meadows Curl':'https://youtu.be/h43bxdtriTo?t=18m26s',
+'Supinated Incline Curl':'https://youtu.be/sTiPOb1q14U?t=39s',
+'Smith Machine Incline Tricep Extension':'https://www.muscleandstrength.com/exercises/smith-machine-incline-tricep-extension.html',
+'Incline Close Grip Bench Press':'https://youtu.be/QxyqZvuxFVU?t=4m56s',
+'Reverse Grip Skull Crusher':'https://youtu.be/MH0UZ_K8VXI?t=3m1s',
+'Tricep Barbell Kickback':'https://youtu.be/l6zs_I2Fkz4?t=1m',
+'Elbows Out Tricep Press':'https://youtu.be/MNElwXXgqqY',
+'Single Cable Extension':'https://youtu.be/42O_0GXU9Qk?t=6m12s',
+'Katana Tricep Extension':'https://youtu.be/DJIfRSKg3A8',
+'Cable Concentration Tricep':'https://www.muscleandstrength.com/exercises/cable-concentration-tricep-extension.html',
+'Tricep Pulldown 21s':'https://youtu.be/p4Vpj9psAQM?t=7s',
+'Reverse Grip Pushdown':'https://youtu.be/kuSFFIY4MpU',
+'Incline Two Dumbbell Extension':'https://youtu.be/d24nAtn8w4E?t=13m43s',
+'Dumbbell Kickbacks Lying':'https://youtube.com/shorts/7Bsycq9MT8w',
+'Decline Tricep Skull Crusher':'https://youtu.be/4xy47xdQo5w?t=12m59s',
+'Incline Rolling Tricep Extension':'https://youtu.be/mf-FsBTR5VU?t=7m18s',
+'Kettlebell Tricep Extensions':'https://youtu.be/bTzJTIM0NpI',
+'Lying Tricep Kettlebell Extensions':'https://youtu.be/d24nAtn8w4E?t=10m33s',
+'Weighted Behind The Back Dips':'https://youtu.be/d24nAtn8w4E?t=10m33s',
+'Dumbbell Finger Wrist Curl':'https://youtu.be/rwMB5Ef6Cmo',
+'T-Bar Forearm Curl':'https://youtu.be/rwMB5Ef6Cmo?t=1m47s',
+'Wrist Curl (Supinated)':'https://fitnessprogramer.com/exercise/wrist-curl/',
+'Behind-The-Back Cable Wrist Curl':'https://www.muscleandstrength.com/exercises/standing-cable-wrist-curl-%28behind-back%29.html',
+'Neutral Grip Dumbbell Wrist Curl':'https://www.muscleandstrength.com/exercises/neutral-dumbbell-wrist-curl-over-bench.html',
+'Ulnar Deviation':'https://youtu.be/4EkKhkSNjWY?t=8m15s',
+'Forearm Sledgehammer EZ Bar':'https://youtu.be/NkgkfrzEWlc?t=25m15s',
+'Lateral Split Squat':'https://www.muscleandstrength.com/exercises/barbell-side-split-squat.html',
+'Deficit Dumbbell Sumo Squat':'https://youtu.be/Y_qWtwBhuXM?t=48s',
+'T-Bar Reverse Lunge':'https://youtu.be/BCKjKEuNJs4',
+'Landmine Goblet Squat':'https://youtu.be/KmDxX2HbBTs?t=1m35s',
+'Deep Knee Squat':'https://youtube.com/shorts/ThNDluLy5n8?si=Q5yLmJo_x6xyuiiy',
+'Squat Tom Platz Style':'https://youtu.be/UsuiidXASt0?t=12m16s',
+'Vince Gironda Hack Slide':'https://youtu.be/xDwJepdI26g',
+'Smith Machine Sissy Squat':'https://www.youtube.com/watch?v=gqLtMXjJnWw',
+'Smith Machine Bulgarian Split Squat':'https://youtu.be/eB2uZmRQU3U?t=16m3s',
+'Somersault Squat':'https://youtu.be/lszyw2fCJ6M',
+'Alternative Sissy Squat':'https://youtube.com/shorts/vbdKaKoRtkU?si=SnjtC0JX3991GpuI',
+'Kickstand Squat':'https://youtu.be/qNDGW3csJPo?t=19m33s',
+'Landmine Sissy Squat':'https://youtu.be/KmDxX2HbBTs?t=2m48s',
+'Decline Smith Machine Lunge':'https://www.muscleandstrength.com/exercises/decline-bench-barbell-lunge.html',
+'Nordic Curl':'https://youtu.be/zyyslFC-Nso',
+'Dumbbell Lateral Lunge':'https://www.muscleandstrength.com/exercises/dumbbell-side-lunge.html',
+'Wrapped Barbell Romanian Deadlift':'https://youtu.be/eB2uZmRQU3U?t=16m3s',
+'Landmine RDL':'https://www.muscleandstrength.com/exercises/landmine-romanian-deadlift',
+'Hip Extension (GluteBuilder)':'https://www.youtube.com/watch?v=qmRm4PAAyo0',
+'Hip Extension (GluteBuilder) Hamstring':'https://www.youtube.com/watch?v=qmRm4PAAyo0',
+'Tibialis Curl':'https://www.muscleandstrength.com/exercises/banded-tibialis-raise',
+'Tibialis Raises Against Wall':'https://www.muscleandstrength.com/exercises/banded-tibialis-raise',
+'Lower Ab Raises':'https://youtube.com/shorts/HW3ozLasEAg?si=6SfdTtj6utLfOw3H',
+'Herculean Press':'https://youtube.com/shorts/QAyyE832iZw?si=bbwMtnUrjq70hooz',
+'Shotgun Row':'https://fitnessprogramer.com/exercise/shotgun-row/',
+'Incline Cable Row':'https://fitnessprogramer.com/exercise/incline-cable-row/',
+'Cable Pulldown Biceps Curl':'https://fitnessprogramer.com/exercise/cable-pulldown-biceps-curl/',
+'Cable Concentration Tricep Extension':'https://fitnessprogramer.com/exercise/cable-concentration-extension-on-knee/',
+'Dumbbell Goblet Curtsey Lunge':'https://fitnessprogramer.com/exercise/dumbbell-goblet-curtsey-lunge/',
+'Lying High Pulley Close Grip Cable Curl':'https://www.muscleandstrength.com/exercises/lying-high-pulley-close-grip-cable-curl.html',
+'Thibaudeau Kayak Row':'https://www.muscleandstrength.com/exercises/thibaudeau-kayak-row',
+'Incline Bench Cable Row':'https://www.muscleandstrength.com/exercises/incline-bench-cable-row-rope-extension.html',
+'Z Press':'https://www.muscleandstrength.com/exercises/z-press',
+'Smith Machine Seated Z Press':'https://youtu.be/nYU196X6udU',
+'Crush Press':'https://youtu.be/Nt49920XCF8',
+'Dip Belt Cable Hack Squat':'https://youtu.be/l54xDvIFkUc?t=33s',
+'Seated Incline Cable Curl':'https://youtu.be/4H_BEk23f0g?t=6m10s',
+'Gironda Supine Bench Curl':'https://youtu.be/z7wlvKp08uY',
+'Cable Split Squat':'https://youtu.be/alkroQK8YYY',
+'Reverse Nordic':'https://youtu.be/ZoTcJJzhe4g?t=1m27s',
+'Weighted Crunches':'https://youtube.com/shorts/UQqV5ExLLX8'
+};
+
 let currentLibMode='exercises';
 function setLibMode(mode){
   currentLibMode=mode;
@@ -2183,23 +2404,51 @@ function setLibMode(mode){
 }
 
 function renderSubs(){
-  const subs=data.substitutions||[];
   const search=(document.getElementById('subSearch').value||'').toLowerCase();
+  const userLinks=data.subLinks||{};
   let html='';
-  subs.forEach((s,i)=>{
-    if(search&&!s.name.toLowerCase().includes(search)&&!(s.original||'').toLowerCase().includes(search))return;
-    html+=`<div class="sub-card">
-      <button class="sub-delete" onclick="deleteSub(${i})" title="Delete">&times;</button>
-      <div class="sub-name">${s.name}</div>
-      ${s.original?`<div class="sub-original">Replaces: ${s.original}</div>`:''}
-      ${s.link?`<a class="sub-link" href="${s.link}" target="_blank" rel="noopener">Watch Video</a>`:''}
+  SUBS_DATA.forEach((group,gi)=>{
+    let groupExes=[];
+    group.subs.forEach(sub=>{
+      const filtered=search?sub.ex.filter(e=>e.toLowerCase().includes(search)):sub.ex;
+      if(filtered.length)groupExes.push({cat:sub.cat,ex:filtered});
+    });
+    if(!groupExes.length)return;
+    const count=groupExes.reduce((s,c)=>s+c.ex.length,0);
+    html+=`<div class="sub-group" onclick="this.classList.toggle('expanded')">
+      <div class="sub-group-head">
+        <span class="sub-muscle">${group.muscle}</span>
+        <span><span class="sub-count">${count}</span> <span class="sub-arrow">&#9654;</span></span>
+      </div>
+      <div class="sub-group-body" onclick="event.stopPropagation()">
+        ${groupExes.map(sub=>`
+          ${sub.cat!=='All'?`<div class="sub-subcat">${sub.cat}</div>`:''}
+          ${sub.ex.map(e=>{
+            const key=e.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase();
+            const link=SUB_LINKS[e]||userLinks[key]||'';
+            return `<div class="sub-item">
+              <span>${e}</span>
+              ${link?`<a class="sub-link-btn" href="${link}" target="_blank" rel="noopener">Video</a>`:`<button class="sub-link-btn" onclick="addSubLink('${key.replace(/'/g,"\\'")}','${e.replace(/'/g,"\\'")}')" style="color:var(--text-dim);border-color:var(--border)">+ Link</button>`}
+            </div>`;
+          }).join('')}
+        `).join('')}
+      </div>
     </div>`;
   });
-  document.getElementById('subsList').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No substitutions yet. Tap + Add to create one.</div>';
+  document.getElementById('subsList').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No matches</div>';
+}
+
+function addSubLink(key,name){
+  const url=prompt('Paste link for '+name+':');
+  if(!url||!url.trim())return;
+  if(!data.subLinks)data.subLinks={};
+  data.subLinks[key]=url.trim();
+  saveData();
+  renderSubs();
+  toast('Link saved');
 }
 
 function openAddSub(){
-  const names=getAllExerciseNames();
   openModal(`
     <div class="modal-header"><span class="modal-title">Add Substitution</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
     <div style="margin-bottom:10px">
@@ -2207,9 +2456,12 @@ function openAddSub(){
       <input id="subNameInput" class="search-bar" placeholder="e.g. Landmine Press" style="margin-bottom:0">
     </div>
     <div style="margin-bottom:10px">
-      <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Replaces (optional)</label>
-      <input id="subOriginalInput" class="search-bar" placeholder="e.g. Overhead Press" list="subOriginalList" style="margin-bottom:0">
-      <datalist id="subOriginalList">${names.map(n=>`<option value="${n}">`).join('')}</datalist>
+      <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Muscle Group</label>
+      <input id="subMuscleInput" class="search-bar" placeholder="e.g. Chest" style="margin-bottom:0">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Sub-category</label>
+      <input id="subCatInput" class="search-bar" placeholder="e.g. Upper, Cable, Dumbbell" style="margin-bottom:0">
     </div>
     <div style="margin-bottom:14px">
       <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Link (optional)</label>
@@ -2222,22 +2474,26 @@ function openAddSub(){
 function saveSub(){
   const name=document.getElementById('subNameInput').value.trim();
   if(!name){toast('Enter a name');return;}
-  const original=document.getElementById('subOriginalInput').value.trim();
+  const muscle=document.getElementById('subMuscleInput').value.trim()||'Other';
+  const cat=document.getElementById('subCatInput').value.trim()||'All';
   const link=document.getElementById('subLinkInput').value.trim();
-  if(!data.substitutions)data.substitutions=[];
-  data.substitutions.push({name,original:original||'',link:link||''});
+  // Add to custom subs in data
+  if(!data.customSubs)data.customSubs=[];
+  data.customSubs.push({muscle,cat,name});
+  // Merge into SUBS_DATA
+  let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===muscle.toLowerCase());
+  if(!group){group={muscle,subs:[]};SUBS_DATA.push(group);}
+  let subcat=group.subs.find(s=>s.cat.toLowerCase()===cat.toLowerCase());
+  if(!subcat){subcat={cat,ex:[]};group.subs.push(subcat);}
+  if(!subcat.ex.includes(name))subcat.ex.push(name);
+  if(link){
+    if(!data.subLinks)data.subLinks={};
+    data.subLinks[name.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase()]=link;
+  }
   saveData();
   closeModal();
   renderSubs();
-  toast('Substitution added');
-}
-
-function deleteSub(i){
-  if(!data.substitutions)return;
-  data.substitutions.splice(i,1);
-  saveData();
-  renderSubs();
-  toast('Deleted');
+  toast('Added to '+muscle+' > '+cat);
 }
 
 // ── SWAP MODAL ──
