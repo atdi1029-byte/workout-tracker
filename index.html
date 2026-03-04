@@ -518,6 +518,39 @@ function getPattern(name){return MOVEMENT_PATTERNS[name]||''}
 // ── PROGRAMS DATA ──
 // Format: [name, nameEn, muscle, technique, setsReps, restSec]
 const PROGRAMS = {
+ABC01:{name:'ABC01',phase:'acc',type:'ABC',days:{
+  A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
+    ['Supino Reto','Barbell Bench Press','chest','S','2x10wu+4x8-12',80],
+    ['Supino Máquina Inclinado','Incline Machine Press','chest','S','4x8-12',80],
+    ['Crucifixo Adutor na Polia','Cable Flyes','chest','S','4x8-12',60],
+    ['Supino Reto com Halteres','Dumbbell Bench Press','chest','S','4x8-12',60],
+    ['Desenvolvimento com Halteres','Dumbbell Shoulder Press','shoulders','S','4x8-12',60],
+    ['Elevação Lateral e Frontal com Halteres','Side & Front Raises','shoulders','S','4x10 Sequences',60],
+    ['Tríceps Corda','Triceps Rope Pushdown','triceps','AP','20-30/15-20/10-15/5-10',60],
+    ['Tríceps Kickback (Cable)','Cable Triceps Kickback','triceps','Fail','4x10-15',60],
+    ['Abdominal Remador','Crunch','abs','BS','4x20 Bi-Set',0],
+    ['Prancha','Plank','abs','BS','4x30-40s Bi-Set',0]
+  ]},
+  B:{label:'Costas + Ombros + Bíceps + Abs',labelEn:'Back + Shoulders + Biceps + Abs',ex:[
+    ['Puxada','Lat Pulldown','back','S','2x10wu+4x8-12',80],
+    ['Puxada Frente Triângulo','V-Bar Pulldown','back','S','4x8-12',60],
+    ['Remada Unilateral com Halter','One-Arm DB Row','back','S','4x8-12',60],
+    ['Remada Curvada com Barra','Barbell Row','back','S','4x8-12',60],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',45],
+    ['Elevação Unilateral','Single-Arm Lateral Raise','shoulders','S','4x10-15',45],
+    ['Rosca Direta','Barbell Curls','biceps','S','4x8-12',60],
+    ['Bíceps Pulley Corda','Cable Rope Curls','biceps','AP','20-30/15-20/10-15/5-10',60]
+  ]},
+  C:{label:'Pernas + Panturrilhas',labelEn:'Legs + Calves',ex:[
+    ['Agachamento Hack','Hack Squat','quads','S','2x10wu+3x8-12',60],
+    ['Back Squat','Barbell Squat','quads','AP','12-15/10-12/8-10',80],
+    ['Leg 45','Leg Press','quads','S','3x8-12',60],
+    ['Cadeira Extensora','Leg Extension','quads','DS','2x8-12+1xDrop',60],
+    ['Passada com Halteres','Dumbbell Lunges','quads','S','3x20',60],
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','S','3x8-12',60],
+    ['Panturrilha Sentado','Seated Calf Raise','calves','S','6x15',40]
+  ]}
+}},
 ABCD09:{name:'ABCD09',phase:'acc',type:'ABCD',days:{
   A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
     ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
