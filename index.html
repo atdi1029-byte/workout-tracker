@@ -1458,9 +1458,15 @@ function promptStartWeight(exName){
 
 // ── PLATE CALCULATOR ──
 const ALL_PLATES=[45,35,25,10,5,2.5];
+const NO_PLATE_KEYWORDS=/halter|dumbbell|halteres|polia|cable|cabo|pulley|maquina|machine|cadeira|mesa flexora|voador|flexao|apoio|prancha|plank|paralela|abdominal|elevacao|crucifixo|concentrado|coice|kickback|kettlebell|elastico|band|bodyweight|dragon|crunch|canivete|remador|carrinho/i;
+function autoNeedsPlates(exName){
+  const n=exName.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return!NO_PLATE_KEYWORDS.test(n);
+}
 function getNoPlate(){try{return JSON.parse(localStorage.getItem('zercher_noplate')||'{}')}catch(e){return{}}}
 function saveNoPlate(n){localStorage.setItem('zercher_noplate',JSON.stringify(n))}
-function toggleNoPlate(exName){const n=getNoPlate();if(n[exName])delete n[exName];else n[exName]=true;saveNoPlate(n);renderExerciseCards()}
+function showPlateForEx(exName){const np=getNoPlate();if(np[exName]===false)return true;if(np[exName]===true)return false;return autoNeedsPlates(exName)}
+function toggleNoPlate(exName){const n=getNoPlate();const currently=showPlateForEx(exName);n[exName]=currently;saveNoPlate(n);renderExerciseCards()}
 function getPlatePref(){try{return JSON.parse(localStorage.getItem('zercher_platepref')||'{}')}catch(e){return{}}}
 function savePlatePref(p){localStorage.setItem('zercher_platepref',JSON.stringify(p))}
 function getExPlates(exName){return getPlatePref()[exName]||ALL_PLATES.slice()}
@@ -1522,6 +1528,7 @@ function renderPlatePopup(exName,weight){
       ${result.breakdown.length>0?plateVisual(result.breakdown):''}
     </div>
     <button class="plate-bar-btn" style="margin-top:8px;width:100%" onclick="toggleNoPlate('${esc}');document.getElementById('platePopup').remove()">Hide plates for this exercise</button>`;
+
 
   document.body.appendChild(pop);
   setTimeout(()=>{document.addEventListener('click',function closePop(ev){
@@ -2067,12 +2074,20 @@ function initWorkout(){
       return{
         name:e[0],nameEn:e[1],muscle:e[2],technique:e[3],
         targetSets:e[4],restSec:e[5],_baseIdx:idx,_origName:e[0],
-        sets:sets.map((s,i)=>({
-          weight:lastLog&&lastLog.sets[i]?lastLog.sets[i].weight:'',
+        sets:sets.map((s,i)=>{
+          // Match by type: find the i-th warmup or j-th working set in last log
+          let prefillWeight='';
+          if(lastLog){
+            const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
+            const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
+            if(sameType[typeIdx])prefillWeight=sameType[typeIdx].weight;
+          }
+          return{
+          weight:prefillWeight,
           reps:s.reps,
           type:s.type,
           done:false
-        }))
+        };})
       };
     })
   };
@@ -2200,11 +2215,11 @@ function renderExerciseCards(){
     // Set rows
     let wNum=0;
     const exNameEsc=ex.name.replace(/'/g,"\\'");
-    const noPlate=getNoPlate();
+    const exShowPlate=!isAbs&&showPlateForEx(ex.name);
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
-      const showPlate=!isAbs&&!noPlate[ex.name]&&(set.type==='warmup'||wNum===1);
+      const showPlate=exShowPlate&&(set.type==='warmup'||wNum===1);
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':''}">${label}${showPlate?`<button class="plate-label-btn" onclick="event.stopPropagation();showPlatePopup('${exNameEsc}',this.closest('.set-row').querySelector('.set-input').value,event)">&#8960;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
