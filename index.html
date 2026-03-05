@@ -101,8 +101,6 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* PLATE CALCULATOR */
-.plate-btn{background:none;border:none;color:var(--text-dim);font-size:0.85rem;cursor:pointer;padding:2px 4px;margin-left:-2px;line-height:1}
-.plate-btn:active{color:var(--gold)}
 .plate-popup{position:fixed;bottom:70px;left:16px;right:16px;max-width:568px;margin:0 auto;background:rgba(14,16,20,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(160,148,106,0.3);border-radius:var(--radius);padding:16px;z-index:200;box-shadow:0 -4px 24px rgba(0,0,0,0.6);animation:slideUp 0.2s ease}
 .plate-popup-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
 .plate-popup-close{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer}
@@ -2209,17 +2207,14 @@ function renderExerciseCards(){
 
     // Set rows
     let wNum=0;
-    const exNameEsc=ex.name.replace(/'/g,"\\'");
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
-      const showPlate=!isAbs&&(set.type==='warmup'||wNum===1);
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
-          ${showPlate?`<button class="plate-btn" onclick="event.stopPropagation();showPlatePopup('${exNameEsc}',this.parentNode.querySelector('.set-input').value,event)" title="Plate calc">&#8960;</button>`:''}
         </div>`}
         <div class="set-input-group">
           <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onchange="updateSet(${ei},${si},'reps',this.value)">
