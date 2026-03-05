@@ -2647,6 +2647,35 @@ function updateSet(ei,si,field,val){
   if(!currentWorkout)return;
   const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
   currentWorkout.exercises[ei].sets[si][field]=v;
+  if(field==='weight')updatePlateCorner(ei);
+}
+function updatePlateCorner(ei){
+  const ex=currentWorkout.exercises[ei];
+  const card=document.getElementById('ex-'+ei);
+  if(!card)return;
+  let old=card.querySelector('.plate-corner');
+  if(!old)old=card.querySelector('.plate-corner-show');
+  const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
+  if(isAbs||!showPlateForEx(ex.name)){if(old)old.remove();return;}
+  const wuSets=ex.sets.filter(s=>s.type==='warmup');
+  const s1Set=ex.sets.find(s=>s.type==='working');
+  const allWuDone=wuSets.length>0&&wuSets.every(s=>s.done);
+  const s1Done=s1Set&&s1Set.done;
+  let pw=0,pl='';
+  if(!allWuDone&&wuSets.length>0){pw=parseFloat((''+wuSets[0].weight).replace(/,/g,''))||0;pl='WU';}
+  else if(!s1Done&&s1Set){pw=parseFloat((''+s1Set.weight).replace(/,/g,''))||0;pl='S1';}
+  if(pw>0&&pl){
+    const pr=calcPlates(pw,getExPlates(ex.name),isSingleEnd(ex.name));
+    const ps=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
+    if(ps){
+      const esc=ex.name.replace(/'/g,"\\'");
+      const newHtml=`<div class="plate-corner" onclick="event.stopPropagation();showPlatePopup('${esc}','${pw}',event)">${pl}: ${ps}</div>`;
+      if(old)old.outerHTML=newHtml;
+      else{const noteCorner=card.querySelector('.ex-note-corner');if(noteCorner)noteCorner.insertAdjacentHTML('afterend',newHtml);}
+      return;
+    }
+  }
+  if(old)old.remove();
 }
 
 function toggleSet(ei,si){
