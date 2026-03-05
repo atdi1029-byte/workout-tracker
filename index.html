@@ -100,6 +100,29 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .tech-popup-close{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 
+/* PLATE CALCULATOR */
+.plate-btn{background:none;border:none;color:var(--text-dim);font-size:0.85rem;cursor:pointer;padding:2px 4px;margin-left:-2px;line-height:1}
+.plate-btn:active{color:var(--gold)}
+.plate-popup{position:fixed;bottom:70px;left:16px;right:16px;max-width:568px;margin:0 auto;background:rgba(14,16,20,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(160,148,106,0.3);border-radius:var(--radius);padding:16px;z-index:200;box-shadow:0 -4px 24px rgba(0,0,0,0.6);animation:slideUp 0.2s ease}
+.plate-popup-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.plate-popup-close{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer}
+.plate-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:0.8rem;color:var(--text)}
+.plate-bar-row span{color:var(--text-dim);margin-right:4px}
+.plate-bar-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-size:0.75rem;cursor:pointer}
+.plate-bar-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(160,148,106,0.15)}
+.plate-breakdown{margin:8px 0;padding:10px;background:var(--bg-input);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.plate-per-side{font-size:1.05rem;color:var(--text-bright);font-weight:600;margin-bottom:4px}
+.plate-detail{font-size:0.75rem;color:var(--text-dim);margin-top:4px}
+.plate-visual{display:flex;align-items:center;gap:3px;margin-top:8px;justify-content:center}
+.plate-disc{display:flex;align-items:center;justify-content:center;border-radius:3px;font-size:0.6rem;font-weight:700;color:#111;min-width:18px;text-align:center}
+.plate-disc.p45{background:#3a7bd5;height:36px;padding:0 4px}
+.plate-disc.p35{background:#e8c84a;height:32px;padding:0 4px}
+.plate-disc.p25{background:#4caf50;height:28px;padding:0 3px}
+.plate-disc.p10{background:#f5f5f5;height:24px;padding:0 3px}
+.plate-disc.p5{background:#f5f5f5;height:20px;padding:0 2px}
+.plate-disc.p2{background:#f5f5f5;height:16px;padding:0 2px;font-size:0.5rem}
+.plate-bar-vis{width:40px;height:8px;background:var(--iron-deep);border-radius:2px}
+
 /* SET ROWS */
 .set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
 .set-label{font-size:0.75rem;color:var(--iron);min-width:36px}
@@ -1432,6 +1455,77 @@ function promptStartWeight(exName){
   renderExerciseCards();
 }
 
+// ── PLATE CALCULATOR ──
+function getBarWeights(){try{return JSON.parse(localStorage.getItem('zercher_barweights')||'{}')}catch(e){return{}}}
+function saveBarWeights(b){localStorage.setItem('zercher_barweights',JSON.stringify(b))}
+function getBarWeight(exName){return getBarWeights()[exName]??45}
+function setBarWeight(exName,w){const b=getBarWeights();b[exName]=w;saveBarWeights(b)}
+
+function calcPlates(totalWeight,barWeight){
+  const plates=[45,35,25,10,5,2.5];
+  let perSide=Math.round(((totalWeight-barWeight)/2)*10)/10;
+  if(perSide<=0)return{perSide:0,breakdown:[],remainder:0};
+  let rem=perSide;
+  const breakdown=[];
+  for(const p of plates){
+    const count=Math.floor(rem/p);
+    if(count>0){breakdown.push({plate:p,count});rem-=count*p;}
+  }
+  return{perSide,breakdown,remainder:Math.round(rem*10)/10};
+}
+
+function plateVisual(breakdown){
+  const colors={45:'p45',35:'p35',25:'p25',10:'p10',5:'p5',2.5:'p2'};
+  let html='<div class="plate-visual"><div class="plate-bar-vis"></div>';
+  breakdown.forEach(b=>{
+    for(let i=0;i<b.count;i++){
+      html+=`<div class="plate-disc ${colors[b.plate]||'p10'}">${b.plate}</div>`;
+    }
+  });
+  html+='</div>';
+  return html;
+}
+
+function showPlatePopup(exName,weightVal,e){
+  if(e)e.stopPropagation();
+  let pop=document.getElementById('platePopup');
+  if(pop)pop.remove();
+  const weight=parseFloat((weightVal+'').replace(/,/g,''))||0;
+  if(!weight){toast('Enter a weight first');return;}
+  const barW=getBarWeight(exName);
+  renderPlatePopup(exName,weight,barW);
+}
+
+function renderPlatePopup(exName,weight,barW){
+  let pop=document.getElementById('platePopup');
+  if(pop)pop.remove();
+  const result=calcPlates(weight,barW);
+  const presets=[0,25,35,45];
+  pop=document.createElement('div');
+  pop.id='platePopup';pop.className='plate-popup';
+
+  let breakdownStr=result.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ');
+  if(result.remainder>0)breakdownStr+=(breakdownStr?' + ':'')+result.remainder+'?';
+  if(!breakdownStr)breakdownStr='No plates needed';
+
+  pop.innerHTML=`<button class="plate-popup-close" onclick="document.getElementById('platePopup').remove()">&times;</button>
+    <div class="plate-popup-title">Plates: ${exName}</div>
+    <div class="plate-bar-row"><span>Bar:</span>${presets.map(p=>`<button class="plate-bar-btn${barW===p?' active':''}" onclick="setBarWeight('${exName.replace(/'/g,"\\'")}',${p});renderPlatePopup('${exName.replace(/'/g,"\\'")}',${weight},${p})">${p} lbs</button>`).join('')}</div>
+    <div class="plate-breakdown">
+      <div class="plate-per-side">Each side: ${breakdownStr}</div>
+      <div class="plate-detail">${result.perSide} lbs per side</div>
+      <div class="plate-detail">Total: ${barW} bar + 2&times;${result.perSide} = ${weight} lbs</div>
+      ${result.breakdown.length>0?plateVisual(result.breakdown):''}
+    </div>`;
+
+  document.body.appendChild(pop);
+  setTimeout(()=>{document.addEventListener('click',function closePop(ev){
+    if(document.getElementById('platePopup')&&!document.getElementById('platePopup').contains(ev.target)){
+      document.getElementById('platePopup')?.remove();document.removeEventListener('click',closePop);
+    }
+  })},100);
+}
+
 // ── ALT MEMORY ──
 function getAltMemory(){try{return JSON.parse(localStorage.getItem('zercher_alts')||'{}')}catch(e){return{}}}
 function saveAltMemory(m){localStorage.setItem('zercher_alts',JSON.stringify(m))}
@@ -2087,14 +2181,17 @@ function renderExerciseCards(){
 
     // Set rows
     let wNum=0;
+    const exNameEsc=ex.name.replace(/'/g,"\\'");
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
+      const showPlate=!isAbs&&(set.type==='warmup'||wNum===1);
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
+          ${showPlate?`<button class="plate-btn" onclick="event.stopPropagation();showPlatePopup('${exNameEsc}',this.parentNode.querySelector('.set-input').value,event)" title="Plate calc">&#8960;</button>`:''}
         </div>`}
         <div class="set-input-group">
           <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onchange="updateSet(${ei},${si},'reps',this.value)">
