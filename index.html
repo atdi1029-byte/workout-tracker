@@ -4224,6 +4224,7 @@ function renderEditorExercises(){
       <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
       <button class="edit-move" onclick="moveEditorEx(${i},-1)" title="Move up">&#9650;</button>
       <button class="edit-move" onclick="moveEditorEx(${i},1)" title="Move down">&#9660;</button>
+      <button class="edit-move${showPlateForEx(e[0])?' active':''}" onclick="toggleEditorPlate(${i})" title="Plate calc" style="${showPlateForEx(e[0])?'color:var(--gold)':''}">&#8960;</button>
       <button class="edit-del" onclick="deleteEditorEx(${i})" title="Remove">&times;</button>
       <div class="edit-row2">
         <label>EN:</label><input class="edit-field" value="${e[1]}" onchange="editorExercises[${i}][1]=this.value" placeholder="English name">
@@ -4261,6 +4262,14 @@ function deleteEditorEx(i){
     editorExercises.splice(i,1);
     renderEditorExercises();
   }
+}
+function toggleEditorPlate(i){
+  const exName=editorExercises[i][0];
+  const np=getNoPlate();
+  const showing=showPlateForEx(exName);
+  np[exName]=showing;
+  saveNoPlate(np);
+  renderEditorExercises();
 }
 
 function addEditorEx(){
