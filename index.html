@@ -173,6 +173,40 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .start-workout-btn{background:linear-gradient(135deg,var(--iron-deep),var(--iron));color:#fff;border:none;border-radius:var(--radius-sm);padding:16px 44px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:3px;box-shadow:0 4px 16px rgba(128,144,168,0.2)}
 .workout-timer{text-align:center;color:var(--green-bright);font-size:0.85rem;padding:6px 0;margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px}
 
+/* RUNNING TAB */
+.run-header{text-align:center;margin-bottom:14px}
+.run-block-label{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);letter-spacing:1px}
+.run-week-label{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-top:2px}
+.run-week-nav{display:flex;gap:8px;align-items:center;justify-content:center;margin:10px 0}
+.run-week-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.8rem}
+.run-week-btn:disabled{opacity:0.3;cursor:default}
+.run-week-current{font-size:0.9rem;color:var(--text-bright);font-weight:700;min-width:80px;text-align:center}
+.run-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.run-card.completed{border-color:rgba(106,136,112,0.3);opacity:0.6}
+.run-card.completed .run-status{color:var(--green)}
+.run-type-badge{display:inline-block;font-size:0.65rem;padding:2px 10px;border-radius:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;font-family:'Oswald',sans-serif}
+.run-type-badge.easy{background:rgba(106,136,112,0.15);color:var(--green);border:1px solid rgba(106,136,112,0.3)}
+.run-type-badge.speed{background:rgba(160,148,106,0.15);color:var(--gold);border:1px solid rgba(160,148,106,0.3)}
+.run-type-badge.long{background:rgba(128,144,168,0.15);color:var(--iron);border:1px solid rgba(128,144,168,0.3)}
+.run-target{font-size:0.82rem;color:var(--text);margin:8px 0}
+.run-notes{font-size:0.78rem;color:var(--text-dim);font-style:italic;margin-bottom:10px;line-height:1.4}
+.run-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.run-input-group{position:relative}
+.run-input-group label{display:block;font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Oswald',sans-serif}
+.run-input-group input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.9rem;width:100%;text-align:center}
+.run-input-group input:focus{outline:none;border-color:var(--iron)}
+.run-input-unit{position:absolute;right:8px;bottom:10px;font-size:0.65rem;color:var(--text-dim)}
+.run-pace{font-size:0.82rem;color:var(--iron);text-align:center;margin:6px 0;font-family:'Oswald',sans-serif}
+.run-log-btn{width:100%;padding:10px;border:1px solid rgba(106,136,112,0.4);background:rgba(106,136,112,0.1);color:var(--green);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer}
+.run-log-btn:active{background:rgba(106,136,112,0.2)}
+.run-summary{margin-top:14px;padding:12px;background:rgba(14,16,20,0.5);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius)}
+.run-summary-title{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-family:'Oswald',sans-serif}
+.run-stat-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.run-stat-label{font-size:0.82rem;color:var(--text)}
+.run-stat-value{font-size:0.82rem;color:var(--text-bright);font-weight:600}
+.run-block-btn{width:100%;padding:10px;margin-top:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;cursor:pointer;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px}
+.run-milestone{text-align:center;padding:10px;margin-top:10px;background:rgba(160,148,106,0.1);border:1px solid rgba(160,148,106,0.25);border-radius:var(--radius);color:var(--gold);font-family:'Oswald',sans-serif;font-size:0.85rem}
+
 /* PROGRESS VIEW */
 .chart-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin:12px 0}
 .chart-container canvas{width:100%;height:150px}
@@ -1220,6 +1254,100 @@ const ABS_ROUTINES = {
   ]}
 };
 
+// ── RUNNING PLANS ──
+const RUNNING_PLANS = {
+  BLOCK1:{
+    label:'Block 1 — Base Building',
+    weeks:[
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:15,notes:'Walk breaks OK. Goal: 15 min moving. Conversational pace.'},
+        {type:'speed',label:'Walk/Run Intervals',targetMin:18,notes:'3 min easy + 5x(1 min fast / 1.5 min walk) + 2.5 min easy'},
+        {type:'long',label:'Long Run',targetMin:20,notes:'Slow & steady. Walk 1 min every 5 min if needed.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:18,notes:'Keep it easy. Breathe through nose if you can.'},
+        {type:'speed',label:'Walk/Run Intervals',targetMin:20,notes:'3 min easy + 6x(1 min fast / 1.5 min walk) + 2 min easy'},
+        {type:'long',label:'Long Run',targetMin:23,notes:'Slow pace. Try fewer walk breaks than last week.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:20,notes:'First 20 min easy run. You got this.'},
+        {type:'speed',label:'Intervals',targetMin:22,notes:'4 min easy + 6x(1 min fast / 1 min walk) + 4 min easy'},
+        {type:'long',label:'Long Run',targetMin:25,notes:'25 min. No pressure on pace. Just keep moving.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Recovery Run',targetMin:15,notes:'Recovery week. Super easy, short. Let your body adapt.'},
+        {type:'speed',label:'Easy Intervals',targetMin:18,notes:'4 min easy + 4x(1 min moderate / 2 min walk) + 4 min easy'},
+        {type:'long',label:'Long Run',targetMin:20,notes:'Recovery. Shorter than last week. Easy pace.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:22,notes:'Building back up. Conversational pace.'},
+        {type:'speed',label:'Tempo Run',targetMin:22,notes:'5 min easy + 8 min tempo (comfortably hard) + 5 min easy + 4 min cool'},
+        {type:'long',label:'Long Run',targetMin:28,notes:'Longest yet. Slow start, find your rhythm.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:25,notes:'Easy and relaxed. Focus on breathing.'},
+        {type:'speed',label:'Tempo Run',targetMin:25,notes:'5 min easy + 10 min tempo + 5 min easy + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:30,notes:'30 min! If you can talk, you are at the right pace.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:25,notes:'Easy 25. Building endurance.'},
+        {type:'speed',label:'Intervals',targetMin:25,notes:'5 min easy + 5x(2 min fast / 1 min walk) + 5 min easy'},
+        {type:'long',label:'Long Run',targetMin:33,notes:'Push toward 35. Walk 1 min at halfway if needed.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:20,notes:'Taper week. Keep it light. Save energy for the test.'},
+        {type:'speed',label:'Speed Test',targetMin:22,notes:'5 min easy + 12 min as fast as you can sustain + 5 min cool. Log your distance!'},
+        {type:'long',label:'Long Run',targetMin:35,notes:'Block 1 finale! 35 min continuous. You earned this.'}
+      ]}
+    ]
+  },
+  BLOCK2:{
+    label:'Block 2 — Endurance & Speed',
+    weeks:[
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:25,notes:'Welcome to Block 2. Easy 25.'},
+        {type:'speed',label:'Intervals',targetMin:25,notes:'5 min easy + 6x(90s fast / 90s easy jog) + 4 min cool'},
+        {type:'long',label:'Long Run',targetMin:35,notes:'35 min easy. You did this in Block 1. Warm-up week.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:28,notes:'Easy 28. Stay relaxed.'},
+        {type:'speed',label:'Tempo Run',targetMin:28,notes:'5 min easy + 12 min tempo (comfortably hard) + 5 min easy + 6 min cool'},
+        {type:'long',label:'Long Run',targetMin:38,notes:'Pushing past 35. Slow start, settle in.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:30,notes:'Easy 30. Focus on form and breathing.'},
+        {type:'speed',label:'Fartlek',targetMin:30,notes:'5 min easy + 18 min fartlek (speed up/slow down by feel) + 5 min cool. Play with pace!'},
+        {type:'long',label:'Long Run',targetMin:40,notes:'40 minutes! Keep it conversational. Walk 1 min if needed.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Recovery Run',targetMin:22,notes:'Recovery week. Easy does it.'},
+        {type:'speed',label:'Easy Intervals',targetMin:22,notes:'5 min easy + 5x(1 min fast / 2 min easy jog) + 4 min cool'},
+        {type:'long',label:'Long Run',targetMin:30,notes:'Recovery. Keep it short and easy.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:30,notes:'Back to building. Easy pace.'},
+        {type:'speed',label:'Tempo Run',targetMin:30,notes:'5 min easy + 15 min tempo + 5 min easy + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:43,notes:'New territory. Slow and controlled. You are ready.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:30,notes:'Easy 30. You are a runner now.'},
+        {type:'speed',label:'Intervals',targetMin:30,notes:'5 min easy + 5x(3 min hard / 2 min easy jog) + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:45,notes:'45 min. Long run caps here. Slow and steady.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:30,notes:'Easy and controlled. Almost at the finish line.'},
+        {type:'speed',label:'Tempo + Intervals',targetMin:32,notes:'5 min easy + 10 min tempo + 3 min easy + 4x(90s fast / 90s easy) + 4 min cool'},
+        {type:'long',label:'Long Run',targetMin:45,notes:'Long run holds at 45 min. Extra energy goes to speed.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:25,notes:'Taper. Keep it light.'},
+        {type:'speed',label:'Speed Test',targetMin:25,notes:'5 min easy + 15 min as fast as you can sustain + 5 min cool. Compare to Block 1 test!'},
+        {type:'long',label:'Long Run',targetMin:45,notes:'Block 2 finale! 45 min continuous. Compare to week 1. Look how far you came.'}
+      ]}
+    ]
+  }
+};
+
 // ── ATH DATA (All-Time Highs from PDF) ──
 const ATH_DATA = {
 // Warm Up
@@ -1306,6 +1434,8 @@ let currentAbsRoutine = (function(){
   return parseInt(localStorage.getItem('abs_routine'))||1;
 })();
 let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]'));
+let currentRunBlock = localStorage.getItem('run_block')||'BLOCK1';
+let currentRunWeek = parseInt(localStorage.getItem('run_week_manual'))||1;
 
 // ── HELPERS ──
 // ── SYNC ──
@@ -1594,7 +1724,7 @@ function parseSets(str){
 // ── STORAGE ──
 function loadData(){
   try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
-  catch(e){data={activeProgram:'ABCD09',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'}}}
+  catch(e){data={activeProgram:'ABCD09',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},runLogs:[]}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -1620,6 +1750,8 @@ function migrateData(){
   }
   // Ensure activeProgram is valid
   if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD09';
+  // Migrate: add runLogs if missing
+  if(!data.runLogs)data.runLogs=[];
   // Exercise name migration (v97): standardize old variants to canonical names
   const NAME_MAP={
     'Tríceps Kickback (Cable)':'Tríceps Kickback','Remada Curvada':'Remada Curvada com Barra',
@@ -1776,9 +1908,11 @@ function getProgram(id){
   delete merged.days.ABS;
   const absR=ABS_ROUTINES['ABS'+currentAbsRoutine]||ABS_ROUTINES.ABS1;
   merged.days.ABS={label:absR.label,labelEn:'Abs '+currentAbsRoutine,ex:absR.ex};
+  // Append RUN day (persists across all programs)
+  merged.days.RUN={label:'Corrida',labelEn:'Running',ex:[],isRun:true};
   return merged;
 }
-function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'&&k!=='_'):[]}
+function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'&&k!=='RUN'&&k!=='_'):[]}
 function getAllExerciseNames(){
   const names=new Set();
   for(const pid in PROGRAMS){
@@ -1882,7 +2016,7 @@ function showView(name,btn){
 
 function getNextDay(){
   const prog=getProgram(data.activeProgram)||getProgram('ABCD09');
-  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
+  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='RUN'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
     const log=data.logs[i];
@@ -1909,7 +2043,7 @@ function renderPrograms(){
     const p=PROGRAMS[pid];
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
-    const days=Object.keys(p.days).filter(d=>d!=='_'&&d!=='ABS');
+    const days=Object.keys(p.days).filter(d=>d!=='_'&&d!=='ABS'&&d!=='RUN');
     html+=`<div class="prog-overview${isActive?' current':''}" onclick="toggleProgram(this)">
       <div class="prog-head">
         <span class="prog-title">${pid}</span>
@@ -1971,10 +2105,23 @@ function renderWorkout(){
   let tabsHtml='';
   days.forEach(d=>{
     const dayData=prog.days[d];
-    const tabLabel=d==='ABS'?'ABS':`${d} - ${dayData.labelEn||dayData.label}`;
+    const tabLabel=d==='ABS'?'ABS':d==='RUN'?'RUN':`${d} - ${dayData.labelEn||dayData.label}`;
     tabsHtml+=`<button class="day-tab${d===currentDay?' active':''}" onclick="switchDay('${d}')">${tabLabel}</button>`;
   });
   document.getElementById('dayTabs').innerHTML=tabsHtml;
+
+  // RUN tab — render separately
+  if(currentDay==='RUN'){
+    const overlay=document.getElementById('startOverlay');
+    const exContainer=document.getElementById('workoutExercises');
+    const finBtn=document.getElementById('finishBtn');
+    const timerEl=document.getElementById('workoutTimer');
+    const absPickerEl=document.getElementById('absRoutinePicker');
+    overlay.style.display='none';finBtn.style.display='none';timerEl.textContent='';
+    absPickerEl.innerHTML='';absPickerEl.style.display='none';
+    renderRunView(exContainer);
+    return;
+  }
 
   // Initialize workout if not started
   if(!currentWorkout||currentWorkout.program!==data.activeProgram||currentWorkout.day!==currentDay){
@@ -2052,6 +2199,192 @@ function showTechPopup(code,e){
 
 function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routine',n);localStorage.setItem('abs_routine_week',weekStart());currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
+
+// ── RUNNING TAB ──
+function renderRunView(container){
+  const block=RUNNING_PLANS[currentRunBlock];
+  if(!block){container.innerHTML='<div style="text-align:center;color:var(--text-dim);padding:40px">No running plan found.</div>';return}
+  const weekIdx=Math.max(0,Math.min(7,currentRunWeek-1));
+  const week=block.weeks[weekIdx];
+  const thisWeekMon=weekStart();
+  const weekLogs=(data.runLogs||[]).filter(l=>l.week===thisWeekMon&&l.block===currentRunBlock);
+  // All-time stats for fun section
+  const allLogs=data.runLogs||[];
+  const totalMin=allLogs.reduce((s,l)=>s+(l.actualMin||0),0);
+  const totalKm=allLogs.reduce((s,l)=>s+(l.actualKm||0),0);
+  // Estimated calories: ~100 cal per 10 min running (rough avg)
+  const estCal=Math.round(totalMin*10);
+  const estLbs=estCal>0?(estCal/3500).toFixed(1):'0';
+  // Distance milestones
+  const kmMilestones=[5,10,25,50,100,200,500];
+  const nextMilestone=kmMilestones.find(m=>m>totalKm)||null;
+
+  let html='';
+  // Header
+  html+=`<div class="run-header">
+    <div class="run-block-label">${block.label}</div>
+    <div class="run-week-label">Week ${currentRunWeek} of 8</div>
+    <div class="run-week-nav">
+      <button class="run-week-btn" onclick="changeRunWeek(-1)"${currentRunWeek<=1?' disabled':''}>&larr;</button>
+      <span class="run-week-current">Week ${currentRunWeek}</span>
+      <button class="run-week-btn" onclick="changeRunWeek(1)"${currentRunWeek>=8?' disabled':''}>&rarr;</button>
+    </div>
+  </div>`;
+
+  // 3 run cards
+  week.runs.forEach((run,ri)=>{
+    const logged=weekLogs.find(l=>l.runIndex===ri);
+    const isComplete=!!logged;
+    const typeIcon=run.type==='easy'?'&#x1F6B6;':run.type==='speed'?'&#x26A1;':'&#x1F3C3;';
+    html+=`<div class="run-card${isComplete?' completed':''}" id="run-card-${ri}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <span style="font-size:1rem;margin-right:6px">${typeIcon}</span>
+          <span class="card-title" style="display:inline">${run.label}</span>
+        </div>
+        <span class="run-type-badge ${run.type}">${run.type}</span>
+      </div>
+      <div class="run-target">Target: ${run.targetMin} min</div>
+      <div class="run-notes">${run.notes}</div>`;
+    if(isComplete){
+      const paceStr=logged.pace?fmtPace(logged.pace):'--';
+      html+=`<div class="run-stat-row"><span class="run-stat-label">Time</span><span class="run-stat-value">${logged.actualMin} min</span></div>`;
+      if(logged.actualKm){
+        html+=`<div class="run-stat-row"><span class="run-stat-label">Distance</span><span class="run-stat-value">${logged.actualKm} km</span></div>`;
+        html+=`<div class="run-stat-row"><span class="run-stat-label">Pace</span><span class="run-stat-value">${paceStr}</span></div>`;
+      }
+      html+=`<div class="run-status" style="text-align:center;margin-top:6px;font-size:0.82rem">&#10003; Logged ${logged.date}</div>`;
+    } else {
+      html+=`<div class="run-inputs">
+        <div class="run-input-group">
+          <label>Time</label>
+          <input type="number" inputmode="decimal" id="run-time-${ri}" placeholder="${run.targetMin}" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
+          <span class="run-input-unit">min</span>
+        </div>
+        <div class="run-input-group">
+          <label>Distance (opt.)</label>
+          <input type="number" inputmode="decimal" id="run-dist-${ri}" placeholder="km" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
+          <span class="run-input-unit">km</span>
+        </div>
+      </div>
+      <div class="run-pace" id="run-pace-${ri}"></div>
+      <button class="run-log-btn" onclick="logRun(${ri})">Log Run</button>`;
+    }
+    html+=`</div>`;
+  });
+
+  // Weekly summary
+  const weekTotal=weekLogs.reduce((s,l)=>s+(l.actualMin||0),0);
+  const weekDist=weekLogs.reduce((s,l)=>s+(l.actualKm||0),0);
+  const weekTarget=week.runs.reduce((s,r)=>s+r.targetMin,0);
+  html+=`<div class="run-summary">
+    <div class="run-summary-title">This Week</div>
+    <div class="run-stat-row"><span class="run-stat-label">Runs completed</span><span class="run-stat-value">${weekLogs.length} / 3</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(weekTotal)} / ${weekTarget} min</span></div>
+    ${weekDist>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${weekDist.toFixed(1)} km</span></div>`:''}
+  </div>`;
+
+  // Fun stats
+  if(allLogs.length>0){
+    html+=`<div class="run-summary" style="margin-top:10px">
+      <div class="run-summary-title">All-Time Stats</div>
+      <div class="run-stat-row"><span class="run-stat-label">Total runs</span><span class="run-stat-value">${allLogs.length}</span></div>
+      <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(totalMin)} min</span></div>
+      ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} km</span></div>`:''}
+      <div class="run-stat-row"><span class="run-stat-label">Est. calories burned</span><span class="run-stat-value">${estCal.toLocaleString()}</span></div>
+      <div class="run-stat-row"><span class="run-stat-label">Est. lbs burned</span><span class="run-stat-value">${estLbs} lbs</span></div>
+    </div>`;
+    if(nextMilestone&&totalKm>0){
+      const remaining=(nextMilestone-totalKm).toFixed(1);
+      html+=`<div class="run-milestone">${remaining} km to ${nextMilestone} km milestone!</div>`;
+    }
+  }
+
+  // Block controls
+  html+=`<button class="run-block-btn" onclick="switchRunBlock()">${currentRunBlock==='BLOCK1'?'Switch to Block 2':'Switch to Block 1'}</button>`;
+  html+=`<button class="run-block-btn" onclick="resetRunBlock()" style="margin-top:6px;color:var(--red);border-color:rgba(144,80,80,0.3)">Reset Week Counter</button>`;
+
+  container.innerHTML=html;
+
+  // Attach live pace calculation
+  week.runs.forEach((run,ri)=>{
+    if(!weekLogs.find(l=>l.runIndex===ri)){
+      const tEl=document.getElementById('run-time-'+ri);
+      const dEl=document.getElementById('run-dist-'+ri);
+      if(tEl&&dEl){
+        const calc=()=>{
+          const t=parseFloat(tEl.value),d=parseFloat(dEl.value);
+          const pEl=document.getElementById('run-pace-'+ri);
+          if(t>0&&d>0){pEl.textContent=fmtPace(t/d)+' pace'}
+          else{pEl.textContent=''}
+        };
+        tEl.addEventListener('input',calc);
+        dEl.addEventListener('input',calc);
+      }
+    }
+  });
+}
+
+function fmtPace(p){
+  const m=Math.floor(p);const s=Math.round((p-m)*60);
+  return m+':'+(s<10?'0':'')+s+'/km';
+}
+
+function logRun(runIndex){
+  const block=RUNNING_PLANS[currentRunBlock];
+  const week=block.weeks[currentRunWeek-1];
+  const run=week.runs[runIndex];
+  const timeVal=parseFloat(document.getElementById('run-time-'+runIndex).value);
+  if(!timeVal||timeVal<=0){toast('Enter your time!');return}
+  const distVal=parseFloat(document.getElementById('run-dist-'+runIndex).value)||null;
+  const pace=(distVal&&distVal>0)?(timeVal/distVal):null;
+  const entry={
+    id:'run_'+Date.now(),
+    date:dateStr(),
+    week:weekStart(),
+    block:currentRunBlock,
+    weekNum:currentRunWeek,
+    runIndex:runIndex,
+    type:run.type,
+    label:run.label,
+    targetMin:run.targetMin,
+    actualMin:Math.round(timeVal*10)/10,
+    actualKm:distVal?Math.round(distVal*100)/100:null,
+    pace:pace?Math.round(pace*100)/100:null
+  };
+  if(!data.runLogs)data.runLogs=[];
+  data.runLogs.push(entry);
+  saveData();
+  toast(run.label+' logged! '+timeVal+' min'+(distVal?' / '+distVal+' km':''));
+  renderWorkout();
+}
+
+function changeRunWeek(delta){
+  currentRunWeek=Math.max(1,Math.min(8,currentRunWeek+delta));
+  localStorage.setItem('run_week_manual',currentRunWeek);
+  renderWorkout();
+}
+
+function switchRunBlock(){
+  if(currentRunBlock==='BLOCK1'){
+    if(!confirm('Switch to Block 2? This is for after completing Block 1.'))return;
+    currentRunBlock='BLOCK2';
+  } else {
+    currentRunBlock='BLOCK1';
+  }
+  currentRunWeek=1;
+  localStorage.setItem('run_block',currentRunBlock);
+  localStorage.setItem('run_week_manual',1);
+  renderWorkout();
+}
+
+function resetRunBlock(){
+  if(!confirm('Reset week counter to Week 1? Your logs are kept.'))return;
+  currentRunWeek=1;
+  localStorage.setItem('run_week_manual',1);
+  renderWorkout();
+  toast('Week counter reset');
+}
 
 function initWorkout(){
   // Try to recover in-progress workout
@@ -2830,6 +3163,54 @@ function ssEndScrub(){
   drawSSChart(ssSeries,ssCurrentScore);
 }
 
+function renderRunProgress(){
+  const logs=data.runLogs||[];
+  if(logs.length===0)return '';
+  const totalRuns=logs.length;
+  const totalMin=logs.reduce((s,l)=>s+(l.actualMin||0),0);
+  const totalKm=logs.reduce((s,l)=>s+(l.actualKm||0),0);
+  const estCal=Math.round(totalMin*10);
+  const estLbs=estCal>0?(estCal/3500).toFixed(1):'0';
+  const paced=logs.filter(l=>l.pace&&l.pace>0);
+  const bestPace=paced.length>0?Math.min(...paced.map(l=>l.pace)):0;
+  const bestPaceStr=bestPace>0?fmtPace(bestPace):'--';
+  const avgPace=totalKm>0?totalMin/totalKm:0;
+  const avgPaceStr=avgPace>0?fmtPace(avgPace):'--';
+  const longestMin=Math.max(...logs.map(l=>l.actualMin||0));
+  // Weekly breakdown
+  const weeks={};
+  logs.forEach(l=>{if(!weeks[l.week])weeks[l.week]=[];weeks[l.week].push(l)});
+  const weekKeys=Object.keys(weeks).sort().reverse();
+  let html=`<div class="card" style="margin-bottom:14px">
+    <div class="card-title" style="margin-bottom:10px">&#x1F3C3; Running Progress</div>
+    <div class="run-stat-row"><span class="run-stat-label">Total runs</span><span class="run-stat-value">${totalRuns}</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(totalMin)} min</span></div>
+    ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} km</span></div>`:''}
+    <div class="run-stat-row"><span class="run-stat-label">Avg pace</span><span class="run-stat-value">${avgPaceStr}</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Best pace</span><span class="run-stat-value">${bestPaceStr}</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Longest run</span><span class="run-stat-value">${longestMin} min</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Est. calories burned</span><span class="run-stat-value">${estCal.toLocaleString()}</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Est. lbs burned</span><span class="run-stat-value">${estLbs} lbs</span></div>
+  </div>`;
+  if(weekKeys.length>0){
+    html+=`<div class="card" style="margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:10px">&#x1F4C5; Weekly Running Log</div>`;
+    weekKeys.slice(0,6).forEach(wk=>{
+      const wkLogs=weeks[wk];
+      const wkMin=wkLogs.reduce((s,l)=>s+(l.actualMin||0),0);
+      const wkKm=wkLogs.reduce((s,l)=>s+(l.actualKm||0),0);
+      html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between">
+          <span class="run-stat-label">Week of ${wk}</span>
+          <span class="run-stat-value">${wkLogs.length} runs / ${Math.round(wkMin)} min${wkKm>0?' / '+wkKm.toFixed(1)+' km':''}</span>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  return html;
+}
+
 function renderProgress(){
   renderStrengthScore();
   const query=(document.getElementById('progressSearch').value||'').toLowerCase();
@@ -2943,7 +3324,9 @@ function renderProgress(){
     }
   });
 
-  document.getElementById('progressCards').innerHTML=html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises logged yet. Start a workout!</div>';
+  // Running progress section
+  const runHtml=renderRunProgress();
+  document.getElementById('progressCards').innerHTML=runHtml+(html||'<div style="color:var(--text-dim);text-align:center;padding:40px">No exercises logged yet. Start a workout!</div>');
 
   if(expandedExercise){
     const cardIdx=allNames.indexOf(expandedExercise);
