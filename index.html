@@ -1273,7 +1273,12 @@ let workoutStartTime = null;
 let chartRange = 4;
 let currentPrMuscle = 'all';
 let currentLibMuscle = 'all';
-let currentAbsRoutine = parseInt(localStorage.getItem('abs_routine'))||1;
+let currentAbsRoutine = (function(){
+  const savedWeek=localStorage.getItem('abs_routine_week');
+  const thisWeek=weekStart();
+  if(savedWeek!==thisWeek){localStorage.removeItem('abs_routine');localStorage.setItem('abs_routine_week',thisWeek);return 1}
+  return parseInt(localStorage.getItem('abs_routine'))||1;
+})();
 let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]'));
 
 // ── HELPERS ──
@@ -1923,7 +1928,7 @@ function showTechPopup(code,e){
 }
 
 function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
-function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routine',n);currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
+function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routine',n);localStorage.setItem('abs_routine_week',weekStart());currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 
 function initWorkout(){
   // Try to recover in-progress workout
@@ -2092,7 +2097,7 @@ function renderExerciseCards(){
           <span class="set-unit">lbs</span>
         </div>`}
         <div class="set-input-group">
-          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${isAbs?'':set.reps}" onchange="updateSet(${ei},${si},'reps',this.value)">
+          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onchange="updateSet(${ei},${si},'reps',this.value)">
           <span class="set-unit">reps</span>
         </div>
         <button class="set-done-btn${set.done?' done':''}" onclick="toggleSet(${ei},${si})">&#10003;</button>
