@@ -2280,7 +2280,6 @@ function renderExerciseCards(){
       ${!isAbs?`<button class="ex-action-btn${startW?' start-set':''}" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startW?'S1: '+startW+'lbs':'S1 Start'}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
-      <button class="ex-action-btn" onclick="removeExercise(${ei})">Remove</button>
       ${!isAbs?`<button class="ex-action-btn alt-btn" onclick="openAltModal(${ei})" style="color:#e8a032;border-color:rgba(232,160,50,0.35)">Alt.</button>`:''}
     </div>`;
 
