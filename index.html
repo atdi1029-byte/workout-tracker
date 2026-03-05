@@ -68,6 +68,13 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .ex-done-label{display:none;color:var(--green);font-size:0.75rem;margin-left:8px}
 .hold-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(232,200,74,0.15);color:var(--yellow);border:1px solid rgba(232,200,74,0.25);margin-left:6px;cursor:pointer;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.5px;vertical-align:middle}
 .hold-badge.active{background:rgba(232,200,74,0.3);color:#e8c84a;border-color:rgba(232,200,74,0.5)}
+.alt-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(232,160,50,0.2);color:#e8a032;border:1px solid rgba(232,160,50,0.35);margin-left:6px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.5px;vertical-align:middle}
+.alt-suggested{background:rgba(232,160,50,0.12);border:1px solid rgba(232,160,50,0.25);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;cursor:pointer}
+.alt-suggested:active{background:rgba(232,160,50,0.22)}
+.alt-suggested-label{font-size:0.65rem;color:#e8a032;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700}
+.alt-custom-row{display:flex;gap:8px;margin-bottom:12px}
+.alt-custom-row input{flex:1;background:var(--bg-input);border:1px solid var(--border);color:var(--text-bright);padding:8px 10px;border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-size:0.85rem}
+.alt-custom-row button{background:rgba(232,160,50,0.2);border:1px solid rgba(232,160,50,0.35);color:#e8a032;padding:8px 14px;border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-weight:700;cursor:pointer;font-size:0.8rem}
 .ex-action-btn.start-set{color:var(--green);border-color:rgba(106,136,112,0.4)}
 .ex-note-corner{font-size:0.72rem;color:var(--iron);cursor:pointer;text-align:right;font-family:'Oswald',sans-serif;font-weight:400;letter-spacing:0.3px;white-space:nowrap;padding:2px 0;opacity:0.8}
 .ex-note-corner .note-text{color:#a0b8d0;font-style:italic;font-family:'Playfair Display',serif;font-weight:400}
@@ -1420,6 +1427,17 @@ function promptStartWeight(exName){
   renderExerciseCards();
 }
 
+// ── ALT MEMORY ──
+function getAltMemory(){try{return JSON.parse(localStorage.getItem('zercher_alts')||'{}')}catch(e){return{}}}
+function saveAltMemory(m){localStorage.setItem('zercher_alts',JSON.stringify(m))}
+function getAltKey(program,day,origName){return program+'|'+day+'|'+origName}
+function getSavedAlt(program,day,origName){return getAltMemory()[getAltKey(program,day,origName)]||null}
+function saveAlt(program,day,origName,altName,altNameEn,altMuscle){
+  const m=getAltMemory();
+  m[getAltKey(program,day,origName)]={name:altName,nameEn:altNameEn,muscle:altMuscle};
+  saveAltMemory(m);
+}
+
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
 function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
@@ -1926,12 +1944,12 @@ function initWorkout(){
     program:data.activeProgram,
     day:currentDay,
     date:dateStr(),
-    exercises:dayData.ex.map(e=>{
+    exercises:dayData.ex.map((e,idx)=>{
       const sets=parseSets(e[4]);
       const lastLog=getLastLog(e[0]);
       return{
         name:e[0],nameEn:e[1],muscle:e[2],technique:e[3],
-        targetSets:e[4],restSec:e[5],
+        targetSets:e[4],restSec:e[5],_baseIdx:idx,_origName:e[0],
         sets:sets.map((s,i)=>({
           weight:lastLog&&lastLog.sets[i]?lastLog.sets[i].weight:'',
           reps:s.reps,
@@ -2048,7 +2066,7 @@ function renderExerciseCards(){
     html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
         <div>
-          <div class="ex-name">${ex.name}<span class="ex-done-label">&#10003; DONE</span>${isAbs?'':`<span class="hold-badge${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'JUST':'J'}</span>`}</div>
+          <div class="ex-name">${ex.name}${ex._isAlt?'<span class="alt-badge">ALT</span>':''}<span class="ex-done-label">&#10003; DONE</span>${isAbs?'':`<span class="hold-badge${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'JUST':'J'}</span>`}</div>
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
         <div class="ex-note-corner" onclick="event.stopPropagation();promptExNote('${ex.name.replace(/'/g,"\\'")}')">
@@ -2112,6 +2130,7 @@ function renderExerciseCards(){
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       <button class="ex-action-btn" onclick="removeExercise(${ei})">Remove</button>
+      ${!isAbs?`<button class="ex-action-btn alt-btn" onclick="openAltModal(${ei})" style="color:#e8a032;border-color:rgba(232,160,50,0.35)">Alt.</button>`:''}
     </div>`;
 
     html+=`</div>`;
@@ -3449,6 +3468,136 @@ function doSwap(ei,name,nameEn,muscle){
   closeModal();
   renderExerciseCards();
   toast('Swapped to '+name);
+}
+
+// ── ALT EXERCISE (session-only swap) ──
+function openAltModal(ei){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];
+  const muscle=ex.muscle;
+
+  // Check for base exercise suggestion
+  let baseSuggestion=null;
+  if(typeof ex._baseIdx==='number'){
+    const baseProg=PROGRAMS[data.activeProgram];
+    if(baseProg&&baseProg.days[currentDay]){
+      const baseEx=baseProg.days[currentDay].ex[ex._baseIdx];
+      if(baseEx&&baseEx[0]!==ex.name){
+        // Check base exercise isn't already in today's workout
+        const alreadyInWorkout=currentWorkout.exercises.some(e=>e.name===baseEx[0]);
+        if(!alreadyInWorkout){
+          baseSuggestion={name:baseEx[0],nameEn:baseEx[1],muscle:baseEx[2]};
+        }
+      }
+    }
+  }
+
+  // Build same-muscle options (reuse openSwapModal logic)
+  const options=new Set();
+  const currentNames=new Set(currentWorkout.exercises.map(e=>e.name));
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      PROGRAMS[pid].days[dk].ex.forEach(e=>{
+        if(e[2]===muscle&&e[0]!==ex.name&&!currentNames.has(e[0]))options.add(e[0]+'|'+e[1]);
+      });
+    }
+  }
+  for(const ak in ABS_ROUTINES){
+    ABS_ROUTINES[ak].ex.forEach(e=>{
+      if(e[2]===muscle&&e[0]!==ex.name&&!currentNames.has(e[0]))options.add(e[0]+'|'+e[1]);
+    });
+  }
+  const deleted=new Set(data.deletedSubs||[]);
+  const muscleMap={chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs'};
+  const subsMuscleName=muscleMap[muscle]||muscle;
+  SUBS_DATA.forEach(g=>{
+    if(g.muscle===subsMuscleName||g.muscle==='Legs (Full)'&&(muscle==='quads'||muscle==='hamstrings'||muscle==='glutes')){
+      g.subs.forEach(s=>s.ex.forEach(name=>{
+        if(name!==ex.name&&name!==ex.nameEn&&!deleted.has(name)&&!currentNames.has(name))options.add(name+'|'+name);
+      }));
+    }
+  });
+
+  // Check for saved alt from previous sessions
+  const origName=ex._origName||ex.name;
+  const savedAlt=getSavedAlt(currentWorkout.program,currentDay,origName);
+
+  let html=`<div class="modal-header">
+    <div class="modal-title">Alt: ${ex.name}</div>
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+  </div>
+  <div style="margin-bottom:8px;font-size:0.7rem;color:var(--text-dim)">Session-only &mdash; resets next workout</div>`;
+
+  // Custom input
+  html+=`<div class="alt-custom-row">
+    <input type="text" id="altCustomName" placeholder="Type exercise name..." onkeydown="if(event.key==='Enter')doAltCustom(${ei})">
+    <button onclick="doAltCustom(${ei})">Use</button>
+  </div>`;
+
+  // Saved alt from last time (top priority)
+  if(savedAlt&&savedAlt.name!==ex.name&&!currentNames.has(savedAlt.name)){
+    const ath=findATH(savedAlt.name);
+    html+=`<div class="alt-suggested" onclick="doAlt(${ei},'${savedAlt.name.replace(/'/g,"\\'")}','${savedAlt.nameEn.replace(/'/g,"\\'")}','${savedAlt.muscle}')">
+      <div class="alt-suggested-label">&#8635; Last Alt Used</div>
+      <div class="swap-name">${savedAlt.name} <span style="color:var(--text-dim);font-size:0.75rem">${savedAlt.nameEn}</span></div>
+      ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
+    </div>`;
+  }
+
+  // Base exercise suggestion
+  if(baseSuggestion&&(!savedAlt||savedAlt.name!==baseSuggestion.name)){
+    const ath=findATH(baseSuggestion.name);
+    html+=`<div class="alt-suggested" onclick="doAlt(${ei},'${baseSuggestion.name.replace(/'/g,"\\'")}','${baseSuggestion.nameEn.replace(/'/g,"\\'")}','${baseSuggestion.muscle}')">
+      <div class="alt-suggested-label">&#9733; Base Exercise</div>
+      <div class="swap-name">${baseSuggestion.name} <span style="color:var(--text-dim);font-size:0.75rem">${baseSuggestion.nameEn}</span></div>
+      ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
+    </div>`;
+  }
+
+  // Same-muscle options
+  if(options.size>0){
+    html+=`<div style="font-size:0.7rem;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">${muscle} exercises</div>`;
+    [...options].sort().forEach(opt=>{
+      const[name,nameEn]=opt.split('|');
+      const ath=findATH(name);
+      html+=`<div class="swap-item" onclick="doAlt(${ei},'${name.replace(/'/g,"\\'")}','${nameEn.replace(/'/g,"\\'")}','${muscle}')">
+        <div class="swap-name">${name} <span style="color:var(--text-dim);font-size:0.75rem">${nameEn}</span></div>
+        ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
+      </div>`;
+    });
+  }
+
+  openModal(html);
+}
+
+function doAlt(ei,name,nameEn,muscle){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];
+  const origName=ex._origName||ex.name;
+  ex.name=name;ex.nameEn=nameEn;ex.muscle=muscle;
+  ex._isAlt=true;
+  // Save to alt memory for next time
+  saveAlt(currentWorkout.program,currentWorkout.day,origName,name,nameEn,muscle);
+  // Pre-fill from last log
+  const lastLog=getLastLog(name);
+  if(lastLog){
+    ex.sets.forEach((s,i)=>{
+      if(lastLog.sets[i])s.weight=lastLog.sets[i].weight;
+    });
+  } else {
+    ex.sets.forEach(s=>{s.weight='';});
+  }
+  closeModal();
+  renderExerciseCards();
+  toast('Alt: '+name);
+}
+
+function doAltCustom(ei){
+  const input=document.getElementById('altCustomName');
+  if(!input)return;
+  const name=input.value.trim();
+  if(!name){toast('Enter an exercise name');return;}
+  doAlt(ei,name,name,currentWorkout.exercises[ei].muscle);
 }
 
 // ── EDITOR MODAL ──
