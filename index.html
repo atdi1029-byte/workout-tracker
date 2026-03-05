@@ -122,6 +122,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .plate-disc.p5{background:#f5f5f5;height:20px;padding:0 2px}
 .plate-disc.p2{background:#f5f5f5;height:16px;padding:0 2px;font-size:0.5rem}
 .plate-bar-vis{width:40px;height:8px;background:var(--iron-deep);border-radius:2px}
+.plate-auto{font-size:0.7rem;color:var(--iron);padding:4px 0 2px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.plate-auto span{color:var(--text-dim)}
 
 /* SET ROWS */
 .set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
@@ -2178,6 +2180,19 @@ function renderExerciseCards(){
         <span class="ex-tag tech" onclick="showTechPopup('${ex.technique}',event)">${techLabel}</span>
         <span class="ex-tag">${ex.restSec}s rest</span>
       </div>`;
+
+    // Auto plate breakdown — shows until S1 done
+    if(!isAbs){
+      const s1=ex.sets.find(s=>s.type==='working');
+      const s1Done=s1&&s1.done;
+      const s1Weight=s1?parseFloat((''+s1.weight).replace(/,/g,'')):0;
+      if(!s1Done&&s1Weight>0){
+        const barW=getBarWeight(ex.name);
+        const pr=calcPlates(s1Weight,barW);
+        const pStr=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
+        if(pStr)html+=`<div class="plate-auto" onclick="showPlatePopup('${ex.name.replace(/'/g,"\\'")}','${s1Weight}',event)">&#8960; <span>Each side:</span> ${pStr}</div>`;
+      }
+    }
 
     // Set rows
     let wNum=0;
