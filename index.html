@@ -120,8 +120,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .plate-disc.p5{background:#f5f5f5;height:20px;padding:0 2px}
 .plate-disc.p2{background:#f5f5f5;height:16px;padding:0 2px;font-size:0.5rem}
 .plate-bar-vis{width:40px;height:8px;background:var(--iron-deep);border-radius:2px}
-.plate-auto{font-size:0.7rem;color:var(--iron);padding:4px 0 2px;display:flex;align-items:center;gap:6px;cursor:pointer}
-.plate-auto span{color:var(--text-dim)}
+.plate-label-btn{background:none;border:none;color:var(--text-dim);font-size:0.7rem;cursor:pointer;padding:0 0 0 3px;vertical-align:middle}
+.plate-label-btn:active{color:var(--gold)}
 
 /* SET ROWS */
 .set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
@@ -1458,6 +1458,9 @@ function promptStartWeight(exName){
 
 // ── PLATE CALCULATOR ──
 const ALL_PLATES=[45,35,25,10,5,2.5];
+function getNoPlate(){try{return JSON.parse(localStorage.getItem('zercher_noplate')||'{}')}catch(e){return{}}}
+function saveNoPlate(n){localStorage.setItem('zercher_noplate',JSON.stringify(n))}
+function toggleNoPlate(exName){const n=getNoPlate();if(n[exName])delete n[exName];else n[exName]=true;saveNoPlate(n);renderExerciseCards()}
 function getPlatePref(){try{return JSON.parse(localStorage.getItem('zercher_platepref')||'{}')}catch(e){return{}}}
 function savePlatePref(p){localStorage.setItem('zercher_platepref',JSON.stringify(p))}
 function getExPlates(exName){return getPlatePref()[exName]||ALL_PLATES.slice()}
@@ -1517,7 +1520,8 @@ function renderPlatePopup(exName,weight){
       <div class="plate-per-side">Each side: ${breakdownStr}</div>
       <div class="plate-detail">${result.perSide} lbs per side</div>
       ${result.breakdown.length>0?plateVisual(result.breakdown):''}
-    </div>`;
+    </div>
+    <button class="plate-bar-btn" style="margin-top:8px;width:100%" onclick="toggleNoPlate('${esc}');document.getElementById('platePopup').remove()">Hide plates for this exercise</button>`;
 
   document.body.appendChild(pop);
   setTimeout(()=>{document.addEventListener('click',function closePop(ev){
@@ -2193,25 +2197,16 @@ function renderExerciseCards(){
         <span class="ex-tag">${ex.restSec}s rest</span>
       </div>`;
 
-    // Auto plate breakdown — shows until S1 done
-    if(!isAbs){
-      const s1=ex.sets.find(s=>s.type==='working');
-      const s1Done=s1&&s1.done;
-      const s1Weight=s1?parseFloat((''+s1.weight).replace(/,/g,'')):0;
-      if(!s1Done&&s1Weight>0){
-        const pr=calcPlates(s1Weight,getExPlates(ex.name));
-        const pStr=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
-        if(pStr)html+=`<div class="plate-auto" onclick="showPlatePopup('${ex.name.replace(/'/g,"\\'")}','${s1Weight}',event)">&#8960; <span>Each side:</span> ${pStr}</div>`;
-      }
-    }
-
     // Set rows
     let wNum=0;
+    const exNameEsc=ex.name.replace(/'/g,"\\'");
+    const noPlate=getNoPlate();
     ex.sets.forEach((set,si)=>{
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU':'S'+wNum;
+      const showPlate=!isAbs&&!noPlate[ex.name]&&(set.type==='warmup'||wNum===1);
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
-        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
+        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}${showPlate?`<button class="plate-label-btn" onclick="event.stopPropagation();showPlatePopup('${exNameEsc}',this.closest('.set-row').querySelector('.set-input').value,event)">&#8960;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
