@@ -121,7 +121,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .plate-disc.p5{background:#f5f5f5;height:20px;padding:0 2px}
 .plate-disc.p2{background:#f5f5f5;height:16px;padding:0 2px;font-size:0.5rem}
 .plate-bar-vis{width:40px;height:8px;background:var(--iron-deep);border-radius:2px}
-.plate-corner{font-size:0.6rem;color:var(--iron);margin-top:4px;cursor:pointer}
+.plate-corner{font-size:0.8rem;color:var(--yellow);margin-top:4px;cursor:pointer;font-weight:600}
 .plate-corner:active{color:var(--gold)}
 .plate-corner-show{font-size:0.6rem;color:var(--text-dim);margin-top:4px;cursor:pointer;opacity:0.4}
 .plate-corner-show:active{opacity:0.8}
@@ -1604,18 +1604,22 @@ function getPlatePref(){try{return JSON.parse(localStorage.getItem('zercher_plat
 function savePlatePref(p){localStorage.setItem('zercher_platepref',JSON.stringify(p))}
 function getExPlates(exName){return getPlatePref()[exName]||ALL_PLATES.slice()}
 function setExPlates(exName,plates){const p=getPlatePref();p[exName]=plates;savePlatePref(p)}
+function getSingleEnd(){try{return JSON.parse(localStorage.getItem('zercher_singleend')||'{}')}catch(e){return{}}}
+function saveSingleEnd(s){localStorage.setItem('zercher_singleend',JSON.stringify(s))}
+function isSingleEnd(exName){return!!getSingleEnd()[exName]}
+function toggleSingleEnd(exName){const s=getSingleEnd();s[exName]=!s[exName];saveSingleEnd(s)}
 
-function calcPlates(totalWeight,usePlates){
+function calcPlates(totalWeight,usePlates,singleEnd){
   const plates=usePlates||ALL_PLATES;
-  let perSide=Math.round((totalWeight/2)*10)/10;
-  if(perSide<=0)return{perSide:0,breakdown:[],remainder:0};
+  let perSide=singleEnd?Math.round(totalWeight*10)/10:Math.round((totalWeight/2)*10)/10;
+  if(perSide<=0)return{perSide:0,breakdown:[],remainder:0,singleEnd:!!singleEnd};
   let rem=perSide;
   const breakdown=[];
   for(const p of plates){
     const count=Math.floor(rem/p);
     if(count>0){breakdown.push({plate:p,count});rem-=count*p;}
   }
-  return{perSide,breakdown,remainder:Math.round(rem*10)/10};
+  return{perSide,breakdown,remainder:Math.round(rem*10)/10,singleEnd:!!singleEnd};
 }
 
 function plateVisual(breakdown){
@@ -1643,7 +1647,8 @@ function renderPlatePopup(exName,weight){
   let pop=document.getElementById('platePopup');
   if(pop)pop.remove();
   const enabled=getExPlates(exName);
-  const result=calcPlates(weight,enabled);
+  const single=isSingleEnd(exName);
+  const result=calcPlates(weight,enabled,single);
   pop=document.createElement('div');
   pop.id='platePopup';pop.className='plate-popup';
 
@@ -1652,13 +1657,15 @@ function renderPlatePopup(exName,weight){
   if(!breakdownStr)breakdownStr='No plates needed';
 
   const esc=exName.replace(/'/g,"\\'");
-  const perSide=Math.round((weight/2)*10)/10;
+  const loadWeight=single?weight:Math.round((weight/2)*10)/10;
+  const sideLabel=single?'One end':'Each side';
   pop.innerHTML=`<button class="plate-popup-close" onclick="document.getElementById('platePopup').remove()">&times;</button>
     <div class="plate-popup-title">Plates: ${exName}</div>
-    <div class="plate-bar-row"><span>Use:</span>${ALL_PLATES.map(p=>{const imp=p>perSide;const cls=imp?' impossible':enabled.includes(p)?' active':'';return`<button class="plate-bar-btn${cls}"${imp?'':` onclick="togglePlateSize('${esc}',${p},${weight})"`}>${p}</button>`;}).join('')}</div>
+    <div class="plate-bar-row"><span>Use:</span>${ALL_PLATES.map(p=>{const imp=p>loadWeight;const cls=imp?' impossible':enabled.includes(p)?' active':'';return`<button class="plate-bar-btn${cls}"${imp?'':` onclick="togglePlateSize('${esc}',${p},${weight})"`}>${p}</button>`;}).join('')}</div>
+    <div class="plate-bar-row"><button class="plate-bar-btn${single?' active':''}" onclick="toggleSingleEnd('${esc}');renderPlatePopup('${esc}',${weight})">Single end (T-bar)</button></div>
     <div class="plate-breakdown">
-      <div class="plate-per-side">Each side: ${breakdownStr}</div>
-      <div class="plate-detail">${result.perSide} lbs per side</div>
+      <div class="plate-per-side">${sideLabel}: ${breakdownStr}</div>
+      <div class="plate-detail">${result.perSide} lbs ${single?'total on bar':'per side'}</div>
       ${result.breakdown.length>0?plateVisual(result.breakdown):''}
     </div>
     <button class="plate-bar-btn" style="margin-top:8px;width:100%" onclick="toggleNoPlate('${esc}');document.getElementById('platePopup').remove()">Hide plates for this exercise</button>`;
@@ -2556,7 +2563,7 @@ function renderExerciseCards(){
             if(!allWuDone&&wuSets.length>0){pw=parseFloat((''+wuSets[0].weight).replace(/,/g,''))||0;pl='WU';}
             else if(!s1Done&&s1Set){pw=parseFloat((''+s1Set.weight).replace(/,/g,''))||0;pl='S1';}
             if(pw>0&&pl){
-              const pr=calcPlates(pw,getExPlates(ex.name));
+              const pr=calcPlates(pw,getExPlates(ex.name),isSingleEnd(ex.name));
               const ps=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
               if(ps)return`<div class="plate-corner" onclick="event.stopPropagation();showPlatePopup('${ex.name.replace(/'/g,"\\'")}','${pw}',event)">${pl}: ${ps}</div>`;
             }
