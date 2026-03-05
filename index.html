@@ -1805,6 +1805,12 @@ function migrateData(){
     });
     data._nameMigV97=true;
   }
+  // v121: migrate user renames from editor
+  if(!data._nameMigV121){
+    const renames={'Quad Focused Leg Press':'Quad Focused Leg Press','Rack Pulls':'Rack Pulls'};
+    for(const oldN in renames)migrateExRename(oldN,renames[oldN]);
+    data._nameMigV121=true;
+  }
   saveData();
 }
 
@@ -1840,7 +1846,7 @@ function initCustomABCD09(){
       {name:'Barbell Hack Squat',sets:[{weight:50,reps:8,type:'warmup'},{weight:50,reps:8,type:'warmup'},{weight:95,reps:10,type:'working'},{weight:100,reps:10,type:'working'},{weight:105,reps:10,type:'working'}]},
       {name:'Agachamento Smith',sets:[{weight:40,reps:8,type:'warmup'},{weight:40,reps:8,type:'warmup'},{weight:85,reps:10,type:'working'},{weight:85,reps:10,type:'working'},{weight:80,reps:10,type:'working'}]},
       {name:'Single Leg Good Morning (Smith)',sets:[{weight:15,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
-      {name:'Quad Focused Leg Press (3 Notches)',sets:[{weight:50,reps:8,type:'warmup'},{weight:50,reps:8,type:'warmup'},{weight:90,reps:10,type:'working'},{weight:95,reps:10,type:'working'},{weight:100,reps:10,type:'working'}]},
+      {name:'Quad Focused Leg Press',sets:[{weight:50,reps:8,type:'warmup'},{weight:50,reps:8,type:'warmup'},{weight:90,reps:10,type:'working'},{weight:95,reps:10,type:'working'},{weight:100,reps:10,type:'working'}]},
       {name:'Calves Leg Press',sets:[{weight:100,reps:10,type:'working'},{weight:105,reps:10,type:'working'},{weight:110,reps:10,type:'working'}]},
       {name:'Weighted Crunches (Bosu Ball)',sets:[{weight:26,reps:12,type:'working'},{weight:26,reps:12,type:'working'},{weight:25,reps:12,type:'working'}]}
     ],duration:0},
@@ -1848,7 +1854,7 @@ function initCustomABCD09(){
       {name:'Supino Inclinado (Smith) (30°)',sets:[{weight:60,reps:8,type:'warmup'},{weight:60,reps:8,type:'warmup'},{weight:120,reps:10,type:'working'},{weight:125,reps:10,type:'working'},{weight:130,reps:10,type:'working'}]},
       {name:'Dumbell Fly (Flat)',sets:[{weight:15,reps:8,type:'warmup'},{weight:15,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
       {name:'JM Press',sets:[{weight:10,reps:8,type:'warmup'},{weight:30,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:20,reps:10,type:'working'}]},
-      {name:'Rack Pulls (Rack 3)',sets:[{weight:100,reps:8,type:'warmup'},{weight:100,reps:8,type:'warmup'},{weight:205,reps:10,type:'working'},{weight:210,reps:10,type:'working'},{weight:205,reps:10,type:'working'}]},
+      {name:'Rack Pulls',sets:[{weight:100,reps:8,type:'warmup'},{weight:100,reps:8,type:'warmup'},{weight:205,reps:10,type:'working'},{weight:210,reps:10,type:'working'},{weight:205,reps:10,type:'working'}]},
       {name:'Pullover',sets:[{weight:12.5,reps:8,type:'warmup'},{weight:12.5,reps:8,type:'warmup'},{weight:27.5,reps:10,type:'working'},{weight:25,reps:10,type:'working'},{weight:22.5,reps:10,type:'working'}]},
       {name:'Rosca 45',sets:[{weight:15,reps:8,type:'warmup'},{weight:15,reps:8,type:'warmup'},{weight:35,reps:10,type:'working'},{weight:35,reps:10,type:'working'},{weight:30,reps:10,type:'working'}]},
       {name:'Barbell Dead Stop Cheat Curl',sets:[{weight:15,reps:8,type:'warmup'},{weight:35,reps:10,type:'working'},{weight:30,reps:10,type:'working'},{weight:25,reps:10,type:'working'}]},
@@ -1885,7 +1891,7 @@ function initCustomABCD09(){
       ['Barbell Hack Squat','Barbell Hack Squat','quads','S','2x8wu+3x10',120],
       ['Agachamento Smith','Smith Machine Squat','quads','S','2x8wu+3x10',120],
       ['Single Leg Good Morning (Smith)','Single Leg Good Morning Smith','hamstrings','S','1x8wu+3x10',90],
-      ['Quad Focused Leg Press (3 Notches)','Quad Focused Leg Press','quads','S','2x8wu+3x10',90],
+      ['Quad Focused Leg Press','Quad Focused Leg Press','quads','S','2x8wu+3x10',90],
       ['Calves Leg Press','Calf Raise Leg Press','calves','S','3x8-12',60],
       ['Weighted Crunches (Bosu Ball)','Weighted Crunches Bosu','abs','S','3x12',60]
     ]},
@@ -1893,7 +1899,7 @@ function initCustomABCD09(){
       ['Supino Inclinado (Smith) (30°)','Incline Smith Bench 30°','chest','S','2x8wu+3x10',120],
       ['Dumbell Fly (Flat)','Flat Dumbbell Fly','chest','S','2x8wu+3x10',90],
       ['JM Press','JM Press','triceps','S','1x8wu+3x10',80],
-      ['Rack Pulls (Rack 3)','Rack Pulls','back','S','2x8wu+3x10',120],
+      ['Rack Pulls','Rack Pulls','back','S','2x8wu+3x10',120],
       ['Pullover','Pullover','back','S','2x8wu+3x10',90],
       ['Rosca 45','Incline Dumbbell Curl','biceps','S','2x8wu+3x10',80],
       ['Barbell Dead Stop Cheat Curl','Barbell Dead Stop Cheat Curl','biceps','S','1x8wu+3x10',80],
@@ -4160,6 +4166,7 @@ function doAltCustom(ei){
 let editorPid='';
 let editorDay='';
 let editorExercises=[];
+let editorOrigNames=[];
 
 function openEditor(pid){
   editorPid=pid||data.activeProgram;
@@ -4207,6 +4214,7 @@ function loadEditorDay(){
   const dayData=prog.days[editorDay];if(!dayData)return;
   // Deep copy exercises into editor state
   editorExercises=dayData.ex.map(e=>[...e]);
+  editorOrigNames=editorExercises.map(e=>e[0]);
   renderEditorExercises();
 }
 
@@ -4280,6 +4288,22 @@ function addEditorEx(){
   modal.scrollTop=modal.scrollHeight;
 }
 
+function migrateExRename(oldName,newName){
+  if(!oldName||!newName||oldName===newName)return;
+  // Migrate logs
+  (data.logs||[]).forEach(log=>{
+    (log.exercises||[]).forEach(ex=>{if(ex.name===oldName)ex.name=newName});
+  });
+  // Migrate PRs
+  const oldId=exId(oldName),newId=exId(newName);
+  if(data.prs&&data.prs[oldId]&&!data.prs[newId]){data.prs[newId]=data.prs[oldId];delete data.prs[oldId]}
+  // Migrate localStorage stores
+  [['zercher_holds',getHolds,saveHolds],['zercher_notes',getExNotes,saveExNotes],['zercher_starts',getStartWeights,saveStartWeights],['zercher_platepref',getPlatePref,savePlatePref],['zercher_noplate',getNoPlate,saveNoPlate],['zercher_singleend',getSingleEnd,saveSingleEnd]].forEach(([key,getter,setter])=>{
+    const obj=getter();
+    if(obj[oldName]!==undefined){obj[newName]=obj[oldName];delete obj[oldName];setter(obj)}
+  });
+}
+
 function saveEditorDay(){
   // Read all current input values from DOM
   const container=document.getElementById('editorDayContent');
@@ -4296,6 +4320,14 @@ function saveEditorDay(){
     if(inputs[4])editorExercises[i][3]=inputs[4].value;  // technique (select)
     if(inputs[5])editorExercises[i][2]=inputs[5].value;  // muscle (select)
   });
+
+  // Migrate data for any renamed exercises
+  editorExercises.forEach((e,i)=>{
+    if(editorOrigNames[i]&&e[0]!==editorOrigNames[i]){
+      migrateExRename(editorOrigNames[i],e[0]);
+    }
+  });
+  editorOrigNames=editorExercises.map(e=>e[0]);
 
   // Save to customPrograms
   if(!data.customPrograms[editorPid])data.customPrograms[editorPid]={days:{}};
