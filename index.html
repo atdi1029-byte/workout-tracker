@@ -108,6 +108,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .plate-bar-row span{color:var(--text-dim);margin-right:2px}
 .plate-bar-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-size:0.75rem;cursor:pointer}
 .plate-bar-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(160,148,106,0.15)}
+.plate-bar-btn.impossible{opacity:0.25;cursor:default;text-decoration:line-through;pointer-events:none}
 .plate-breakdown{margin:8px 0;padding:10px;background:var(--bg-input);border-radius:var(--radius-sm);border:1px solid var(--border)}
 .plate-per-side{font-size:1.05rem;color:var(--text-bright);font-weight:600;margin-bottom:4px}
 .plate-detail{font-size:0.75rem;color:var(--text-dim);margin-top:4px}
@@ -122,6 +123,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .plate-bar-vis{width:40px;height:8px;background:var(--iron-deep);border-radius:2px}
 .plate-corner{font-size:0.6rem;color:var(--iron);margin-top:4px;cursor:pointer}
 .plate-corner:active{color:var(--gold)}
+.plate-corner-show{font-size:0.6rem;color:var(--text-dim);margin-top:4px;cursor:pointer;opacity:0.4}
+.plate-corner-show:active{opacity:0.8}
 
 /* SET ROWS */
 .set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
@@ -1519,9 +1522,10 @@ function renderPlatePopup(exName,weight){
   if(!breakdownStr)breakdownStr='No plates needed';
 
   const esc=exName.replace(/'/g,"\\'");
+  const perSide=Math.round((weight/2)*10)/10;
   pop.innerHTML=`<button class="plate-popup-close" onclick="document.getElementById('platePopup').remove()">&times;</button>
     <div class="plate-popup-title">Plates: ${exName}</div>
-    <div class="plate-bar-row"><span>Use:</span>${ALL_PLATES.map(p=>`<button class="plate-bar-btn${enabled.includes(p)?' active':''}" onclick="togglePlateSize('${esc}',${p},${weight})">${p}</button>`).join('')}</div>
+    <div class="plate-bar-row"><span>Use:</span>${ALL_PLATES.map(p=>{const imp=p>perSide;const cls=imp?' impossible':enabled.includes(p)?' active':'';return`<button class="plate-bar-btn${cls}"${imp?'':` onclick="togglePlateSize('${esc}',${p},${weight})"`}>${p}</button>`;}).join('')}</div>
     <div class="plate-breakdown">
       <div class="plate-per-side">Each side: ${breakdownStr}</div>
       <div class="plate-detail">${result.perSide} lbs per side</div>
@@ -2205,7 +2209,12 @@ function renderExerciseCards(){
           <div class="ex-note-corner" onclick="event.stopPropagation();promptExNote('${ex.name.replace(/'/g,"\\'")}')">
             ${getExNote(ex.name)?`<span class="note-text">${getExNote(ex.name)}</span>`:'<span class="note-pencil">&#9998;</span>'}
           </div>${(()=>{
-            if(isAbs||!showPlateForEx(ex.name))return'';
+            if(isAbs)return'';
+            if(!showPlateForEx(ex.name)){
+              const np=getNoPlate();
+              if(np[ex.name]===true)return`<div class="plate-corner-show" onclick="event.stopPropagation();toggleNoPlate('${ex.name.replace(/'/g,"\\'")}')">&#8960; show</div>`;
+              return'';
+            }
             const wuSets=ex.sets.filter(s=>s.type==='warmup');
             const s1Set=ex.sets.find(s=>s.type==='working');
             const allWuDone=wuSets.length>0&&wuSets.every(s=>s.done);
