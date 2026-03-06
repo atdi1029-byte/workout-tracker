@@ -176,9 +176,9 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 /* RUNNING TAB */
 .run-header{text-align:center;margin-bottom:14px}
 .run-block-label{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);letter-spacing:1px}
-.run-week-label{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-top:2px}
+.run-week-label{font-size:0.75rem;color:var(--text);text-transform:uppercase;letter-spacing:2px;margin-top:2px}
 .run-week-nav{display:flex;gap:8px;align-items:center;justify-content:center;margin:10px 0}
-.run-week-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.8rem}
+.run-week-btn{background:none;border:1px solid rgba(106,136,112,0.4);color:var(--green);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.8rem;font-weight:700}
 .run-week-btn:disabled{opacity:0.3;cursor:default}
 .run-week-current{font-size:0.9rem;color:var(--text-bright);font-weight:700;min-width:80px;text-align:center}
 .run-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
@@ -189,20 +189,20 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .run-type-badge.speed{background:rgba(160,148,106,0.15);color:var(--gold);border:1px solid rgba(160,148,106,0.3)}
 .run-type-badge.long{background:rgba(128,144,168,0.15);color:var(--iron);border:1px solid rgba(128,144,168,0.3)}
 .run-target{font-size:0.82rem;color:var(--text);margin:8px 0}
-.run-notes{font-size:0.78rem;color:var(--text-dim);font-style:italic;margin-bottom:10px;line-height:1.4}
+.run-notes{font-size:0.78rem;color:var(--text);font-style:italic;margin-bottom:10px;line-height:1.4}
 .run-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .run-input-group{position:relative}
-.run-input-group label{display:block;font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Oswald',sans-serif}
+.run-input-group label{display:block;font-size:0.65rem;color:var(--text);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:'Oswald',sans-serif}
 .run-input-group input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.9rem;width:100%;text-align:center}
 .run-input-group input:focus{outline:none;border-color:var(--iron)}
-.run-input-unit{position:absolute;right:8px;bottom:10px;font-size:0.65rem;color:var(--text-dim)}
+.run-input-unit{position:absolute;right:8px;bottom:10px;font-size:0.65rem;color:var(--text)}
 .run-pace{font-size:0.82rem;color:var(--iron);text-align:center;margin:6px 0;font-family:'Oswald',sans-serif}
 .run-log-btn{width:100%;padding:10px;border:1px solid rgba(106,136,112,0.4);background:rgba(106,136,112,0.1);color:var(--green);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer}
 .run-log-btn:active{background:rgba(106,136,112,0.2)}
 .run-summary{margin-top:14px;padding:12px;background:rgba(14,16,20,0.5);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius)}
-.run-summary-title{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-family:'Oswald',sans-serif}
+.run-summary-title{font-size:0.75rem;color:var(--text-bright);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-family:'Oswald',sans-serif}
 .run-stat-row{display:flex;justify-content:space-between;margin-bottom:6px}
-.run-stat-label{font-size:0.82rem;color:var(--text)}
+.run-stat-label{font-size:0.82rem;color:var(--text-bright)}
 .run-stat-value{font-size:0.82rem;color:var(--text-bright);font-weight:600}
 .run-block-btn{width:100%;padding:10px;margin-top:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;cursor:pointer;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px}
 .run-milestone{text-align:center;padding:10px;margin-top:10px;background:rgba(160,148,106,0.1);border:1px solid rgba(160,148,106,0.25);border-radius:var(--radius);color:var(--gold);font-family:'Oswald',sans-serif;font-size:0.85rem}
@@ -1345,6 +1345,96 @@ const RUNNING_PLANS = {
         {type:'long',label:'Long Run',targetMin:45,notes:'Block 2 finale! 45 min continuous. Compare to week 1. Look how far you came.'}
       ]}
     ]
+  },
+  BLOCK3:{
+    label:'Block 3 — Building Distance',
+    weeks:[
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:30,notes:'Welcome to Block 3. Easy 30 min to start.'},
+        {type:'speed',label:'Tempo Run',targetMin:30,notes:'5 min easy + 15 min tempo + 5 min easy + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:48,notes:'Pushing past 45. Slow and steady. You are ready for this.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:30,notes:'Easy 30. Stay relaxed.'},
+        {type:'speed',label:'Intervals',targetMin:32,notes:'5 min easy + 6x(3 min hard / 90s easy jog) + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:50,notes:'50 min! Half way to your goal. Keep it conversational.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:32,notes:'Easy 32. Focus on form.'},
+        {type:'speed',label:'Fartlek',targetMin:32,notes:'5 min easy + 20 min fartlek (speed up for landmarks — mailbox, tree, corner) + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:55,notes:'55 min. Walk 1 min at 30 and 45 if needed. No shame.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Recovery Run',targetMin:25,notes:'Recovery week. Your legs earned this rest.'},
+        {type:'speed',label:'Easy Tempo',targetMin:25,notes:'5 min easy + 10 min moderate tempo + 5 min easy + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:40,notes:'Recovery. Cut it back. Easy pace.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:32,notes:'Back to building. Easy pace.'},
+        {type:'speed',label:'Tempo + Intervals',targetMin:34,notes:'5 min easy + 12 min tempo + 3 min easy + 4x(2 min hard / 1 min easy) + 4 min cool'},
+        {type:'long',label:'Long Run',targetMin:58,notes:'Almost 60! You are in distance runner territory now.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Easy 35. Breathing should be comfortable throughout.'},
+        {type:'speed',label:'Intervals',targetMin:35,notes:'5 min easy + 5x(4 min hard / 2 min easy jog) + 5 min cool. Long intervals — build stamina.'},
+        {type:'long',label:'Long Run',targetMin:60,notes:'60 min! One full hour of running. Landmark achievement.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Easy 35. Stay consistent.'},
+        {type:'speed',label:'Tempo Run',targetMin:35,notes:'5 min easy + 20 min tempo (longest tempo yet!) + 5 min easy + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:65,notes:'65 min. Slow and controlled. Walk 1 min every 20 min if needed.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:25,notes:'Taper. Keep it light for the test.'},
+        {type:'speed',label:'Speed Test',targetMin:28,notes:'5 min easy + 18 min as fast as you can sustain + 5 min cool. You should crush your Block 2 time!'},
+        {type:'long',label:'Long Run',targetMin:70,notes:'Block 3 finale! 70 min continuous. You are an endurance machine.'}
+      ]}
+    ]
+  },
+  BLOCK4:{
+    label:'Block 4 — Peak Performance',
+    weeks:[
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Block 4. Your fitness is solid. Easy 35 to start.'},
+        {type:'speed',label:'Intervals',targetMin:35,notes:'5 min easy + 8x(2 min hard / 1 min easy jog) + 6 min cool'},
+        {type:'long',label:'Long Run',targetMin:70,notes:'70 min easy. Same as Block 3 finale — now it is your warm-up.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Easy 35. Stay loose.'},
+        {type:'speed',label:'Tempo Run',targetMin:38,notes:'5 min easy + 22 min tempo + 5 min easy + 6 min cool. Push that tempo pace.'},
+        {type:'long',label:'Long Run',targetMin:75,notes:'75 min. New territory. Keep it easy and enjoy the distance.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Easy 35. Focus on cadence and breathing.'},
+        {type:'speed',label:'Fartlek + Tempo',targetMin:38,notes:'5 min easy + 10 min tempo + 2 min easy + 10 min fartlek + 5 min easy + 6 min cool'},
+        {type:'long',label:'Long Run',targetMin:80,notes:'80 min! If you need walk breaks, take them. Just keep the total time.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Recovery Run',targetMin:28,notes:'Recovery week. Let the gains settle in.'},
+        {type:'speed',label:'Easy Intervals',targetMin:28,notes:'5 min easy + 6x(90s fast / 2 min easy) + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:55,notes:'Recovery. Short and easy.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Back to peak building. Easy and controlled.'},
+        {type:'speed',label:'Tempo + Intervals',targetMin:40,notes:'5 min easy + 15 min tempo + 3 min easy + 5x(2 min hard / 1 min easy) + 5 min cool'},
+        {type:'long',label:'Long Run',targetMin:80,notes:'80 min again. This should feel easier than week 3. That is progress.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Easy 35. You are in peak shape.'},
+        {type:'speed',label:'Intervals',targetMin:40,notes:'5 min easy + 4x(5 min hard / 2 min easy jog) + 7 min cool. 5-min intervals are elite.'},
+        {type:'long',label:'Long Run',targetMin:85,notes:'85 min! Almost at 90. Slow pace. Walk 1 min at 40 and 70 if needed.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:35,notes:'Easy 35. Almost done with the program.'},
+        {type:'speed',label:'Tempo Run',targetMin:40,notes:'5 min easy + 25 min tempo + 5 min easy + 5 min cool. Longest tempo of the entire program.'},
+        {type:'long',label:'Long Run',targetMin:90,notes:'90 MIN! Your absolute peak. This is the run you trained 32 weeks for. Enjoy every minute.'}
+      ]},
+      {runs:[
+        {type:'easy',label:'Easy Run',targetMin:25,notes:'Final taper. Light and easy.'},
+        {type:'speed',label:'Final Speed Test',targetMin:30,notes:'5 min easy + 20 min as fast as you can sustain + 5 min cool. Compare to all your previous tests!'},
+        {type:'long',label:'Victory Lap',targetMin:60,notes:'Not about distance today. 60 min at whatever pace feels good. You completed the program. You are a runner.'}
+      ]}
+    ]
   }
 };
 
@@ -2316,7 +2406,10 @@ function renderRunView(container){
   }
 
   // Block controls
-  html+=`<button class="run-block-btn" onclick="switchRunBlock()">${currentRunBlock==='BLOCK1'?'Switch to Block 2':'Switch to Block 1'}</button>`;
+  const blockOrder=['BLOCK1','BLOCK2','BLOCK3','BLOCK4'];
+  const nextBlockIdx=(blockOrder.indexOf(currentRunBlock)+1)%blockOrder.length;
+  const nextBlockLabel=RUNNING_PLANS[blockOrder[nextBlockIdx]].label;
+  html+=`<button class="run-block-btn" onclick="switchRunBlock()">Next: ${nextBlockLabel}</button>`;
   html+=`<button class="run-block-btn" onclick="resetRunBlock()" style="margin-top:6px;color:var(--red);border-color:rgba(144,80,80,0.3)">Reset Week Counter</button>`;
 
   container.innerHTML=html;
@@ -2381,12 +2474,13 @@ function changeRunWeek(delta){
 }
 
 function switchRunBlock(){
-  if(currentRunBlock==='BLOCK1'){
-    if(!confirm('Switch to Block 2? This is for after completing Block 1.'))return;
-    currentRunBlock='BLOCK2';
-  } else {
-    currentRunBlock='BLOCK1';
-  }
+  const blocks=['BLOCK1','BLOCK2','BLOCK3','BLOCK4'];
+  const idx=blocks.indexOf(currentRunBlock);
+  const nextIdx=(idx+1)%blocks.length;
+  const nextBlock=blocks[nextIdx];
+  const nextLabel=RUNNING_PLANS[nextBlock].label;
+  if(!confirm('Switch to '+nextLabel+'?'))return;
+  currentRunBlock=nextBlock;
   currentRunWeek=1;
   localStorage.setItem('run_block',currentRunBlock);
   localStorage.setItem('run_week_manual',1);
