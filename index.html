@@ -3632,33 +3632,38 @@ function renderRunProgress(){
     });
     html+=`</div>`;
   }
-  // Speed Run History (all speed runs with pace data)
-  const speedRuns=logs.filter(l=>l.type==='speed'&&l.pace&&l.pace>0);
-  if(speedRuns.length>0){
-    const sorted=speedRuns.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-    let prevPace=null;
-    html+=`<div class="card" style="margin-bottom:14px">
-      <div class="card-title" style="margin-bottom:10px">&#x23F1; Speed Run History</div>`;
-    sorted.forEach(t=>{
-      const bl=t.block?t.block.replace('BLOCK','B'):'';
-      const ps=fmtPace(t.pace);
-      let imp='';
-      if(prevPace){
-        if(t.pace<prevPace){
-          imp=` <span style="color:var(--green)">&uarr; ${Math.round((1-t.pace/prevPace)*100)}%</span>`;
-        }else if(t.pace>prevPace){
-          imp=` <span style="color:var(--red)">&darr; ${Math.round((t.pace/prevPace-1)*100)}%</span>`;
+  // Speed Run History with toggle
+  const speedAll=logs.filter(l=>l.type==='speed'&&l.pace&&l.pace>0).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const speedTests=speedAll.filter(l=>l.label&&l.label.includes('Speed Test'));
+  if(speedAll.length>0){
+    const renderRows=(arr)=>{
+      let rows='',pp=null;
+      arr.forEach(t=>{
+        const bl=t.block?t.block.replace('BLOCK','B'):'';
+        const ps=fmtPace(t.pace);
+        let imp='';
+        if(pp){
+          if(t.pace<pp)imp=` <span style="color:var(--green)">&uarr; ${Math.round((1-t.pace/pp)*100)}%</span>`;
+          else if(t.pace>pp)imp=` <span style="color:var(--red)">&darr; ${Math.round((t.pace/pp-1)*100)}%</span>`;
         }
-      }
-      html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
-          <span class="run-stat-label">${bl} W${t.weekNum} ${t.label||''}</span>
-          <span class="run-stat-value">${t.actualMin}m &bull; ${t.actualKm}mi &bull; ${ps}${imp}</span>
-        </div>
-      </div>`;
-      prevPace=t.pace;
-    });
-    html+=`</div>`;
+        rows+=`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+            <span class="run-stat-label">${bl} W${t.weekNum} ${t.label||''}</span>
+            <span class="run-stat-value">${t.actualMin}m &bull; ${t.actualKm}mi &bull; ${ps}${imp}</span>
+          </div>
+        </div>`;
+        pp=t.pace;
+      });
+      return rows;
+    };
+    html+=`<div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="card-title" style="margin:0">&#x23F1; Speed Run History</div>
+        <button onclick="document.getElementById('speed-all').style.display=document.getElementById('speed-all').style.display==='none'?'':'none';document.getElementById('speed-tests').style.display=document.getElementById('speed-tests').style.display==='none'?'':'none';this.textContent=this.textContent==='Tests Only'?'All Runs':'Tests Only'" style="background:none;border:1px solid var(--border);color:var(--gold);border-radius:var(--radius-sm);padding:4px 10px;font-family:'Oswald',sans-serif;font-size:0.7rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px">${speedTests.length>0?'Tests Only':'All Runs'}</button>
+      </div>
+      <div id="speed-all">${renderRows(speedAll)}</div>
+      <div id="speed-tests" style="display:none">${speedTests.length>0?renderRows(speedTests):'<div style="padding:12px;text-align:center;color:var(--text-dim);font-size:0.82rem">No speed tests logged yet. Complete a Week 8 speed test!</div>'}</div>
+    </div>`;
   }
   return html;
 }
