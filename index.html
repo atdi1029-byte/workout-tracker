@@ -2306,6 +2306,28 @@ function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(
 function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routine',n);localStorage.setItem('abs_routine_week',weekStart());currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 
 // ── RUNNING TAB ──
+function getAdaptiveTarget(runType,blockDefault){
+  // Find last completed run of this type
+  const logs=data.runLogs||[];
+  const increment=runType==='long'?3:2;
+  // Block caps (max target per block)
+  const blockCaps={
+    BLOCK1:{easy:30,speed:25,long:35},
+    BLOCK2:{easy:35,speed:32,long:45},
+    BLOCK3:{easy:35,speed:35,long:70},
+    BLOCK4:{easy:35,speed:40,long:90}
+  };
+  const cap=(blockCaps[currentRunBlock]||{})[runType]||blockDefault;
+  // Find most recent log of this run type
+  for(let i=logs.length-1;i>=0;i--){
+    if(logs[i].type===runType&&logs[i].actualMin>0){
+      const adaptive=Math.round(logs[i].actualMin+increment);
+      return Math.min(adaptive,cap);
+    }
+  }
+  return blockDefault;// No history — use plan default
+}
+
 function renderRunView(container){
   const block=RUNNING_PLANS[currentRunBlock];
   if(!block){container.innerHTML='<div style="text-align:center;color:var(--text-dim);padding:40px">No running plan found.</div>';return}
@@ -2317,9 +2339,14 @@ function renderRunView(container){
   const allLogs=data.runLogs||[];
   const totalMin=allLogs.reduce((s,l)=>s+(l.actualMin||0),0);
   const totalKm=allLogs.reduce((s,l)=>s+(l.actualKm||0),0);
-  // Estimated calories: ~100 cal per 10 min running (rough avg)
-  const estCal=Math.round(totalMin*10);
-  const estLbs=estCal>0?(estCal/3500).toFixed(1):'0';
+  // Calories: use logged values when available, estimate for the rest
+  const realCal=allLogs.reduce((s,l)=>s+(l.calories||0),0);
+  const logsWithCal=allLogs.filter(l=>l.calories>0);
+  const logsWithoutCal=allLogs.filter(l=>!l.calories);
+  const estFromTime=Math.round(logsWithoutCal.reduce((s,l)=>s+(l.actualMin||0),0)*10);
+  const totalCal=realCal+estFromTime;
+  const calLabel=logsWithCal.length>0&&logsWithoutCal.length>0?'Calories (mixed)':logsWithCal.length>0?'Calories':'Est. calories';
+  const estLbs=totalCal>0?(totalCal/3500).toFixed(1):'0';
   // Distance milestones
   const kmMilestones=[5,10,25,50,100,200,500];
   const nextMilestone=kmMilestones.find(m=>m>totalKm)||null;
@@ -2340,6 +2367,7 @@ function renderRunView(container){
   week.runs.forEach((run,ri)=>{
     const logged=weekLogs.find(l=>l.runIndex===ri);
     const isComplete=!!logged;
+    const adaptiveTarget=getAdaptiveTarget(run.type,run.targetMin);
     const typeIcon=run.type==='easy'?'&#x1F6B6;':run.type==='speed'?'&#x26A1;':'&#x1F3C3;';
     html+=`<div class="run-card${isComplete?' completed':''}" id="run-card-${ri}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -2349,7 +2377,7 @@ function renderRunView(container){
         </div>
         <span class="run-type-badge ${run.type}">${run.type}</span>
       </div>
-      <div class="run-target">Target: ${run.targetMin} min</div>
+      <div class="run-target">Target: ${adaptiveTarget} min</div>
       <div class="run-notes">${run.notes}</div>`;
     if(isComplete){
       const paceStr=logged.pace?fmtPace(logged.pace):'--';
@@ -2358,12 +2386,15 @@ function renderRunView(container){
         html+=`<div class="run-stat-row"><span class="run-stat-label">Distance</span><span class="run-stat-value">${logged.actualKm} km</span></div>`;
         html+=`<div class="run-stat-row"><span class="run-stat-label">Pace</span><span class="run-stat-value">${paceStr}</span></div>`;
       }
+      if(logged.calories){
+        html+=`<div class="run-stat-row"><span class="run-stat-label">Calories</span><span class="run-stat-value">${logged.calories} cal</span></div>`;
+      }
       html+=`<div class="run-status" style="text-align:center;margin-top:6px;font-size:0.82rem">&#10003; Logged ${logged.date}</div>`;
     } else {
       html+=`<div class="run-inputs">
         <div class="run-input-group">
           <label>Time</label>
-          <input type="number" inputmode="decimal" id="run-time-${ri}" placeholder="${run.targetMin}" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
+          <input type="number" inputmode="decimal" id="run-time-${ri}" placeholder="${adaptiveTarget}" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
           <span class="run-input-unit">min</span>
         </div>
         <div class="run-input-group">
@@ -2371,6 +2402,14 @@ function renderRunView(container){
           <input type="number" inputmode="decimal" id="run-dist-${ri}" placeholder="km" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
           <span class="run-input-unit">km</span>
         </div>
+      </div>
+      <div class="run-inputs" style="margin-top:0">
+        <div class="run-input-group">
+          <label>Calories (opt.)</label>
+          <input type="number" inputmode="numeric" id="run-cal-${ri}" placeholder="from app" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
+          <span class="run-input-unit">cal</span>
+        </div>
+        <div></div>
       </div>
       <div class="run-pace" id="run-pace-${ri}"></div>
       <button class="run-log-btn" onclick="logRun(${ri})">Log Run</button>`;
@@ -2396,7 +2435,7 @@ function renderRunView(container){
       <div class="run-stat-row"><span class="run-stat-label">Total runs</span><span class="run-stat-value">${allLogs.length}</span></div>
       <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(totalMin)} min</span></div>
       ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} km</span></div>`:''}
-      <div class="run-stat-row"><span class="run-stat-label">Est. calories burned</span><span class="run-stat-value">${estCal.toLocaleString()}</span></div>
+      <div class="run-stat-row"><span class="run-stat-label">${calLabel}</span><span class="run-stat-value">${totalCal.toLocaleString()}</span></div>
       <div class="run-stat-row"><span class="run-stat-label">Est. lbs burned</span><span class="run-stat-value">${estLbs} lbs</span></div>
     </div>`;
     if(nextMilestone&&totalKm>0){
@@ -2445,7 +2484,9 @@ function logRun(runIndex){
   const timeVal=parseFloat(document.getElementById('run-time-'+runIndex).value);
   if(!timeVal||timeVal<=0){toast('Enter your time!');return}
   const distVal=parseFloat(document.getElementById('run-dist-'+runIndex).value)||null;
+  const calVal=parseInt(document.getElementById('run-cal-'+runIndex).value)||null;
   const pace=(distVal&&distVal>0)?(timeVal/distVal):null;
+  const adaptiveTarget=getAdaptiveTarget(run.type,run.targetMin);
   const entry={
     id:'run_'+Date.now(),
     date:dateStr(),
@@ -2455,10 +2496,11 @@ function logRun(runIndex){
     runIndex:runIndex,
     type:run.type,
     label:run.label,
-    targetMin:run.targetMin,
+    targetMin:adaptiveTarget,
     actualMin:Math.round(timeVal*10)/10,
     actualKm:distVal?Math.round(distVal*100)/100:null,
-    pace:pace?Math.round(pace*100)/100:null
+    pace:pace?Math.round(pace*100)/100:null,
+    calories:calVal
   };
   if(!data.runLogs)data.runLogs=[];
   data.runLogs.push(entry);
@@ -3307,8 +3349,12 @@ function renderRunProgress(){
   const totalRuns=logs.length;
   const totalMin=logs.reduce((s,l)=>s+(l.actualMin||0),0);
   const totalKm=logs.reduce((s,l)=>s+(l.actualKm||0),0);
-  const estCal=Math.round(totalMin*10);
-  const estLbs=estCal>0?(estCal/3500).toFixed(1):'0';
+  const realCal=logs.reduce((s,l)=>s+(l.calories||0),0);
+  const logsNoCal=logs.filter(l=>!l.calories);
+  const estFromTime2=Math.round(logsNoCal.reduce((s,l)=>s+(l.actualMin||0),0)*10);
+  const totalCal2=realCal+estFromTime2;
+  const calLabel2=logs.some(l=>l.calories>0)&&logsNoCal.length>0?'Calories (mixed)':logs.some(l=>l.calories>0)?'Calories':'Est. calories';
+  const estLbs=(totalCal2/3500).toFixed(1);
   const paced=logs.filter(l=>l.pace&&l.pace>0);
   const bestPace=paced.length>0?Math.min(...paced.map(l=>l.pace)):0;
   const bestPaceStr=bestPace>0?fmtPace(bestPace):'--';
@@ -3327,7 +3373,7 @@ function renderRunProgress(){
     <div class="run-stat-row"><span class="run-stat-label">Avg pace</span><span class="run-stat-value">${avgPaceStr}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Best pace</span><span class="run-stat-value">${bestPaceStr}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Longest run</span><span class="run-stat-value">${longestMin} min</span></div>
-    <div class="run-stat-row"><span class="run-stat-label">Est. calories burned</span><span class="run-stat-value">${estCal.toLocaleString()}</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">${calLabel2}</span><span class="run-stat-value">${totalCal2.toLocaleString()}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Est. lbs burned</span><span class="run-stat-value">${estLbs} lbs</span></div>
   </div>`;
   if(weekKeys.length>0){
