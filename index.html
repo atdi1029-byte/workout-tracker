@@ -174,7 +174,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .workout-timer{text-align:center;color:var(--green-bright);font-size:0.85rem;padding:6px 0;margin-bottom:4px;font-family:'Oswald',sans-serif;letter-spacing:1px}
 
 /* RUNNING TAB */
-.run-header{text-align:center;margin-bottom:14px}
+.run-header{text-align:center;margin-bottom:14px;background:rgba(10,12,16,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(128,144,168,0.15);border-radius:var(--radius);padding:14px}
 .run-block-label{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);letter-spacing:1px}
 .run-week-label{font-size:0.75rem;color:var(--text);text-transform:uppercase;letter-spacing:2px;margin-top:2px}
 .run-week-nav{display:flex;gap:8px;align-items:center;justify-content:center;margin:10px 0}
@@ -206,6 +206,20 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .run-stat-value{font-size:0.82rem;color:var(--text-bright);font-weight:600}
 .run-block-btn{width:100%;padding:10px;margin-top:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;cursor:pointer;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px}
 .run-milestone{text-align:center;padding:10px;margin-top:10px;background:rgba(160,148,106,0.1);border:1px solid rgba(160,148,106,0.25);border-radius:var(--radius);color:var(--gold);font-family:'Oswald',sans-serif;font-size:0.85rem}
+/* Interval Timer */
+.run-timer-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,12,16,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.run-timer-phase{font-size:1.3rem;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:3px;margin-bottom:8px;font-weight:700}
+.run-timer-countdown{font-size:5rem;font-family:'Oswald',sans-serif;font-weight:700;line-height:1}
+.run-timer-next{font-size:0.85rem;color:var(--text-dim);margin-top:20px}
+.run-timer-elapsed{font-size:0.9rem;color:var(--text);margin-top:8px}
+.run-timer-controls{display:flex;gap:16px;margin-top:30px}
+.run-timer-btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px}
+.run-timer-start-btn{width:100%;padding:8px;margin-bottom:6px;border:1px solid rgba(160,148,106,0.4);background:rgba(160,148,106,0.1);color:var(--gold);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer}
+.run-timer-start-btn:active{background:rgba(160,148,106,0.2)}
+.run-timer-dots{margin:16px 0;line-height:18px}
+/* Extra Run */
+.run-extra-card{border-style:dashed;opacity:0.7}
+.run-extra-card:focus-within{opacity:1}
 
 /* PROGRESS VIEW */
 .chart-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin:12px 0}
@@ -1260,43 +1274,43 @@ const RUNNING_PLANS = {
     label:'Block 1 — Base Building',
     weeks:[
       {runs:[
-        {type:'easy',label:'Easy Run',targetMin:15,notes:'Walk breaks OK. Goal: 15 min moving. Conversational pace.'},
-        {type:'speed',label:'Walk/Run Intervals',targetMin:18,notes:'3 min easy + 5x(1 min fast / 1.5 min walk) + 2.5 min easy'},
-        {type:'long',label:'Long Run',targetMin:20,notes:'Slow & steady. Walk 1 min every 5 min if needed.'}
+        {type:'easy',label:'Easy Run',targetMin:15,notes:'Easy jog. Conversational pace the whole time.'},
+        {type:'speed',label:'Jog/Sprint',targetMin:18,notes:'3 min jog + 5x(30s sprint / 90s jog) + 3 min cool. Sprint = 80-90% effort.'},
+        {type:'long',label:'Long Run',targetMin:20,notes:'Slow & steady. Keep it easy the whole way.'}
       ]},
       {runs:[
         {type:'easy',label:'Easy Run',targetMin:18,notes:'Keep it easy. Breathe through nose if you can.'},
-        {type:'speed',label:'Walk/Run Intervals',targetMin:20,notes:'3 min easy + 6x(1 min fast / 1.5 min walk) + 2 min easy'},
-        {type:'long',label:'Long Run',targetMin:23,notes:'Slow pace. Try fewer walk breaks than last week.'}
+        {type:'speed',label:'Jog/Sprint',targetMin:20,notes:'3 min jog + 6x(30s sprint / 90s jog) + 3 min cool. Go hard on the sprints.'},
+        {type:'long',label:'Long Run',targetMin:23,notes:'Slow pace. No need to push — just keep running.'}
       ]},
       {runs:[
         {type:'easy',label:'Easy Run',targetMin:20,notes:'First 20 min easy run. You got this.'},
-        {type:'speed',label:'Intervals',targetMin:22,notes:'4 min easy + 6x(1 min fast / 1 min walk) + 4 min easy'},
-        {type:'long',label:'Long Run',targetMin:25,notes:'25 min. No pressure on pace. Just keep moving.'}
+        {type:'speed',label:'Jog/Sprint',targetMin:22,notes:'4 min jog + 6x(40s sprint / 80s jog) + 4 min cool. Longer sprints this week.'},
+        {type:'long',label:'Long Run',targetMin:25,notes:'25 min. Easy pace. Find your rhythm.'}
       ]},
       {runs:[
         {type:'easy',label:'Recovery Run',targetMin:15,notes:'Recovery week. Super easy, short. Let your body adapt.'},
-        {type:'speed',label:'Easy Intervals',targetMin:18,notes:'4 min easy + 4x(1 min moderate / 2 min walk) + 4 min easy'},
+        {type:'speed',label:'Easy Jog/Sprint',targetMin:18,notes:'4 min jog + 4x(30s sprint / 2 min jog) + 4 min cool. Keep sprints at 70%.'},
         {type:'long',label:'Long Run',targetMin:20,notes:'Recovery. Shorter than last week. Easy pace.'}
       ]},
       {runs:[
         {type:'easy',label:'Easy Run',targetMin:22,notes:'Building back up. Conversational pace.'},
-        {type:'speed',label:'Tempo Run',targetMin:22,notes:'5 min easy + 8 min tempo (comfortably hard) + 5 min easy + 4 min cool'},
+        {type:'speed',label:'Tempo Run',targetMin:22,notes:'5 min jog + 8 min tempo (comfortably hard) + 5 min jog + 4 min cool'},
         {type:'long',label:'Long Run',targetMin:28,notes:'Longest yet. Slow start, find your rhythm.'}
       ]},
       {runs:[
         {type:'easy',label:'Easy Run',targetMin:25,notes:'Easy and relaxed. Focus on breathing.'},
-        {type:'speed',label:'Tempo Run',targetMin:25,notes:'5 min easy + 10 min tempo + 5 min easy + 5 min cool'},
+        {type:'speed',label:'Jog/Sprint',targetMin:25,notes:'5 min jog + 5x(45s sprint / 75s jog) + 5 min cool. Push the sprint pace.'},
         {type:'long',label:'Long Run',targetMin:30,notes:'30 min! If you can talk, you are at the right pace.'}
       ]},
       {runs:[
         {type:'easy',label:'Easy Run',targetMin:25,notes:'Easy 25. Building endurance.'},
-        {type:'speed',label:'Intervals',targetMin:25,notes:'5 min easy + 5x(2 min fast / 1 min walk) + 5 min easy'},
-        {type:'long',label:'Long Run',targetMin:33,notes:'Push toward 35. Walk 1 min at halfway if needed.'}
+        {type:'speed',label:'Jog/Sprint',targetMin:25,notes:'5 min jog + 5x(1 min sprint / 1 min jog) + 5 min cool. Full minute sprints!'},
+        {type:'long',label:'Long Run',targetMin:33,notes:'Push toward 35. Steady and controlled.'}
       ]},
       {runs:[
         {type:'easy',label:'Easy Run',targetMin:20,notes:'Taper week. Keep it light. Save energy for the test.'},
-        {type:'speed',label:'Speed Test',targetMin:22,notes:'5 min easy + 12 min as fast as you can sustain + 5 min cool. Log your distance!'},
+        {type:'speed',label:'Speed Test',targetMin:22,notes:'5 min jog + 12 min as fast as you can sustain + 5 min cool. Log your distance!'},
         {type:'long',label:'Long Run',targetMin:35,notes:'Block 1 finale! 35 min continuous. You earned this.'}
       ]}
     ]
@@ -1436,6 +1450,40 @@ const RUNNING_PLANS = {
       ]}
     ]
   }
+};
+
+// ── SPEED TIMER DATA ──
+const SPEED_TIMERS={
+  'BLOCK1_1':{warmup:180,phases:[{hard:30,easy:90,reps:5}],cooldown:180},
+  'BLOCK1_2':{warmup:180,phases:[{hard:30,easy:90,reps:6}],cooldown:180},
+  'BLOCK1_3':{warmup:240,phases:[{hard:40,easy:80,reps:6}],cooldown:240},
+  'BLOCK1_4':{warmup:240,phases:[{hard:30,easy:120,reps:4}],cooldown:240},
+  'BLOCK1_5':{warmup:300,phases:[{tempo:480}],cooldown:540},
+  'BLOCK1_6':{warmup:300,phases:[{hard:45,easy:75,reps:5}],cooldown:300},
+  'BLOCK1_7':{warmup:300,phases:[{hard:60,easy:60,reps:5}],cooldown:300},
+  'BLOCK1_8':{warmup:300,phases:[{test:720}],cooldown:300},
+  'BLOCK2_1':{warmup:300,phases:[{hard:90,easy:90,reps:6}],cooldown:240},
+  'BLOCK2_2':{warmup:300,phases:[{tempo:720}],cooldown:660},
+  'BLOCK2_4':{warmup:300,phases:[{hard:60,easy:120,reps:5}],cooldown:240},
+  'BLOCK2_5':{warmup:300,phases:[{tempo:900}],cooldown:600},
+  'BLOCK2_6':{warmup:300,phases:[{hard:180,easy:120,reps:5}],cooldown:300},
+  'BLOCK2_7':{warmup:300,phases:[{tempo:600},{easy:180},{hard:90,easy:90,reps:4}],cooldown:240},
+  'BLOCK2_8':{warmup:300,phases:[{test:900}],cooldown:300},
+  'BLOCK3_1':{warmup:300,phases:[{tempo:900}],cooldown:600},
+  'BLOCK3_2':{warmup:300,phases:[{hard:180,easy:90,reps:6}],cooldown:300},
+  'BLOCK3_4':{warmup:300,phases:[{tempo:600}],cooldown:600},
+  'BLOCK3_5':{warmup:300,phases:[{tempo:720},{easy:180},{hard:120,easy:60,reps:4}],cooldown:240},
+  'BLOCK3_6':{warmup:300,phases:[{hard:240,easy:120,reps:5}],cooldown:300},
+  'BLOCK3_7':{warmup:300,phases:[{tempo:1200}],cooldown:600},
+  'BLOCK3_8':{warmup:300,phases:[{test:1080}],cooldown:300},
+  'BLOCK4_1':{warmup:300,phases:[{hard:120,easy:60,reps:8}],cooldown:360},
+  'BLOCK4_2':{warmup:300,phases:[{tempo:1320}],cooldown:660},
+  'BLOCK4_3':{warmup:300,phases:[{tempo:600},{easy:120},{fartlek:600}],cooldown:660},
+  'BLOCK4_4':{warmup:300,phases:[{hard:90,easy:120,reps:6}],cooldown:300},
+  'BLOCK4_5':{warmup:300,phases:[{tempo:900},{easy:180},{hard:120,easy:60,reps:5}],cooldown:300},
+  'BLOCK4_6':{warmup:300,phases:[{hard:300,easy:120,reps:4}],cooldown:420},
+  'BLOCK4_7':{warmup:300,phases:[{tempo:1500}],cooldown:600},
+  'BLOCK4_8':{warmup:300,phases:[{test:1200}],cooldown:300}
 };
 
 // ── ATH DATA (All-Time Highs from PDF) ──
@@ -2412,10 +2460,56 @@ function renderRunView(container){
         <div></div>
       </div>
       <div class="run-pace" id="run-pace-${ri}"></div>
+      ${run.type==='speed'&&SPEED_TIMERS[currentRunBlock+'_'+currentRunWeek]?'<button class="run-timer-start-btn" onclick="startRunTimer('+ri+')">&#x23F1; Start Timer</button>':''}
       <button class="run-log-btn" onclick="logRun(${ri})">Log Run</button>`;
     }
     html+=`</div>`;
   });
+
+  // Extra/bonus runs
+  const extraLogs=weekLogs.filter(l=>l.isExtra);
+  extraLogs.forEach(el=>{
+    html+=`<div class="run-card completed">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div><span style="font-size:1rem;margin-right:6px">&#x2B50;</span><span class="card-title" style="display:inline">Bonus Run</span></div>
+        <span class="run-type-badge easy">bonus</span>
+      </div>
+      <div class="run-stat-row"><span class="run-stat-label">Time</span><span class="run-stat-value">${el.actualMin} min</span></div>
+      ${el.actualKm?`<div class="run-stat-row"><span class="run-stat-label">Distance</span><span class="run-stat-value">${el.actualKm} mi</span></div>`:''}
+      ${el.pace?`<div class="run-stat-row"><span class="run-stat-label">Pace</span><span class="run-stat-value">${fmtPace(el.pace)}</span></div>`:''}
+      ${el.calories?`<div class="run-stat-row"><span class="run-stat-label">Calories</span><span class="run-stat-value">${el.calories} cal</span></div>`:''}
+      <div class="run-status" style="text-align:center;margin-top:6px;font-size:0.82rem">&#10003; Logged ${el.date}</div>
+    </div>`;
+  });
+  html+=`<div class="run-card run-extra-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div><span style="font-size:1rem;margin-right:6px">&#x2B50;</span><span class="card-title" style="display:inline">Bonus Easy Run</span></div>
+      <span class="run-type-badge easy">bonus</span>
+    </div>
+    <div class="run-notes">Extra volume. Keep it easy and conversational.</div>
+    <div class="run-inputs">
+      <div class="run-input-group">
+        <label>Time</label>
+        <input type="number" inputmode="decimal" id="run-time-extra" placeholder="min" onkeydown="if(event.key==='Enter'){event.preventDefault();logExtraRun()}">
+        <span class="run-input-unit">min</span>
+      </div>
+      <div class="run-input-group">
+        <label>Distance (opt.)</label>
+        <input type="number" inputmode="decimal" id="run-dist-extra" placeholder="miles" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();logExtraRun()}">
+        <span class="run-input-unit">mi</span>
+      </div>
+    </div>
+    <div class="run-inputs" style="margin-top:0">
+      <div class="run-input-group">
+        <label>Calories (opt.)</label>
+        <input type="number" inputmode="numeric" id="run-cal-extra" placeholder="from app" onkeydown="if(event.key==='Enter'){event.preventDefault();logExtraRun()}">
+        <span class="run-input-unit">cal</span>
+      </div>
+      <div></div>
+    </div>
+    <div class="run-pace" id="run-pace-extra"></div>
+    <button class="run-log-btn" onclick="logExtraRun()">Log Bonus Run</button>
+  </div>`;
 
   // Weekly summary
   const weekTotal=weekLogs.reduce((s,l)=>s+(l.actualMin||0),0);
@@ -2423,7 +2517,7 @@ function renderRunView(container){
   const weekTarget=week.runs.reduce((s,r)=>s+r.targetMin,0);
   html+=`<div class="run-summary">
     <div class="run-summary-title">This Week</div>
-    <div class="run-stat-row"><span class="run-stat-label">Runs completed</span><span class="run-stat-value">${weekLogs.length} / 3</span></div>
+    <div class="run-stat-row"><span class="run-stat-label">Runs completed</span><span class="run-stat-value">${weekLogs.filter(l=>!l.isExtra).length} / 3${extraLogs.length?' + '+extraLogs.length+' bonus':''}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(weekTotal)} / ${weekTarget} min</span></div>
     ${weekDist>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${weekDist.toFixed(1)} mi</span></div>`:''}
   </div>`;
@@ -2470,6 +2564,19 @@ function renderRunView(container){
       }
     }
   });
+  // Extra run pace calc
+  const etEl=document.getElementById('run-time-extra');
+  const edEl=document.getElementById('run-dist-extra');
+  if(etEl&&edEl){
+    const calc=()=>{
+      const t=parseFloat(etEl.value),d=parseFloat(edEl.value);
+      const pEl=document.getElementById('run-pace-extra');
+      if(t>0&&d>0){pEl.textContent=fmtPace(t/d)+' pace'}
+      else{pEl.textContent=''}
+    };
+    etEl.addEventListener('input',calc);
+    edEl.addEventListener('input',calc);
+  }
 }
 
 function fmtPace(p){
@@ -2535,6 +2642,139 @@ function resetRunBlock(){
   localStorage.setItem('run_week_manual',1);
   renderWorkout();
   toast('Week counter reset');
+}
+
+// ── INTERVAL TIMER ──
+let runTimerState=null;
+
+function expandIntervals(timer){
+  const p=[];
+  p.push({label:'Warm Up',duration:timer.warmup,type:'warmup'});
+  for(const s of timer.phases){
+    if(s.hard!==undefined&&s.reps){
+      for(let i=1;i<=s.reps;i++){
+        p.push({label:'Sprint '+i+'/'+s.reps,duration:s.hard,type:'hard'});
+        p.push({label:'Recovery '+i+'/'+s.reps,duration:s.easy,type:'easy'});
+      }
+    }else if(s.tempo!==undefined){p.push({label:'Tempo',duration:s.tempo,type:'tempo'})}
+    else if(s.test!==undefined){p.push({label:'GO!',duration:s.test,type:'test'})}
+    else if(s.fartlek!==undefined){p.push({label:'Fartlek',duration:s.fartlek,type:'tempo'})}
+    else if(s.easy!==undefined){p.push({label:'Easy Jog',duration:s.easy,type:'easy'})}
+  }
+  p.push({label:'Cool Down',duration:timer.cooldown,type:'cooldown'});
+  return p;
+}
+
+function startRunTimer(ri){
+  const key=currentRunBlock+'_'+currentRunWeek;
+  const timer=SPEED_TIMERS[key];
+  if(!timer)return;
+  const phases=expandIntervals(timer);
+  runTimerState={phases,phaseIdx:0,timeLeft:phases[0].duration,totalElapsed:0,running:true,runIndex:ri,interval:null,wakeLock:null};
+  if(navigator.wakeLock){navigator.wakeLock.request('screen').then(l=>{if(runTimerState)runTimerState.wakeLock=l}).catch(()=>{})}
+  renderTimerOverlay();
+  runTimerState.interval=setInterval(tickRunTimer,1000);
+}
+
+function tickRunTimer(){
+  if(!runTimerState||!runTimerState.running)return;
+  runTimerState.timeLeft--;
+  runTimerState.totalElapsed++;
+  if(runTimerState.timeLeft<=0){
+    runTimerState.phaseIdx++;
+    if(runTimerState.phaseIdx>=runTimerState.phases.length){finishRunTimer();return}
+    runTimerState.timeLeft=runTimerState.phases[runTimerState.phaseIdx].duration;
+    if(navigator.vibrate){
+      const nt=runTimerState.phases[runTimerState.phaseIdx].type;
+      if(nt==='hard'||nt==='test')navigator.vibrate([200,100,200,100,200]);
+      else navigator.vibrate([200,100,200]);
+    }
+  }
+  renderTimerOverlay();
+}
+
+function renderTimerOverlay(){
+  let ov=document.getElementById('run-timer-overlay');
+  if(!ov){ov=document.createElement('div');ov.id='run-timer-overlay';ov.className='run-timer-overlay';document.body.appendChild(ov)}
+  const st=runTimerState,ph=st.phases[st.phaseIdx];
+  const colors={warmup:'var(--green)',easy:'var(--green)',hard:'var(--red-bright)',test:'var(--red-bright)',tempo:'var(--gold)',cooldown:'var(--iron)'};
+  const c=colors[ph.type]||'var(--text)';
+  const mm=Math.floor(st.timeLeft/60),ss=st.timeLeft%60;
+  const cd=mm+':'+(ss<10?'0':'')+ss;
+  const em=Math.floor(st.totalElapsed/60),es=st.totalElapsed%60;
+  const el=em+':'+(es<10?'0':'')+es;
+  const next=st.phaseIdx<st.phases.length-1?st.phases[st.phaseIdx+1]:null;
+  const ns=next?'Next: '+next.label:'Last phase!';
+  let dots='';
+  st.phases.forEach((p,i)=>{
+    const dc=i<st.phaseIdx?'var(--green)':i===st.phaseIdx?c:'var(--text-dim)';
+    const sz=i===st.phaseIdx?'10px':'6px';
+    dots+=`<span style="display:inline-block;width:${sz};height:${sz};border-radius:50%;background:${dc};margin:0 2px;transition:all 0.3s"></span>`;
+  });
+  ov.innerHTML=`<div style="text-align:center">
+    <div class="run-timer-phase" style="color:${c}">${ph.label}</div>
+    <div class="run-timer-countdown" style="color:${c}">${cd}</div>
+    <div class="run-timer-dots">${dots}</div>
+    <div class="run-timer-next">${ns}</div>
+    <div class="run-timer-elapsed">Total: ${el}</div>
+    <div class="run-timer-controls">
+      <button class="run-timer-btn" onclick="${st.running?'pauseRunTimer()':'resumeRunTimer()'}" style="border:1px solid var(--iron);background:rgba(128,144,168,0.1);color:var(--iron)">${st.running?'PAUSE':'RESUME'}</button>
+      <button class="run-timer-btn" onclick="stopRunTimer()" style="border:1px solid var(--red);background:rgba(200,80,80,0.1);color:var(--red)">STOP</button>
+    </div>
+  </div>`;
+}
+
+function pauseRunTimer(){if(runTimerState){runTimerState.running=false;renderTimerOverlay()}}
+function resumeRunTimer(){if(runTimerState){runTimerState.running=true;renderTimerOverlay()}}
+
+function finishRunTimer(){
+  if(!runTimerState)return;
+  clearInterval(runTimerState.interval);
+  if(runTimerState.wakeLock)runTimerState.wakeLock.release().catch(()=>{});
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,200,100,200]);
+  const totalMin=Math.round(runTimerState.totalElapsed/6)/10;
+  const ri=runTimerState.runIndex;
+  const ov=document.getElementById('run-timer-overlay');
+  if(ov)ov.remove();
+  runTimerState=null;
+  const tInput=document.getElementById('run-time-'+ri);
+  if(tInput)tInput.value=totalMin;
+  toast('Timer done! '+totalMin+' min');
+}
+
+function stopRunTimer(){
+  if(!runTimerState)return;
+  if(!confirm('Stop the timer?'))return;
+  clearInterval(runTimerState.interval);
+  if(runTimerState.wakeLock)runTimerState.wakeLock.release().catch(()=>{});
+  const totalMin=Math.round(runTimerState.totalElapsed/6)/10;
+  const ri=runTimerState.runIndex;
+  const ov=document.getElementById('run-timer-overlay');
+  if(ov)ov.remove();
+  runTimerState=null;
+  const tInput=document.getElementById('run-time-'+ri);
+  if(tInput)tInput.value=totalMin;
+}
+
+function logExtraRun(){
+  const timeVal=parseFloat(document.getElementById('run-time-extra').value);
+  if(!timeVal||timeVal<=0){toast('Enter your time!');return}
+  const distVal=parseFloat(document.getElementById('run-dist-extra').value)||null;
+  const calVal=parseInt(document.getElementById('run-cal-extra').value)||null;
+  const pace=(distVal&&distVal>0)?(timeVal/distVal):null;
+  const wkLogs=(data.runLogs||[]).filter(l=>l.week===weekStart()&&l.block===currentRunBlock);
+  const extraCount=wkLogs.filter(l=>l.isExtra).length;
+  const entry={
+    id:'run_'+Date.now(),date:dateStr(),week:weekStart(),block:currentRunBlock,weekNum:currentRunWeek,
+    runIndex:3+extraCount,type:'easy',label:'Bonus Run',targetMin:null,
+    actualMin:Math.round(timeVal*10)/10,actualKm:distVal?Math.round(distVal*100)/100:null,
+    pace:pace?Math.round(pace*100)/100:null,calories:calVal,isExtra:true
+  };
+  if(!data.runLogs)data.runLogs=[];
+  data.runLogs.push(entry);
+  saveData();
+  toast('Bonus run logged! '+timeVal+' min'+(distVal?' / '+distVal+' mi':''));
+  renderWorkout();
 }
 
 function initWorkout(){
