@@ -181,7 +181,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .run-week-btn{background:none;border:1px solid rgba(106,136,112,0.4);color:var(--green);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.8rem;font-weight:700}
 .run-week-btn:disabled{opacity:0.3;cursor:default}
 .run-week-current{font-size:0.9rem;color:var(--text-bright);font-weight:700;min-width:80px;text-align:center}
-.run-card{background:rgba(14,16,20,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.run-card{background:rgba(10,12,16,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(128,144,168,0.15);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
 .run-card.completed{border-color:rgba(106,136,112,0.3);opacity:0.6}
 .run-card.completed .run-status{color:var(--green)}
 .run-type-badge{display:inline-block;font-size:0.65rem;padding:2px 10px;border-radius:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;font-family:'Oswald',sans-serif}
@@ -199,7 +199,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .run-pace{font-size:0.82rem;color:var(--iron);text-align:center;margin:6px 0;font-family:'Oswald',sans-serif}
 .run-log-btn{width:100%;padding:10px;border:1px solid rgba(106,136,112,0.4);background:rgba(106,136,112,0.1);color:var(--green);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer}
 .run-log-btn:active{background:rgba(106,136,112,0.2)}
-.run-summary{margin-top:14px;padding:12px;background:rgba(14,16,20,0.5);border:1px solid rgba(128,144,168,0.12);border-radius:var(--radius)}
+.run-summary{margin-top:14px;padding:12px;background:rgba(10,12,16,0.85);border:1px solid rgba(128,144,168,0.15);border-radius:var(--radius)}
 .run-summary-title{font-size:0.75rem;color:var(--text-bright);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-family:'Oswald',sans-serif}
 .run-stat-row{display:flex;justify-content:space-between;margin-bottom:6px}
 .run-stat-label{font-size:0.82rem;color:var(--text-bright)}
@@ -2348,8 +2348,8 @@ function renderRunView(container){
   const calLabel=logsWithCal.length>0&&logsWithoutCal.length>0?'Calories (mixed)':logsWithCal.length>0?'Calories':'Est. calories';
   const estLbs=totalCal>0?(totalCal/3500).toFixed(1):'0';
   // Distance milestones
-  const kmMilestones=[5,10,25,50,100,200,500];
-  const nextMilestone=kmMilestones.find(m=>m>totalKm)||null;
+  const miMilestones=[5,10,25,50,100,200,500,1000];
+  const nextMilestone=miMilestones.find(m=>m>totalKm)||null;
 
   let html='';
   // Header
@@ -2383,7 +2383,7 @@ function renderRunView(container){
       const paceStr=logged.pace?fmtPace(logged.pace):'--';
       html+=`<div class="run-stat-row"><span class="run-stat-label">Time</span><span class="run-stat-value">${logged.actualMin} min</span></div>`;
       if(logged.actualKm){
-        html+=`<div class="run-stat-row"><span class="run-stat-label">Distance</span><span class="run-stat-value">${logged.actualKm} km</span></div>`;
+        html+=`<div class="run-stat-row"><span class="run-stat-label">Distance</span><span class="run-stat-value">${logged.actualKm} mi</span></div>`;
         html+=`<div class="run-stat-row"><span class="run-stat-label">Pace</span><span class="run-stat-value">${paceStr}</span></div>`;
       }
       if(logged.calories){
@@ -2399,8 +2399,8 @@ function renderRunView(container){
         </div>
         <div class="run-input-group">
           <label>Distance (opt.)</label>
-          <input type="number" inputmode="decimal" id="run-dist-${ri}" placeholder="km" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
-          <span class="run-input-unit">km</span>
+          <input type="number" inputmode="decimal" id="run-dist-${ri}" placeholder="miles" step="0.1" onkeydown="if(event.key==='Enter'){event.preventDefault();logRun(${ri})}">
+          <span class="run-input-unit">mi</span>
         </div>
       </div>
       <div class="run-inputs" style="margin-top:0">
@@ -2425,7 +2425,7 @@ function renderRunView(container){
     <div class="run-summary-title">This Week</div>
     <div class="run-stat-row"><span class="run-stat-label">Runs completed</span><span class="run-stat-value">${weekLogs.length} / 3</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(weekTotal)} / ${weekTarget} min</span></div>
-    ${weekDist>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${weekDist.toFixed(1)} km</span></div>`:''}
+    ${weekDist>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${weekDist.toFixed(1)} mi</span></div>`:''}
   </div>`;
 
   // Fun stats
@@ -2434,13 +2434,13 @@ function renderRunView(container){
       <div class="run-summary-title">All-Time Stats</div>
       <div class="run-stat-row"><span class="run-stat-label">Total runs</span><span class="run-stat-value">${allLogs.length}</span></div>
       <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(totalMin)} min</span></div>
-      ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} km</span></div>`:''}
+      ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} mi</span></div>`:''}
       <div class="run-stat-row"><span class="run-stat-label">${calLabel}</span><span class="run-stat-value">${totalCal.toLocaleString()}</span></div>
       <div class="run-stat-row"><span class="run-stat-label">Est. lbs burned</span><span class="run-stat-value">${estLbs} lbs</span></div>
     </div>`;
     if(nextMilestone&&totalKm>0){
       const remaining=(nextMilestone-totalKm).toFixed(1);
-      html+=`<div class="run-milestone">${remaining} km to ${nextMilestone} km milestone!</div>`;
+      html+=`<div class="run-milestone">${remaining} mi to ${nextMilestone} mi milestone!</div>`;
     }
   }
 
@@ -2474,7 +2474,7 @@ function renderRunView(container){
 
 function fmtPace(p){
   const m=Math.floor(p);const s=Math.round((p-m)*60);
-  return m+':'+(s<10?'0':'')+s+'/km';
+  return m+':'+(s<10?'0':'')+s+'/mi';
 }
 
 function logRun(runIndex){
@@ -2505,7 +2505,7 @@ function logRun(runIndex){
   if(!data.runLogs)data.runLogs=[];
   data.runLogs.push(entry);
   saveData();
-  toast(run.label+' logged! '+timeVal+' min'+(distVal?' / '+distVal+' km':''));
+  toast(run.label+' logged! '+timeVal+' min'+(distVal?' / '+distVal+' mi':''));
   renderWorkout();
 }
 
@@ -3369,7 +3369,7 @@ function renderRunProgress(){
     <div class="card-title" style="margin-bottom:10px">&#x1F3C3; Running Progress</div>
     <div class="run-stat-row"><span class="run-stat-label">Total runs</span><span class="run-stat-value">${totalRuns}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(totalMin)} min</span></div>
-    ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} km</span></div>`:''}
+    ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} mi</span></div>`:''}
     <div class="run-stat-row"><span class="run-stat-label">Avg pace</span><span class="run-stat-value">${avgPaceStr}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Best pace</span><span class="run-stat-value">${bestPaceStr}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Longest run</span><span class="run-stat-value">${longestMin} min</span></div>
@@ -3386,7 +3386,7 @@ function renderRunProgress(){
       html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between">
           <span class="run-stat-label">Week of ${wk}</span>
-          <span class="run-stat-value">${wkLogs.length} runs / ${Math.round(wkMin)} min${wkKm>0?' / '+wkKm.toFixed(1)+' km':''}</span>
+          <span class="run-stat-value">${wkLogs.length} runs / ${Math.round(wkMin)} min${wkKm>0?' / '+wkKm.toFixed(1)+' mi':''}</span>
         </div>
       </div>`;
     });
