@@ -1452,7 +1452,7 @@ function syncConfigToCloud(){
 function syncExtraToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref()};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd()};
     const encoded=encodeURIComponent(JSON.stringify(extra));
     if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+encoded);
   }catch(e){console.warn('Extra sync failed',e)}
@@ -1540,6 +1540,8 @@ function loadFromCloud(){
       if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!s[k])s[k]=extra.starts[k];}saveStartWeights(s);}
       if(extra.favs){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
       if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!p[k])p[k]=extra.platePref[k];}savePlatePref(p);}
+      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(np[k]===undefined)np[k]=extra.noPlate[k];}saveNoPlate(np);}
+      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!se[k])se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
     }catch(e){console.warn('Extra merge error',e)}
     try{saveData()}catch(e){console.warn('Save error after sync',e)}
     syncConfigToCloud();
