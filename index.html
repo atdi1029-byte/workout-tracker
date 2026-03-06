@@ -3632,29 +3632,31 @@ function renderRunProgress(){
     });
     html+=`</div>`;
   }
-  // Speed Test History
-  const speedTests=logs.filter(l=>l.label&&l.label.includes('Speed Test'));
-  if(speedTests.length>0){
-    const sorted=speedTests.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  // Speed Run History (all speed runs with pace data)
+  const speedRuns=logs.filter(l=>l.type==='speed'&&l.pace&&l.pace>0);
+  if(speedRuns.length>0){
+    const sorted=speedRuns.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     let prevPace=null;
     html+=`<div class="card" style="margin-bottom:14px">
-      <div class="card-title" style="margin-bottom:10px">&#x23F1; Speed Test History</div>`;
+      <div class="card-title" style="margin-bottom:10px">&#x23F1; Speed Run History</div>`;
     sorted.forEach(t=>{
-      const bl=t.block?t.block.replace('BLOCK','Block '):'';
-      const ps=t.pace?fmtPace(t.pace):'--';
+      const bl=t.block?t.block.replace('BLOCK','B'):'';
+      const ps=fmtPace(t.pace);
       let imp='';
-      if(prevPace&&t.pace&&t.pace<prevPace){
-        imp=` <span style="color:var(--green)">&uarr; ${Math.round((1-t.pace/prevPace)*100)}% faster</span>`;
-      }else if(prevPace&&t.pace&&t.pace>prevPace){
-        imp=` <span style="color:var(--red)">&darr; ${Math.round((t.pace/prevPace-1)*100)}% slower</span>`;
+      if(prevPace){
+        if(t.pace<prevPace){
+          imp=` <span style="color:var(--green)">&uarr; ${Math.round((1-t.pace/prevPace)*100)}%</span>`;
+        }else if(t.pace>prevPace){
+          imp=` <span style="color:var(--red)">&darr; ${Math.round((t.pace/prevPace-1)*100)}%</span>`;
+        }
       }
       html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
-          <span class="run-stat-label">${bl} (W${t.weekNum})</span>
-          <span class="run-stat-value">${t.actualMin} min${t.actualKm?' &bull; '+t.actualKm+' mi':''} &bull; ${ps}${imp}</span>
+          <span class="run-stat-label">${bl} W${t.weekNum} ${t.label||''}</span>
+          <span class="run-stat-value">${t.actualMin}m &bull; ${t.actualKm}mi &bull; ${ps}${imp}</span>
         </div>
       </div>`;
-      if(t.pace)prevPace=t.pace;
+      prevPace=t.pace;
     });
     html+=`</div>`;
   }
