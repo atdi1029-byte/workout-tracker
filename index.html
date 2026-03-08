@@ -3246,7 +3246,7 @@ function finishWorkout(){
     const card=document.getElementById('ex-'+ei);
     if(!card)return;
     const rows=card.querySelectorAll('.set-row');
-    const isAbsEx=ex.muscle==='abs';
+    const isAbsEx=currentDay==='ABS'&&ex.muscle==='abs';
     ex.sets.forEach((set,si)=>{
       if(rows[si]){
         const inputs=rows[si].querySelectorAll('.set-input');
