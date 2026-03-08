@@ -2963,12 +2963,12 @@ function renderExerciseCards(){
         ${isAbs?'':`<span class="hold-tag${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'JUST':'J'}</span>`}
       </div>`;
 
-    // Set rows — only show 1 WU row
+    // Set rows
     let wNum=0;let wuCount=0;
     ex.sets.forEach((set,si)=>{
-      if(set.type==='warmup'){wuCount++;if(wuCount>1)return;}
+      if(set.type==='warmup'){wuCount++;}
       if(set.type!=='warmup')wNum++;
-      const label=set.type==='warmup'?'WU':'S'+wNum;
+      const label=set.type==='warmup'?'WU'+wuCount:'S'+wNum;
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
         ${isAbs?'':`<div class="set-input-group">
@@ -4386,28 +4386,38 @@ function openAddSub(){
 }
 
 function saveSub(){
-  const name=document.getElementById('subNameInput').value.trim();
-  if(!name){toast('Enter a name');return;}
-  const muscle=document.getElementById('subMuscleInput').value.trim()||'Other';
-  const cat=document.getElementById('subCatInput').value.trim()||'All';
-  const link=document.getElementById('subLinkInput').value.trim();
-  // Add to custom subs in data
-  if(!data.customSubs)data.customSubs=[];
-  data.customSubs.push({muscle,cat,name});
-  // Merge into SUBS_DATA
-  let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===muscle.toLowerCase());
-  if(!group){group={muscle,subs:[]};SUBS_DATA.push(group);}
-  let subcat=group.subs.find(s=>s.cat.toLowerCase()===cat.toLowerCase());
-  if(!subcat){subcat={cat,ex:[]};group.subs.push(subcat);}
-  if(!subcat.ex.includes(name))subcat.ex.push(name);
-  if(link){
-    if(!data.subLinks)data.subLinks={};
-    data.subLinks[name.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase()]=link;
-  }
-  saveData();
-  closeModal();
-  renderSubs();
-  toast('Added to '+muscle+' > '+cat);
+  try{
+    const nameEl=document.getElementById('subNameInput');
+    if(!nameEl){toast('Error: form not found');return;}
+    const name=nameEl.value.trim();
+    if(!name){toast('Enter a name');return;}
+    const muscle=(document.getElementById('subMuscleInput').value||'').trim()||'Other';
+    const cat=(document.getElementById('subCatInput').value||'').trim()||'All';
+    const link=(document.getElementById('subLinkInput').value||'').trim();
+    // Remove from deleted if re-adding
+    if(data.deletedSubs){data.deletedSubs=data.deletedSubs.filter(d=>d!==name);}
+    if(!data.customSubs)data.customSubs=[];
+    if(!data.customSubs.find(s=>s.name===name))data.customSubs.push({muscle,cat,name});
+    let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===muscle.toLowerCase());
+    if(!group){group={muscle,subs:[]};SUBS_DATA.push(group);}
+    let subcat=group.subs.find(s=>s.cat.toLowerCase()===cat.toLowerCase());
+    if(!subcat){subcat={cat,ex:[]};group.subs.push(subcat);}
+    if(!subcat.ex.includes(name))subcat.ex.push(name);
+    if(link){
+      if(!data.subLinks)data.subLinks={};
+      data.subLinks[name.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase()]=link;
+    }
+    saveData();
+    closeModal();
+    renderSubs();
+    setTimeout(()=>{
+      document.querySelectorAll('.sub-group').forEach(g=>{
+        const m=g.querySelector('.sub-muscle');
+        if(m&&m.textContent.toLowerCase()===muscle.toLowerCase())g.classList.add('expanded');
+      });
+    },100);
+    toast('Added: '+name+' → '+muscle+' > '+cat);
+  }catch(err){toast('Save error: '+err.message);}
 }
 
 // ── SWAP MODAL ──
