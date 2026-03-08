@@ -1620,12 +1620,18 @@ function fullSync(){
   fetch(SYNC_ENDPOINT+'?action=zercher_load').then(r=>r.json()).then(resp=>{
     const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
     const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
-    if(unsynced.length===0){toast('All synced!');return}
+    const cloudRunIds=new Set((resp.runLogs||[]).map(l=>l.id));
+    const unsyncedRuns=(data.runLogs||[]).filter(l=>!cloudRunIds.has(l.id));
+    const total=unsynced.length+unsyncedRuns.length;
+    if(total===0){toast('All synced!');return}
+    const allToSync=[...unsynced.map(l=>({type:'workout',data:l})),...unsyncedRuns.map(l=>({type:'run',data:l}))];
     let i=0;
     function sendNext(){
-      if(i>=unsynced.length){toast('Synced '+unsynced.length+' workouts!');return}
-      const encoded=encodeURIComponent(JSON.stringify(unsynced[i]));
-      fireGet(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded);
+      if(i>=allToSync.length){toast('Synced '+total+' entries!');return}
+      const item=allToSync[i];
+      const encoded=encodeURIComponent(JSON.stringify(item.data));
+      const action=item.type==='run'?'zercher_log_run':'zercher_log_workout';
+      fireGet(SYNC_ENDPOINT+'?action='+action+'&data='+encoded);
       i++;
       setTimeout(sendNext,600);
     }
@@ -1677,6 +1683,15 @@ function loadFromCloud(){
           if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
         }
       }
+    }
+    // Merge run logs by ID
+    const cloudRunLogs=resp.runLogs||[];
+    if(cloudRunLogs.length>0){
+      if(!data.runLogs)data.runLogs=[];
+      const runMap={};
+      data.runLogs.forEach(l=>{runMap[l.id]=l});
+      cloudRunLogs.forEach(l=>{if(!runMap[l.id])runMap[l.id]=l});
+      data.runLogs=Object.values(runMap).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     }
     // Merge extra (holds, notes, starts)
     const extra=resp.extra||{};
@@ -2620,6 +2635,7 @@ function logRun(runIndex){
   if(!data.runLogs)data.runLogs=[];
   data.runLogs.push(entry);
   saveData();
+  syncRunToCloud(entry);
   toast(run.label+' logged! '+timeVal+' min'+(distVal?' / '+distVal+' mi':''));
   renderWorkout();
 }
@@ -2781,6 +2797,7 @@ function logExtraRun(){
   if(!data.runLogs)data.runLogs=[];
   data.runLogs.push(entry);
   saveData();
+  syncRunToCloud(entry);
   toast('Bonus run logged! '+timeVal+' min'+(distVal?' / '+distVal+' mi':''));
   renderWorkout();
 }
@@ -2929,7 +2946,7 @@ function renderExerciseCards(){
     const allDone=ex.sets.every(s=>s.done);
     const lastLog=getLastLog(ex.name);
     const techLabel=TECH_LABELS[ex.technique]||ex.technique;
-    const isAbs=ex.muscle==='abs';
+    const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
 
     html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
@@ -3042,7 +3059,7 @@ function updatePlateCorner(ei){
   if(!card)return;
   let old=card.querySelector('.plate-corner');
   if(!old)old=card.querySelector('.plate-corner-show');
-  const isAbs=ex.muscle==='abs';
+  const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
   if(isAbs||!showPlateForEx(ex.name)){if(old)old.remove();return;}
   const wuSets=ex.sets.filter(s=>s.type==='warmup');
   const s1Set=ex.sets.find(s=>s.type==='working');
@@ -3073,7 +3090,7 @@ function toggleSet(ei,si){
   // Read current input values
   const card=document.getElementById('ex-'+ei);
   const inputs=card.querySelectorAll('.set-row')[si].querySelectorAll('.set-input');
-  const isAbsEx=currentWorkout.exercises[ei].muscle==='abs';
+  const isAbsEx=currentDay==='ABS'&&currentWorkout.exercises[ei].muscle==='abs';
   if(isAbsEx){
     set.weight=0;
     set.reps=parseInt(inputs[0].value)||0;
@@ -3095,7 +3112,7 @@ function toggleSet(ei,si){
   ex.sets.forEach((s,i)=>{
     if(rows[i]){
       const inp=rows[i].querySelectorAll('.set-input');
-      if(ex.muscle==='abs'){
+      if(currentDay==='ABS'&&ex.muscle==='abs'){
         s.weight=0;
         s.reps=parseInt(inp[0].value)||0;
       } else {
