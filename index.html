@@ -2416,7 +2416,7 @@ function renderRunView(container){
     const logged=weekLogs.find(l=>l.runIndex===ri);
     const isComplete=!!logged;
     const adaptiveTarget=getAdaptiveTarget(run.type,run.targetMin);
-    const typeIcon=run.type==='easy'?'&#x1F6B6;':run.type==='speed'?'&#x26A1;':'&#x1F3C3;';
+    const typeIcon=run.type==='easy'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><circle cx="12" cy="5" r="3"/><path d="M12 8v8M9 21l3-5 3 5M7 13h10"/></svg>':run.type==='speed'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>';
     html+=`<div class="run-card${isComplete?' completed':''}" id="run-card-${ri}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div>
@@ -3606,7 +3606,7 @@ function renderRunProgress(){
   logs.forEach(l=>{if(!weeks[l.week])weeks[l.week]=[];weeks[l.week].push(l)});
   const weekKeys=Object.keys(weeks).sort().reverse();
   let html=`<div class="card" style="margin-bottom:14px">
-    <div class="card-title" style="margin-bottom:10px">&#x1F3C3; Running Progress</div>
+    <div class="card-title" style="margin-bottom:10px">Running Progress</div>
     <div class="run-stat-row"><span class="run-stat-label">Total runs</span><span class="run-stat-value">${totalRuns}</span></div>
     <div class="run-stat-row"><span class="run-stat-label">Total time</span><span class="run-stat-value">${Math.round(totalMin)} min</span></div>
     ${totalKm>0?`<div class="run-stat-row"><span class="run-stat-label">Total distance</span><span class="run-stat-value">${totalKm.toFixed(1)} mi</span></div>`:''}
@@ -3618,7 +3618,7 @@ function renderRunProgress(){
   </div>`;
   if(weekKeys.length>0){
     html+=`<div class="card" style="margin-bottom:14px">
-      <div class="card-title" style="margin-bottom:10px">&#x1F4C5; Weekly Running Log</div>`;
+      <div class="card-title" style="margin-bottom:10px">Weekly Running Log</div>`;
     weekKeys.slice(0,6).forEach(wk=>{
       const wkLogs=weeks[wk];
       const wkMin=wkLogs.reduce((s,l)=>s+(l.actualMin||0),0);
@@ -3750,7 +3750,7 @@ function renderProgress(){
               const pr=prs[r];
               const isRecent=pr.date&&new Date(pr.date)>new Date(Date.now()-14*86400000);
               const isBest=repCounts.length>1&&calcE1RM(pr.weight,r)===best1rm;
-              html+=`<tr><td class="rep-col">${r} reps</td><td class="weight-col${isBest?' crown':''}">${isBest?'&#x1f451; ':''}${fmt(pr.weight)} lbs</td><td class="date-col${isRecent?' recent':''}">${pr.date||''}</td></tr>`;
+              html+=`<tr><td class="rep-col">${r} reps</td><td class="weight-col${isBest?' crown':''}">${isBest?'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:2px;color:var(--accent)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>':''}${fmt(pr.weight)} lbs</td><td class="date-col${isRecent?' recent':''}">${pr.date||''}</td></tr>`;
             });
             html+=`</table>
                 <div style="margin-top:12px">
