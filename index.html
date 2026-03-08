@@ -3026,6 +3026,7 @@ function updateSet(ei,si,field,val){
   const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
   currentWorkout.exercises[ei].sets[si][field]=v;
   if(field==='weight')updatePlateCorner(ei);
+  localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
 }
 function updatePlateCorner(ei){
   const ex=currentWorkout.exercises[ei];
@@ -3073,12 +3074,6 @@ function toggleSet(ei,si){
     set.reps=parseInt(inputs[1].value)||0;
   }
 
-  // When WU1 is toggled, also toggle hidden WU sets
-  if(set.type==='warmup'&&si===0){
-    currentWorkout.exercises[ei].sets.forEach((s,i)=>{
-      if(i>0&&s.type==='warmup'){s.done=set.done;s.weight=set.weight;s.reps=set.reps;}
-    });
-  }
 
   // Check for PR
   if(set.done&&set.type==='working'&&set.weight>0){
