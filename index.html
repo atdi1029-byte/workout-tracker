@@ -1922,6 +1922,16 @@ function migrateData(){
   if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD09';
   // Migrate: add runLogs if missing
   if(!data.runLogs)data.runLogs=[];
+  // Dedup run logs: keep first entry per (runIndex, week, block) for scheduled runs
+  if(data.runLogs.length>0){
+    const seen=new Set();const deduped=[];
+    data.runLogs.forEach(l=>{
+      if(l.isExtra){deduped.push(l);return}
+      const key=l.runIndex+'|'+l.week+'|'+l.block;
+      if(!seen.has(key)){seen.add(key);deduped.push(l)}
+    });
+    if(deduped.length!==data.runLogs.length)data.runLogs=deduped;
+  }
   // Exercise name migration (v97): standardize old variants to canonical names
   const NAME_MAP={
     'Tríceps Kickback (Cable)':'Tríceps Kickback','Remada Curvada':'Remada Curvada com Barra',
@@ -2608,6 +2618,9 @@ function fmtPace(p){
 }
 
 function logRun(runIndex){
+  // Prevent double-logging same run
+  const alreadyLogged=(data.runLogs||[]).find(l=>l.runIndex===runIndex&&l.week===weekStart()&&l.block===currentRunBlock&&!l.isExtra);
+  if(alreadyLogged){toast('Already logged!');renderWorkout();return}
   const block=RUNNING_PLANS[currentRunBlock];
   const week=block.weeks[currentRunWeek-1];
   const run=week.runs[runIndex];
