@@ -333,6 +333,20 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .edit-ex-item.drop-target{border-color:var(--gold);box-shadow:0 -3px 0 var(--gold)}
 .edit-ex-item .drag-handle{color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:6px 4px;user-select:none;-webkit-user-select:none;line-height:1;min-width:28px;text-align:center}
 .edit-ex-item.picked .drag-handle{color:var(--iron)}
+.edit-ex-item .edit-swap{background:none;border:none;color:var(--gold);font-size:0.95rem;cursor:pointer;padding:2px 4px;opacity:0.7}
+.edit-ex-item .edit-swap:hover{opacity:1}
+.ex-picker{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,12,16,0.98);z-index:10;display:flex;flex-direction:column;border-radius:var(--radius)}
+.ex-picker-header{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--border)}
+.ex-picker-header input{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.85rem;font-family:'Oswald',sans-serif}
+.ex-picker-header input:focus{outline:none;border-color:var(--iron)}
+.ex-picker-header button{background:none;border:none;color:var(--text-dim);font-size:1.3rem;cursor:pointer;padding:4px 8px}
+.ex-picker-list{flex:1;overflow-y:auto;padding:8px 12px}
+.ex-picker-group{font-size:0.65rem;color:var(--iron);text-transform:uppercase;letter-spacing:2px;padding:8px 0 4px;font-family:'Oswald',sans-serif;font-weight:700}
+.ex-picker-item{padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:4px;cursor:pointer;transition:border-color 0.15s}
+.ex-picker-item:active{border-color:var(--iron);background:rgba(128,144,168,0.08)}
+.ex-picker-item .pi-name{font-size:0.85rem;color:var(--text-bright);font-weight:600}
+.ex-picker-item .pi-detail{font-size:0.7rem;color:var(--text-dim);margin-top:2px}
+.ex-picker-item .pi-recent{font-size:0.6rem;color:var(--gold);margin-top:2px}
 .edit-ex-item .edit-num{color:var(--text-dim);font-size:0.8rem;min-width:20px}
 .edit-ex-item .edit-name-input{flex:1;min-width:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text-bright);font-size:0.8rem}
 .edit-ex-item .edit-name-input:focus{outline:none;border-color:var(--iron)}
@@ -4753,6 +4767,7 @@ function renderEditorExercises(){
       <span class="drag-handle" onclick="tapHandle(${i})">&#9776;</span>
       <span class="edit-num">${i+1}</span>
       <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
+      <button class="edit-swap" onclick="openExPicker(${i})" title="Replace">&#8644;</button>
       <button class="edit-move${showPlateForEx(e[0])?' active':''}" onclick="toggleEditorPlate(${i})" title="Plate calc" style="${showPlateForEx(e[0])?'color:var(--gold)':''}">&#8960;</button>
       <button class="edit-del" onclick="deleteEditorEx(${i})" title="Remove">&times;</button>
       <div class="edit-row2">
@@ -4813,6 +4828,145 @@ function clearPicked(){
   pickedIdx=null;
   const container=document.getElementById('editorDayContent');
   if(container)container.querySelectorAll('.edit-ex-item').forEach(el=>{el.classList.remove('picked','drop-target')});
+}
+
+// ── EXERCISE PICKER (editor replace) ──
+function getFullExerciseData(name){
+  // Search all programs for full exercise array
+  for(const pid in PROGRAMS){
+    for(const dk in PROGRAMS[pid].days){
+      const ex=PROGRAMS[pid].days[dk].ex.find(e=>e[0]===name);
+      if(ex)return[...ex];
+    }
+  }
+  for(const ak in ABS_ROUTINES){
+    const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);
+    if(ex)return[...ex];
+  }
+  for(const pid in data.customPrograms||{}){
+    const cp=data.customPrograms[pid];
+    for(const dk in cp.days||{}){
+      const ex=(cp.days[dk].ex||[]).find(e=>e[0]===name);
+      if(ex)return[...ex];
+    }
+  }
+  // Fallback: construct from helpers
+  return[name,getExerciseEnglish(name),getExerciseMuscle(name)||'other','S','4x10',60];
+}
+
+function getRecentExercises(){
+  // Get exercises from recent logs, most recent first, deduplicated
+  const seen=new Set();
+  const recent=[];
+  const logs=[...(data.logs||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  for(const log of logs){
+    for(const ex of(log.exercises||[])){
+      if(!seen.has(ex.name)){seen.add(ex.name);recent.push(ex.name)}
+    }
+    if(recent.length>=30)break;
+  }
+  return recent;
+}
+
+function openExPicker(idx){
+  const currentMuscle=editorExercises[idx][2];
+  const currentName=editorExercises[idx][0];
+  const modal=document.getElementById('modalContent');
+  // Make modal position:relative for absolute picker
+  modal.style.position='relative';
+
+  let picker=document.getElementById('exPickerOverlay');
+  if(picker)picker.remove();
+  picker=document.createElement('div');
+  picker.id='exPickerOverlay';
+  picker.className='ex-picker';
+  modal.appendChild(picker);
+
+  picker.innerHTML=`<div class="ex-picker-header">
+    <input id="exPickerSearch" placeholder="Search exercises..." oninput="filterExPicker()">
+    <button onclick="closeExPicker()">&times;</button>
+  </div>
+  <div class="ex-picker-tabs" style="display:flex;gap:4px;padding:4px 12px">
+    <button class="day-tab active" onclick="setPickerFilter('muscle',this)" id="pickerTabMuscle">${(MUSCLE_LABELS[currentMuscle]||currentMuscle).toUpperCase()}</button>
+    <button class="day-tab" onclick="setPickerFilter('recent',this)" id="pickerTabRecent">RECENT</button>
+    <button class="day-tab" onclick="setPickerFilter('all',this)" id="pickerTabAll">ALL</button>
+  </div>
+  <div class="ex-picker-list" id="exPickerList"></div>`;
+
+  window._pickerIdx=idx;
+  window._pickerMuscle=currentMuscle;
+  window._pickerFilter='muscle';
+  window._pickerCurrent=currentName;
+  filterExPicker();
+  setTimeout(()=>document.getElementById('exPickerSearch').focus(),100);
+}
+
+function setPickerFilter(filter,btn){
+  window._pickerFilter=filter;
+  document.querySelectorAll('.ex-picker-tabs .day-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  filterExPicker();
+}
+
+function filterExPicker(){
+  const list=document.getElementById('exPickerList');
+  if(!list)return;
+  const search=(document.getElementById('exPickerSearch').value||'').toLowerCase();
+  const filter=window._pickerFilter;
+  const muscle=window._pickerMuscle;
+  const currentName=window._pickerCurrent;
+
+  // Build exercise list based on filter
+  const allNames=getAllExerciseNames();
+  const recentNames=getRecentExercises();
+  let exercises=[];
+
+  if(filter==='recent'){
+    exercises=recentNames;
+  }else if(filter==='muscle'){
+    exercises=allNames.filter(n=>(getExerciseMuscle(n)||'other')===muscle);
+  }else{
+    exercises=allNames;
+  }
+
+  // Apply search
+  if(search){
+    exercises=exercises.filter(n=>n.toLowerCase().includes(search)||(getExerciseEnglish(n)||'').toLowerCase().includes(search));
+  }
+
+  // Remove current exercise from list
+  exercises=exercises.filter(n=>n!==currentName);
+
+  let html='';
+  if(exercises.length===0){
+    html='<div style="padding:20px;text-align:center;color:var(--text-dim)">No exercises found</div>';
+  }else{
+    exercises.forEach(name=>{
+      const en=getExerciseEnglish(name);
+      const m=getExerciseMuscle(name)||'other';
+      const mLabel=MUSCLE_LABELS[m]||m;
+      const recentIdx=recentNames.indexOf(name);
+      html+=`<div class="ex-picker-item" onclick="pickExercise('${name.replace(/'/g,"\\'")}')">
+        <div class="pi-name">${name}</div>
+        <div class="pi-detail">${en!==name?en+' &middot; ':''}${mLabel}</div>
+        ${recentIdx>=0?'<div class="pi-recent">Recently used</div>':''}
+      </div>`;
+    });
+  }
+  list.innerHTML=html;
+}
+
+function pickExercise(name){
+  const idx=window._pickerIdx;
+  const fullData=getFullExerciseData(name);
+  editorExercises[idx]=fullData;
+  closeExPicker();
+  renderEditorExercises();
+}
+
+function closeExPicker(){
+  const picker=document.getElementById('exPickerOverlay');
+  if(picker)picker.remove();
 }
 
 function deleteEditorEx(i){
