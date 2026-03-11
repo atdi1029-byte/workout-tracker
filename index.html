@@ -3720,12 +3720,13 @@ function renderProgress(){
   const exerciseData=[];
   allNames.forEach((name,idx)=>{
     const id=exId(name);
-    if(!loggedNames.has(name)&&!(data.prs[id]&&Object.keys(data.prs[id]).length>0))return;
+    const hasATH=!!findATH(name);
+    if(!loggedNames.has(name)&&!(data.prs[id]&&Object.keys(data.prs[id]).length>0)&&!hasATH)return;
     if(query&&!name.toLowerCase().includes(query)&&!(getExerciseEnglish(name)||'').toLowerCase().includes(query))return;
     const prs=data.prs[id]||{};
     const athVal=findATH(name);
-    const repCounts=Object.keys(prs).map(Number).sort((a,b)=>a-b);
-    if(repCounts.length===0)return;
+    const repCounts=Object.keys(prs).filter(k=>!isNaN(+k)).map(Number).sort((a,b)=>a-b);
+    if(repCounts.length===0&&!athVal)return;
     let best1rm=0;
     repCounts.forEach(r=>{const e=calcE1RM(prs[r].weight,r);if(e>best1rm)best1rm=e});
     const equip=getExerciseEquip(name);
