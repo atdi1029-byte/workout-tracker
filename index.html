@@ -3715,9 +3715,9 @@ function renderProgress(){
   // Build exercise data
   const exerciseData=[];
   allNames.forEach((name,idx)=>{
-    if(!loggedNames.has(name))return;
-    if(query&&!name.toLowerCase().includes(query)&&!(getExerciseEnglish(name)||'').toLowerCase().includes(query))return;
     const id=exId(name);
+    if(!loggedNames.has(name)&&!(data.prs[id]&&Object.keys(data.prs[id]).length>0))return;
+    if(query&&!name.toLowerCase().includes(query)&&!(getExerciseEnglish(name)||'').toLowerCase().includes(query))return;
     const prs=data.prs[id]||{};
     const athVal=findATH(name);
     const repCounts=Object.keys(prs).map(Number).sort((a,b)=>a-b);
