@@ -1935,13 +1935,12 @@ function migrateData(){
   if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD09';
   // Migrate: add runLogs if missing
   if(!data.runLogs)data.runLogs=[];
-  // One-time fix: nuke duplicate run logs (v149 migration)
-  if(!localStorage.getItem('zr_runfix_v149')&&data.runLogs.length>1){
-    // Group by actualMin+actualKm — if all entries are the same run, keep only the last
-    const sig=l=>(l.actualMin||0)+'|'+(l.actualKm||0);
-    const sigs=new Set(data.runLogs.map(sig));
-    if(sigs.size===1){data.runLogs=[data.runLogs[data.runLogs.length-1]]}
-    localStorage.setItem('zr_runfix_v149','1');
+  // One-time fix v150: nuke all run log dupes, keep only 1 with data
+  if(!localStorage.getItem('zr_runfix_v150')){
+    const withData=data.runLogs.filter(l=>l.actualMin>0);
+    data.runLogs=withData.length>0?[withData[withData.length-1]]:[];
+    localStorage.setItem('zr_runfix_v150','1');
+    saveData();
   }
   // Fix run logs: always recalculate week from date to ensure it's a Monday
   data.runLogs.forEach(l=>{
