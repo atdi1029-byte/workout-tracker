@@ -1693,6 +1693,18 @@ function loadFromCloud(){
       cloudRunLogs.forEach(l=>{if(!runMap[l.id])runMap[l.id]=l});
       data.runLogs=Object.values(runMap).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     }
+    // Dedup run logs after cloud merge
+    if(data.runLogs&&data.runLogs.length>0){
+      data.runLogs.forEach(l=>{l.week=l.date?weekStart(l.date):weekStart()});
+      const sn=new Set();const sn2=new Set();const dd=[];
+      data.runLogs.forEach(l=>{
+        if(l.isExtra){dd.push(l);return}
+        const k=l.runIndex+'|'+l.week+'|'+l.block;
+        const k2=l.date+'|'+(l.actualMin||0)+'|'+(l.actualKm||0);
+        if(!sn.has(k)&&!sn2.has(k2)){sn.add(k);sn2.add(k2);dd.push(l)}
+      });
+      if(dd.length!==data.runLogs.length){data.runLogs=dd;saveData()}
+    }
     // Merge extra (holds, notes, starts)
     const extra=resp.extra||{};
     try{
