@@ -4996,6 +4996,15 @@ initCustomABCD09();
 if(data.customExercises&&data.customExercises.length){
   PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
 }
+// Auto-seed ATH data into PRs on every load
+for(const name in ATH_DATA){
+  const id=exId(name);
+  if(!data.prs[id])data.prs[id]={};
+  if(!data.prs[id]['ath']||ATH_DATA[name]>data.prs[id]['ath'].weight){
+    data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'ATH'};
+  }
+}
+saveData();
 currentDay=getNextDay();
 showView('workout',document.querySelector('.nav-btn'));
 loadFromCloud();
