@@ -1730,6 +1730,7 @@ function setExNote(exName,note){
   const n=getExNotes();
   if(note.trim())n[exName]=note.trim();else delete n[exName];
   saveExNotes(n);
+  syncExtraToCloud();
   renderExerciseCards();
 }
 function promptExNote(exName){
@@ -1926,15 +1927,16 @@ function migrateData(){
   data.runLogs.forEach(l=>{
     l.week=l.date?weekStart(l.date):weekStart();
   });
-  // Dedup run logs: keep first entry per (runIndex, week, block) for scheduled runs
+  // Dedup run logs: by runIndex+week+block, then also by date+time+distance
   if(data.runLogs.length>0){
-    const seen=new Set();const deduped=[];
+    const seen=new Set();const seen2=new Set();const deduped=[];
     data.runLogs.forEach(l=>{
       if(l.isExtra){deduped.push(l);return}
       const key=l.runIndex+'|'+l.week+'|'+l.block;
-      if(!seen.has(key)){seen.add(key);deduped.push(l)}
+      const key2=l.date+'|'+(l.actualMin||0)+'|'+(l.actualKm||0);
+      if(!seen.has(key)&&!seen2.has(key2)){seen.add(key);seen2.add(key2);deduped.push(l)}
     });
-    if(deduped.length!==data.runLogs.length)data.runLogs=deduped;
+    if(deduped.length!==data.runLogs.length){data.runLogs=deduped;saveData()}
   }
   // Exercise name migration (v97): standardize old variants to canonical names
   const NAME_MAP={
@@ -3176,6 +3178,7 @@ function renameExercise(ei){
   // Rename start weights
   const s=getStartWeights();if(s[oldName]){s[trimmed]=s[oldName];delete s[oldName];saveStartWeights(s);}
   saveData();
+  syncToCloud();
   renderExerciseCards();
   toast('Renamed to '+trimmed);
 }
@@ -4832,6 +4835,7 @@ function saveEditorDay(){
 
 function saveEditorAll(){
   saveEditorDay();
+  syncToCloud();
   toast(editorPid+' Day '+editorDay+' saved!');
   // Update badge
   const titleEl=document.querySelector('.modal-title');
