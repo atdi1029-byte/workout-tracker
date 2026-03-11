@@ -2874,9 +2874,10 @@ function initWorkout(){
             const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
             if(sameType[typeIdx])prefillWeight=sameType[typeIdx].weight;
           }
+          const isAbsEx=currentDay==='ABS'&&e[2]==='abs';
           return{
           weight:prefillWeight,
-          reps:s.reps,
+          reps:isAbsEx?'':s.reps,
           type:s.type,
           done:false
         };})
@@ -4405,13 +4406,13 @@ function renderSubs(){
 function deleteSub(name){
   if(!data.deletedSubs)data.deletedSubs=[];
   if(!data.deletedSubs.includes(name))data.deletedSubs.push(name);
-  saveData();renderSubs();
+  saveData();syncToCloud();renderSubs();
   toast('Removed: '+name);
 }
 function restoreAllSubs(){
   if(!confirm('Restore all hidden substitutions?'))return;
   data.deletedSubs=[];
-  saveData();renderSubs();
+  saveData();syncToCloud();renderSubs();
   toast('All substitutions restored');
 }
 
