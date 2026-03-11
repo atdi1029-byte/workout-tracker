@@ -328,13 +328,20 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .modal-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer}
 
 /* EDITOR */
-.edit-ex-item{display:flex;align-items:center;gap:6px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap;transition:border-color 0.2s,box-shadow 0.2s}
+.edit-ex-item{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;transition:border-color 0.2s,box-shadow 0.2s}
 .edit-ex-item.picked{border-color:var(--iron);box-shadow:0 0 12px rgba(128,144,168,0.3);background:rgba(128,144,168,0.08)}
 .edit-ex-item.drop-target{border-color:var(--gold);box-shadow:0 -3px 0 var(--gold)}
-.edit-ex-item .drag-handle{color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:6px 4px;user-select:none;-webkit-user-select:none;line-height:1;min-width:28px;text-align:center}
+.edit-ex-top{display:flex;align-items:center;gap:8px}
+.edit-ex-top .drag-handle{color:var(--text-dim);font-size:1.3rem;cursor:pointer;padding:6px 4px;user-select:none;-webkit-user-select:none;line-height:1;min-width:28px;text-align:center}
 .edit-ex-item.picked .drag-handle{color:var(--iron)}
-.edit-ex-item .edit-swap{background:none;border:none;color:var(--gold);font-size:0.95rem;cursor:pointer;padding:2px 4px;opacity:0.7}
-.edit-ex-item .edit-swap:hover{opacity:1}
+.edit-ex-top .edit-num{color:var(--text-dim);font-size:0.85rem;font-weight:700;min-width:18px}
+.edit-ex-top .edit-name-input{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-bright);font-size:1rem;font-weight:600;font-family:'Oswald',sans-serif}
+.edit-ex-top .edit-name-input:focus{outline:none;border-color:var(--iron)}
+.edit-ex-actions{display:flex;gap:4px;align-items:center}
+.edit-ex-actions button{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-dim);font-size:0.85rem;cursor:pointer;padding:6px 8px;transition:border-color 0.15s,color 0.15s}
+.edit-ex-actions button:active{border-color:var(--iron);color:var(--iron)}
+.edit-ex-actions .edit-del{color:var(--red);border-color:rgba(144,80,80,0.3)}
+.edit-ex-actions .edit-swap{color:var(--gold);border-color:rgba(160,148,106,0.3)}
 .ex-picker{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,12,16,0.98);z-index:10;display:flex;flex-direction:column;border-radius:var(--radius)}
 .ex-picker-header{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--border)}
 .ex-picker-header input{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.85rem;font-family:'Oswald',sans-serif}
@@ -347,17 +354,12 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .ex-picker-item .pi-name{font-size:0.85rem;color:var(--text-bright);font-weight:600}
 .ex-picker-item .pi-detail{font-size:0.7rem;color:var(--text-dim);margin-top:2px}
 .ex-picker-item .pi-recent{font-size:0.6rem;color:var(--gold);margin-top:2px}
-.edit-ex-item .edit-num{color:var(--text-dim);font-size:0.8rem;min-width:20px}
-.edit-ex-item .edit-name-input{flex:1;min-width:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text-bright);font-size:0.8rem}
-.edit-ex-item .edit-name-input:focus{outline:none;border-color:var(--iron)}
-.edit-ex-item .edit-field{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text);font-size:0.75rem;width:80px}
-.edit-ex-item .edit-field:focus{outline:none;border-color:var(--iron)}
-.edit-ex-item .edit-field.narrow{width:50px}
-.edit-ex-item .edit-del{background:none;border:none;color:var(--red);font-size:1.1rem;cursor:pointer;padding:4px 6px}
-.edit-ex-item .edit-move{background:none;border:none;color:var(--text-dim);font-size:0.9rem;cursor:pointer;padding:2px 4px}
-.edit-ex-item .edit-move:hover{color:var(--iron)}
-.edit-row2{display:flex;gap:6px;width:100%;padding-left:26px;margin-top:4px;align-items:center}
-.edit-row2 label{font-size:0.65rem;color:var(--text-dim)}
+.edit-ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.edit-ex-grid .edit-field-group{display:flex;flex-direction:column;gap:3px}
+.edit-ex-grid .edit-field-group.full{grid-column:1/-1}
+.edit-ex-grid label{font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;font-family:'Oswald',sans-serif}
+.edit-ex-grid input,.edit-ex-grid select{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.85rem;font-family:'Oswald',sans-serif;width:100%}
+.edit-ex-grid input:focus,.edit-ex-grid select:focus{outline:none;border-color:var(--iron)}
 .edit-save-btn{display:block;width:100%;background:var(--iron);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:12px}
 .edit-reset-btn{display:block;width:100%;background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:10px;font-size:0.85rem;cursor:pointer;margin-top:8px}
 .edit-add-btn{display:block;width:100%;background:none;border:1px dashed var(--border);border-radius:var(--radius-sm);padding:8px;color:var(--text-dim);font-size:0.8rem;cursor:pointer;margin-top:6px}
@@ -4764,22 +4766,41 @@ function renderEditorExercises(){
   editorExercises.forEach((e,i)=>{
     // e = [name, nameEn, muscle, technique, setsReps, restSec]
     html+=`<div class="edit-ex-item" data-idx="${i}">
-      <span class="drag-handle" onclick="tapHandle(${i})">&#9776;</span>
-      <span class="edit-num">${i+1}</span>
-      <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
-      <button class="edit-swap" onclick="openExPicker(${i})" title="Replace">&#8644;</button>
-      <button class="edit-move${showPlateForEx(e[0])?' active':''}" onclick="toggleEditorPlate(${i})" title="Plate calc" style="${showPlateForEx(e[0])?'color:var(--gold)':''}">&#8960;</button>
-      <button class="edit-del" onclick="deleteEditorEx(${i})" title="Remove">&times;</button>
-      <div class="edit-row2">
-        <label>EN:</label><input class="edit-field" value="${e[1]}" onchange="editorExercises[${i}][1]=this.value" placeholder="English name">
-        <label>Sets:</label><input class="edit-field" value="${e[4]}" onchange="editorExercises[${i}][4]=this.value" placeholder="e.g. 4x8-12">
-        <label>Rest:</label><input class="edit-field narrow" type="number" value="${e[5]}" onchange="editorExercises[${i}][5]=+this.value" placeholder="sec">
-        <label>Tech:</label><select class="edit-field" onchange="editorExercises[${i}][3]=this.value">
-          ${Object.keys(TECH_LABELS).map(t=>`<option value="${t}"${e[3]===t?' selected':''}>${t}</option>`).join('')}
-        </select>
-        <label>Muscle:</label><select class="edit-field" onchange="editorExercises[${i}][2]=this.value">
-          ${MUSCLE_GROUPS.map(m=>`<option value="${m}"${e[2]===m?' selected':''}>${MUSCLE_LABELS[m]}</option>`).join('')}
-        </select>
+      <div class="edit-ex-top">
+        <span class="drag-handle" onclick="tapHandle(${i})">&#9776;</span>
+        <span class="edit-num">${i+1}</span>
+        <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
+        <div class="edit-ex-actions">
+          <button class="edit-swap" onclick="openExPicker(${i})" title="Replace">&#8644;</button>
+          <button onclick="toggleEditorPlate(${i})" title="Plate calc" style="${showPlateForEx(e[0])?'color:var(--gold);border-color:rgba(160,148,106,0.4)':''}">&#8960;</button>
+          <button class="edit-del" onclick="deleteEditorEx(${i})" title="Remove">&times;</button>
+        </div>
+      </div>
+      <div class="edit-ex-grid">
+        <div class="edit-field-group full">
+          <label>English Name</label>
+          <input value="${e[1]}" onchange="editorExercises[${i}][1]=this.value" placeholder="English name">
+        </div>
+        <div class="edit-field-group">
+          <label>Sets / Reps</label>
+          <input value="${e[4]}" onchange="editorExercises[${i}][4]=this.value" placeholder="e.g. 4x8-12">
+        </div>
+        <div class="edit-field-group">
+          <label>Rest (sec)</label>
+          <input type="number" value="${e[5]}" onchange="editorExercises[${i}][5]=+this.value" placeholder="sec">
+        </div>
+        <div class="edit-field-group">
+          <label>Technique</label>
+          <select onchange="editorExercises[${i}][3]=this.value">
+            ${Object.keys(TECH_LABELS).map(t=>`<option value="${t}"${e[3]===t?' selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="edit-field-group">
+          <label>Muscle</label>
+          <select onchange="editorExercises[${i}][2]=this.value">
+            ${MUSCLE_GROUPS.map(m=>`<option value="${m}"${e[2]===m?' selected':''}>${MUSCLE_LABELS[m]}</option>`).join('')}
+          </select>
+        </div>
       </div>
     </div>`;
   });
