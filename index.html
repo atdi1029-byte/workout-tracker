@@ -328,7 +328,11 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .modal-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer}
 
 /* EDITOR */
-.edit-ex-item{display:flex;align-items:center;gap:6px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap}
+.edit-ex-item{display:flex;align-items:center;gap:6px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap;transition:transform 0.15s,opacity 0.15s,box-shadow 0.15s}
+.edit-ex-item.dragging{opacity:0.4;border-color:var(--iron)}
+.edit-ex-item.drag-over{border-color:var(--iron);box-shadow:0 -2px 0 var(--iron)}
+.edit-ex-item .drag-handle{color:var(--text-dim);font-size:1.1rem;cursor:grab;padding:4px 2px;touch-action:none;user-select:none;-webkit-user-select:none;line-height:1}
+.edit-ex-item .drag-handle:active{cursor:grabbing;color:var(--iron)}
 .edit-ex-item .edit-num{color:var(--text-dim);font-size:0.8rem;min-width:20px}
 .edit-ex-item .edit-name-input{flex:1;min-width:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;color:var(--text-bright);font-size:0.8rem}
 .edit-ex-item .edit-name-input:focus{outline:none;border-color:var(--iron)}
@@ -4745,11 +4749,10 @@ function renderEditorExercises(){
 
   editorExercises.forEach((e,i)=>{
     // e = [name, nameEn, muscle, technique, setsReps, restSec]
-    html+=`<div class="edit-ex-item">
+    html+=`<div class="edit-ex-item" draggable="true" data-idx="${i}">
+      <span class="drag-handle" data-idx="${i}">&#9776;</span>
       <span class="edit-num">${i+1}</span>
       <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
-      <button class="edit-move" onclick="moveEditorEx(${i},-1)" title="Move up">&#9650;</button>
-      <button class="edit-move" onclick="moveEditorEx(${i},1)" title="Move down">&#9660;</button>
       <button class="edit-move${showPlateForEx(e[0])?' active':''}" onclick="toggleEditorPlate(${i})" title="Plate calc" style="${showPlateForEx(e[0])?'color:var(--gold)':''}">&#8960;</button>
       <button class="edit-del" onclick="deleteEditorEx(${i})" title="Remove">&times;</button>
       <div class="edit-row2">
@@ -4774,13 +4777,107 @@ function renderEditorExercises(){
   }
 
   document.getElementById('editorDayContent').innerHTML=html;
+  initEditorDrag();
 }
 
-function moveEditorEx(i,dir){
-  const j=i+dir;
-  if(j<0||j>=editorExercises.length)return;
-  [editorExercises[i],editorExercises[j]]=[editorExercises[j],editorExercises[i]];
+function moveEditorEx(from,to){
+  if(to<0||to>=editorExercises.length||from===to)return;
+  const item=editorExercises.splice(from,1)[0];
+  editorExercises.splice(to,0,item);
   renderEditorExercises();
+}
+
+// ── DRAG & DROP (editor) ──
+let dragFromIdx=null;
+let dragGhost=null;
+let touchDragIdx=null;
+let touchCurrentOver=null;
+
+function initEditorDrag(){
+  const container=document.getElementById('editorDayContent');
+  if(!container||container._dragInit)return;
+  container._dragInit=true;
+
+  // Desktop drag events — only from handle
+  container.addEventListener('dragstart',e=>{
+    const handle=e.target.closest('.drag-handle');
+    if(!handle){e.preventDefault();return}
+    const item=handle.closest('.edit-ex-item');
+    if(!item)return;
+    dragFromIdx=+item.dataset.idx;
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',dragFromIdx);
+  });
+  container.addEventListener('dragover',e=>{
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    const item=e.target.closest('.edit-ex-item');
+    container.querySelectorAll('.edit-ex-item').forEach(el=>el.classList.remove('drag-over'));
+    if(item&&+item.dataset.idx!==dragFromIdx)item.classList.add('drag-over');
+  });
+  container.addEventListener('dragend',()=>{
+    container.querySelectorAll('.edit-ex-item').forEach(el=>{el.classList.remove('dragging','drag-over')});
+    dragFromIdx=null;
+  });
+  container.addEventListener('drop',e=>{
+    e.preventDefault();
+    const item=e.target.closest('.edit-ex-item');
+    if(!item||dragFromIdx===null)return;
+    const to=+item.dataset.idx;
+    if(dragFromIdx!==to)moveEditorEx(dragFromIdx,to);
+    dragFromIdx=null;
+  });
+
+  // Touch drag events (mobile)
+  container.addEventListener('touchstart',e=>{
+    const handle=e.target.closest('.drag-handle');
+    if(!handle)return;
+    e.preventDefault();
+    const item=handle.closest('.edit-ex-item');
+    touchDragIdx=+item.dataset.idx;
+    item.classList.add('dragging');
+    // Create ghost element
+    dragGhost=item.cloneNode(true);
+    dragGhost.style.cssText='position:fixed;z-index:9999;pointer-events:none;opacity:0.8;width:'+item.offsetWidth+'px;transform:scale(0.95);box-shadow:0 4px 20px rgba(0,0,0,0.5);border-color:var(--iron)';
+    document.body.appendChild(dragGhost);
+    const touch=e.touches[0];
+    dragGhost.style.left=(touch.clientX-item.offsetWidth/2)+'px';
+    dragGhost.style.top=(touch.clientY-30)+'px';
+  },{passive:false});
+
+  container.addEventListener('touchmove',e=>{
+    if(touchDragIdx===null)return;
+    e.preventDefault();
+    const touch=e.touches[0];
+    if(dragGhost){
+      dragGhost.style.left=(touch.clientX-dragGhost.offsetWidth/2)+'px';
+      dragGhost.style.top=(touch.clientY-30)+'px';
+    }
+    // Find which item we're over
+    const items=container.querySelectorAll('.edit-ex-item');
+    items.forEach(el=>el.classList.remove('drag-over'));
+    const overEl=document.elementFromPoint(touch.clientX,touch.clientY);
+    if(overEl){
+      const overItem=overEl.closest('.edit-ex-item');
+      if(overItem&&+overItem.dataset.idx!==touchDragIdx){
+        overItem.classList.add('drag-over');
+        touchCurrentOver=+overItem.dataset.idx;
+      }else{touchCurrentOver=null}
+    }
+  },{passive:false});
+
+  container.addEventListener('touchend',()=>{
+    if(touchDragIdx===null)return;
+    if(dragGhost){dragGhost.remove();dragGhost=null}
+    const container2=document.getElementById('editorDayContent');
+    if(container2)container2.querySelectorAll('.edit-ex-item').forEach(el=>{el.classList.remove('dragging','drag-over')});
+    if(touchCurrentOver!==null&&touchDragIdx!==touchCurrentOver){
+      moveEditorEx(touchDragIdx,touchCurrentOver);
+    }
+    touchDragIdx=null;
+    touchCurrentOver=null;
+  });
 }
 
 function deleteEditorEx(i){
