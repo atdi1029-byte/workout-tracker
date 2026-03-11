@@ -1679,18 +1679,16 @@ function loadFromCloud(){
         if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
       }
     }
-    // Merge config — preserve local ABCD09 custom program
-    const localCustom=data.customPrograms.ABCD09?JSON.parse(JSON.stringify(data.customPrograms.ABCD09)):null;
+    // Merge config — preserve ALL local custom programs
+    const localCustom=JSON.parse(JSON.stringify(data.customPrograms||{}));
     if(config.activeProgram&&PROGRAMS[config.activeProgram])data.activeProgram=config.activeProgram;
     else data.activeProgram='ABCD09';
     if(config.customPrograms){
-      // Only keep programs that exist in PROGRAMS
-      const cleaned={};
-      for(const k in config.customPrograms){if(PROGRAMS[k])cleaned[k]=config.customPrograms[k]}
-      data.customPrograms=cleaned;
+      // Merge cloud custom programs with local — local wins on conflict
+      for(const k in config.customPrograms){if(PROGRAMS[k]&&!localCustom[k])data.customPrograms[k]=config.customPrograms[k]}
     }
-    // Restore local ABCD09 custom if cloud didn't have it
-    if(localCustom&&!data.customPrograms.ABCD09)data.customPrograms.ABCD09=localCustom;
+    // Restore any local custom programs that cloud didn't have
+    for(const k in localCustom){if(PROGRAMS[k]&&!data.customPrograms[k])data.customPrograms[k]=localCustom[k]}
     if(config.customSubs)data.customSubs=config.customSubs;
     if(config.customExercises)data.customExercises=config.customExercises;
     if(config.settings)data.settings=config.settings;
