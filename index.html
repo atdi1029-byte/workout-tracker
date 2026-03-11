@@ -1922,6 +1922,10 @@ function migrateData(){
   if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD09';
   // Migrate: add runLogs if missing
   if(!data.runLogs)data.runLogs=[];
+  // Fix run logs with missing/bad week: derive from date
+  data.runLogs.forEach(l=>{
+    if(!l.week||l.week==='undefined'){l.week=l.date?weekStart(l.date):weekStart()}
+  });
   // Dedup run logs: keep first entry per (runIndex, week, block) for scheduled runs
   if(data.runLogs.length>0){
     const seen=new Set();const deduped=[];
