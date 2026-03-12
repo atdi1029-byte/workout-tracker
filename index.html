@@ -5389,6 +5389,8 @@ for(const name in ATH_DATA){
 }
 saveData();
 currentDay=getNextDay();
+// Resume in-progress workout (including ABS) if one exists
+try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.program===data.activeProgram&&_s.day)currentDay=_s.day;}catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 loadFromCloud();
 if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js')}
