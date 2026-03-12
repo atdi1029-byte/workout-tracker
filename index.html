@@ -2027,6 +2027,11 @@ function migrateData(){
     for(const oldN in renames)migrateExRename(oldN,renames[oldN]);
     data._nameMigV121=true;
   }
+  // v156: remove stale ABS/RUN keys from customPrograms (editor bug)
+  for(const pid in data.customPrograms||{}){
+    const cp=data.customPrograms[pid];
+    if(cp&&cp.days){delete cp.days.ABS;delete cp.days.RUN;if(Object.keys(cp.days).length===0)delete data.customPrograms[pid];}
+  }
   saveData();
 }
 
@@ -2132,7 +2137,7 @@ function getProgram(id){
   const custom=data.customPrograms[id];
   let merged;
   if(!custom){merged=JSON.parse(JSON.stringify(p))}
-  else{merged=JSON.parse(JSON.stringify(p));for(const dk in custom.days||{}){if(custom.days[dk]&&custom.days[dk].ex)merged.days[dk].ex=custom.days[dk].ex;}}
+  else{merged=JSON.parse(JSON.stringify(p));for(const dk in custom.days||{}){if(custom.days[dk]&&custom.days[dk].ex&&merged.days[dk])merged.days[dk].ex=custom.days[dk].ex;}}
   // Replace old per-program ABS with single ABS day using selected routine
   delete merged.days.ABS;
   const absR=ABS_ROUTINES['ABS'+currentAbsRoutine]||ABS_ROUTINES.ABS1;
@@ -4718,7 +4723,7 @@ function openEditor(pid){
 
   openModal(html);
 
-  const days=Object.keys(prog.days);
+  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='RUN');
   editorDay=days[0];
   renderEditorTabs();
   loadEditorDay();
@@ -4726,7 +4731,7 @@ function openEditor(pid){
 
 function renderEditorTabs(){
   const prog=getProgram(editorPid);if(!prog)return;
-  const days=Object.keys(prog.days);
+  const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='RUN');
   let html='';
   days.forEach(d=>{
     html+=`<button class="day-tab${d===editorDay?' active':''}" onclick="switchEditorDay('${d}',this)">${d}</button>`;
