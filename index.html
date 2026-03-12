@@ -5249,6 +5249,19 @@ function importATH(){
 loadData();
 migrateData();
 initCustomABCD09();
+// Bootstrap PRs from all logs (seed logs don't call finishWorkout so PRs are missing)
+(data.logs||[]).forEach(log=>{
+  (log.exercises||[]).forEach(ex=>{
+    ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
+      const id=exId(ex.name);
+      if(!data.prs[id])data.prs[id]={};
+      const current=data.prs[id][s.reps];
+      if(!current||s.weight>current.weight){
+        data.prs[id][s.reps]={weight:s.weight,date:log.date,program:log.program||''};
+      }
+    });
+  });
+});
 // ABS days exist in some programs — they show as tabs but aren't in ABCD rotation
 // Load custom exercises into hidden program
 if(data.customExercises&&data.customExercises.length){
