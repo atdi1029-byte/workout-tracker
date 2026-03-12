@@ -142,6 +142,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .pr-flash{display:none;background:linear-gradient(135deg,rgba(232,184,74,0.15),rgba(232,184,74,0.05));border:1px solid rgba(232,184,74,0.4);border-radius:var(--radius-sm);padding:6px 10px;margin-top:6px;font-size:0.75rem;color:var(--gold);font-weight:600;animation:prPulse 0.6s ease}
 .pr-flash.show{display:block}
 @keyframes prPulse{0%{transform:scale(0.95);opacity:0}50%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 
 /* LAST TIME ROW */
 .ex-last{font-size:0.7rem;color:var(--iron);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);text-align:center}
@@ -402,6 +403,19 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .prog-detail-reps{color:var(--iron);font-family:'Oswald',sans-serif;font-weight:600;white-space:nowrap}
 .prog-detail-tech{font-size:0.6rem;padding:1px 5px;border-radius:8px;background:rgba(160,148,106,0.15);color:var(--gold);border:1px solid rgba(160,148,106,0.25);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px;vertical-align:middle}
 .prog-detail-weights{font-size:0.7rem;color:var(--gold);opacity:0.7;padding:0 0 4px 28px;font-family:'Oswald',sans-serif}
+.prog-week-bar{margin-top:8px;padding-top:8px;border-top:1px solid rgba(128,144,168,0.1)}
+.prog-week-label{font-size:0.7rem;color:var(--text-dim);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;display:flex;justify-content:space-between}
+.prog-week-track{height:4px;background:rgba(128,144,168,0.1);border-radius:2px;overflow:hidden}
+.prog-week-fill{height:100%;border-radius:2px;transition:width 0.3s}
+.prog-week-fill.ok{background:var(--iron)}
+.prog-week-fill.warn{background:var(--gold)}
+.prog-week-fill.expired{background:var(--red)}
+.workout-week-banner{background:rgba(128,144,168,0.08);border:1px solid rgba(128,144,168,0.15);border-radius:var(--radius);padding:8px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;font-family:'Oswald',sans-serif}
+.workout-week-banner.expired{border-color:rgba(144,80,80,0.3);background:rgba(144,80,80,0.08)}
+.workout-week-text{font-size:0.8rem;color:var(--text);text-transform:uppercase;letter-spacing:1px}
+.workout-week-text strong{color:var(--text-bright)}
+.workout-week-days{font-size:0.7rem;color:var(--text-dim)}
+.workout-week-switch{font-size:0.65rem;color:var(--red-bright);text-transform:uppercase;letter-spacing:1px;font-weight:700;animation:pulse 2s infinite}
 
 /* ADD PR / ADD EXERCISE BUTTON */
 .add-pr-btn{background:rgba(128,144,168,0.15);border:1px solid rgba(128,144,168,0.25);border-radius:var(--radius-sm);padding:6px 14px;color:var(--iron);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
@@ -455,6 +469,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 
 <!-- VIEW: WORKOUT -->
 <div id="view-workout" class="view active">
+  <div id="workoutWeekBanner"></div>
   <div class="day-tabs" id="dayTabs"></div>
   <div id="absRoutinePicker" style="display:none"></div>
   <div class="workout-timer" id="workoutTimer"></div>
@@ -619,7 +634,7 @@ function getPattern(name){return MOVEMENT_PATTERNS[name]||''}
 // ── PROGRAMS DATA ──
 // Format: [name, nameEn, muscle, technique, setsReps, restSec]
 const PROGRAMS = {
-ABC01:{name:'ABC01',phase:'acc',type:'ABC',days:{
+ABC01:{name:'ABC01',phase:'acc',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Supino Reto','Barbell Bench Press','chest','S','2x10wu+4x8-12',80],
     ['Supino Máquina Inclinado','Incline Machine Press','chest','S','4x8-12',80],
@@ -652,7 +667,7 @@ ABC01:{name:'ABC01',phase:'acc',type:'ABC',days:{
     ['Panturrilha Sentado','Seated Calf Raise','calves','S','6x15',40]
   ]}
 }},
-ABC02:{name:'ABC02',phase:'int',type:'ABC',days:{
+ABC02:{name:'ABC02',phase:'int',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Supino Reto','Barbell Bench Press','chest','AP','2x10wu+12-15/10-12/8-10/5-8',80],
     ['Crucifixo (Voador)','Chest Fly Machine','chest','BS','3x10-12 Bi-Set',0],
@@ -687,7 +702,7 @@ ABC02:{name:'ABC02',phase:'int',type:'ABC',days:{
     ['Panturrilha Press','Calf Press','calves','S','4x12-15',60]
   ]}
 }},
-ABC03:{name:'ABC03',phase:'spe',type:'ABC',days:{
+ABC03:{name:'ABC03',phase:'spe',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Supino Inclinado','Incline Barbell Press','chest','S','2x10wu+4x8-10',90],
     ['Crucifixo Inclinado com Halteres','Incline Dumbbell Flyes','chest','S','4x10-12',60],
@@ -722,7 +737,7 @@ ABC03:{name:'ABC03',phase:'spe',type:'ABC',days:{
     ['Panturrilha Smith','Smith Machine Calf Raise','calves','S','4x12-15',60]
   ]}
 }},
-ABC04:{name:'ABC04',phase:'rea',type:'ABC',days:{
+ABC04:{name:'ABC04',phase:'rea',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Supino Reto','Barbell Bench Press','chest','S','2x10wu+4x6-8',90],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x6-8',90],
@@ -751,7 +766,7 @@ ABC04:{name:'ABC04',phase:'rea',type:'ABC',days:{
     ['Panturrilha Smith','Smith Machine Calf Raise','calves','S','3x12-15',45]
   ]}
 }},
-ABC05:{name:'ABC05',phase:'acc',type:'ABC',days:{
+ABC05:{name:'ABC05',phase:'acc',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Push (Chest + Shoulders + Triceps + Abs)',ex:[
     ['Abdominal com Carrinho','Ab Wheel','abs','Fail','4xFailure',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -787,7 +802,7 @@ ABC05:{name:'ABC05',phase:'acc',type:'ABC',days:{
     ['Panturrilha Sentado','Seated Calf Raise','calves','S','3x20',45]
   ]}
 }},
-ABCD01:{name:'ABCD01',phase:'int',type:'ABCD',days:{
+ABCD01:{name:'ABCD01',phase:'int',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros',labelEn:'Chest + Shoulders',ex:[
     ['Crucifixo (Voador)','Chest Fly Machine','chest','DS','3x8-12+Drop',60],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','S','5x5-8',90],
@@ -829,7 +844,7 @@ ABCD01:{name:'ABCD01',phase:'int',type:'ABCD',days:{
     ['Panturrilha Press','Calf Press','calves','S','3x20-30',45]
   ]}
 }},
-ABCD02:{name:'ABCD02',phase:'spe',type:'ABCD',days:{
+ABCD02:{name:'ABCD02',phase:'spe',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Push + Abs',ex:[
     ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','2x10',60],
@@ -869,7 +884,7 @@ ABCD02:{name:'ABCD02',phase:'spe',type:'ABCD',days:{
     ['Panturrilha Press','Calf Press','calves','P','20/15/10',45]
   ]}
 }},
-ABCD03:{name:'ABCD03',phase:'int',type:'ABCD',days:{
+ABCD03:{name:'ABCD03',phase:'int',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Abs',labelEn:'Push + Abs',ex:[
     ['Abdomen Infra no Banco','Bench Leg Raises','abs','BS','4x20 Bi-Set',0],
     ['Prancha','Plank','abs','BS','4x60s Bi-Set',45],
@@ -913,7 +928,7 @@ ABCD03:{name:'ABCD03',phase:'int',type:'ABCD',days:{
     ['Panturrilha Press','Calf Press','calves','AP','20/15/10',45]
   ]}
 }},
-ABCD04:{name:'ABCD04',phase:'rea',type:'ABCD',days:{
+ABCD04:{name:'ABCD04',phase:'rea',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Abs',labelEn:'Push + Abs',ex:[
     ['Prancha na Bola','Plank on Ball','abs','S','4x90s',60],
     ['Abdominal Canivete I','Jackknife Crunches','abs','S','4x15-20',60],
@@ -953,7 +968,7 @@ ABCD04:{name:'ABCD04',phase:'rea',type:'ABCD',days:{
     ['Panturrilha Press','Calf Press','calves','S','4x12',45]
   ]}
 }},
-ABCD05:{name:'ABCD05',phase:'peak',type:'ABCD',days:{
+ABCD05:{name:'ABCD05',phase:'peak',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Abdominal Cruzado','Cross Crunch','abs','S','3x10 each',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -990,7 +1005,7 @@ ABCD05:{name:'ABCD05',phase:'peak',type:'ABCD',days:{
     ['Rosca Direta','Barbell Curl','biceps','P','12/10/3x8',90]
   ]}
 }},
-ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',days:{
+ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -1029,7 +1044,7 @@ ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',days:{
     ['Rosca com Halteres','DB Curls','biceps','P','12/10/3x6-8',120]
   ]}
 }},
-ABCD07:{name:'ABCD07',phase:'spe',type:'ABCD',days:{
+ABCD07:{name:'ABCD07',phase:'spe',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Push + Abs',ex:[
     ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -1068,7 +1083,7 @@ ABCD07:{name:'ABCD07',phase:'spe',type:'ABCD',days:{
     ['Rosca Scott','Preacher Curl','biceps','S','1x8wu+3x8',120]
   ]}
 }},
-ABCD08:{name:'ABCD08',phase:'rea',type:'ABCD',days:{
+ABCD08:{name:'ABCD08',phase:'rea',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Push + Abs',ex:[
     ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -1107,7 +1122,7 @@ ABCD08:{name:'ABCD08',phase:'rea',type:'ABCD',days:{
     ['Bíceps Direto','Barbell Curl','biceps','S','1x8wu+3x6',120]
   ]}
 }},
-ABCD09:{name:'ABCD09',phase:'acc',type:'ABCD',days:{
+ABCD09:{name:'ABCD09',phase:'acc',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Triceps',labelEn:'Push',ex:[
     ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
     ['Supino Reto','Barbell Bench Press','chest','PC','2x8wu+3x10',180],
@@ -1150,7 +1165,7 @@ ABCD09:{name:'ABCD09',phase:'acc',type:'ABCD',days:{
     ['Weighted Sit-ups','Weighted Sit-ups','abs','S','3x10',60]
   ]}
 }},
-ABCD10:{name:'ABCD10',phase:'int',type:'ABCD',days:{
+ABCD10:{name:'ABCD10',phase:'int',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -1187,7 +1202,7 @@ ABCD10:{name:'ABCD10',phase:'int',type:'ABCD',days:{
     ['Rosca 45','Incline Dumbbell Curl','biceps','S','3x10',60]
   ]}
 }},
-ABCD11:{name:'ABCD11',phase:'peak',type:'ABCD',days:{
+ABCD11:{name:'ABCD11',phase:'peak',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
@@ -1602,12 +1617,12 @@ function fireGet(url){const img=new Image();img.src=url}
 function syncConfigToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[]};
+    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const encoded=encodeURIComponent(JSON.stringify(config));
     if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);}
     else{
       // Config too large with PRs — send without PRs (PRs sync via workout logs)
-      const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[]};
+      const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
       const enc1=encodeURIComponent(JSON.stringify(lite));
       if(enc1.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);
     }
@@ -1707,6 +1722,14 @@ function loadFromCloud(){
     }
     if(config.customExercises)data.customExercises=config.customExercises;
     if(config.settings)data.settings=config.settings;
+    if(config.programStartDates){
+      if(!data.programStartDates)data.programStartDates={};
+      for(const k in config.programStartDates){if(!data.programStartDates[k])data.programStartDates[k]=config.programStartDates[k]}
+    }
+    if(config.programWeeks){
+      if(!data.programWeeks)data.programWeeks={};
+      for(const k in config.programWeeks){data.programWeeks[k]=config.programWeeks[k]}
+    }
     if(config.prs){
       for(const eid in config.prs){
         if(!data.prs[eid])data.prs[eid]={};
@@ -1925,6 +1948,30 @@ function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||
 function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
 function weekStart(d){const dt=new Date(d||Date.now());dt.setDate(dt.getDate()-dt.getDay()+1);return dateStr(dt)}
 function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
+function getProgWeeks(pid){
+  if(data.programWeeks&&data.programWeeks[pid])return data.programWeeks[pid];
+  const prog=PROGRAMS[pid];return prog?prog.weeks:0;
+}
+function setProgWeeks(pid,w){
+  if(!data.programWeeks)data.programWeeks={};
+  data.programWeeks[pid]=w;saveData();syncConfigToCloud();
+}
+function editProgWeeks(pid){
+  const current=getProgWeeks(pid);
+  const val=prompt('Set duration (weeks) for '+pid+':',current);
+  if(val===null)return;
+  const n=parseInt(val);if(!n||n<1||n>52)return toast('Enter 1-52');
+  setProgWeeks(pid,n);renderWorkout();renderPrograms();
+}
+function getProgramWeekInfo(pid){
+  const totalWeeks=getProgWeeks(pid);if(!totalWeeks)return null;
+  const startStr=(data.programStartDates||{})[pid];if(!startStr)return null;
+  const start=new Date(startStr+'T00:00:00');const now=new Date();
+  const diffMs=now-start;const diffDays=Math.floor(diffMs/86400000);
+  const currentWeek=Math.floor(diffDays/7)+1;
+  const daysLeft=totalWeeks*7-diffDays;
+  return{currentWeek:Math.min(currentWeek,totalWeeks+1),totalWeeks,expired:currentWeek>totalWeeks,daysLeft:Math.max(0,daysLeft),startDate:startStr};
+}
 function parseSets(str){
   // Parse setsReps string into array of {reps, type}
   if(!str)return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
@@ -1948,7 +1995,7 @@ function parseSets(str){
 // ── STORAGE ──
 function loadData(){
   try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
-  catch(e){data={activeProgram:'ABCD09',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},runLogs:[]}}
+  catch(e){data={activeProgram:'ABCD09',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},runLogs:[],programStartDates:{}}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -1976,6 +2023,11 @@ function migrateData(){
   if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD09';
   // Migrate: add runLogs if missing
   if(!data.runLogs)data.runLogs=[];
+  // Migrate: add programStartDates and programWeeks if missing
+  if(!data.programStartDates)data.programStartDates={};
+  if(!data.programWeeks)data.programWeeks={};
+  // Auto-set start date for current active program if not set
+  if(data.activeProgram&&!data.programStartDates[data.activeProgram])data.programStartDates[data.activeProgram]=dateStr();
   // One-time fix v150: nuke all run log dupes, keep only 1 with data
   if(!localStorage.getItem('zr_runfix_v150')){
     const withData=data.runLogs.filter(l=>l.actualMin>0);
@@ -2286,7 +2338,10 @@ function getNextDay(){
 }
 
 function selectProgram(pid){
-  data.activeProgram=pid;saveData();
+  data.activeProgram=pid;
+  if(!data.programStartDates)data.programStartDates={};
+  data.programStartDates[pid]=dateStr();
+  saveData();
   currentDay=getNextDay();
   showView('workout',document.querySelectorAll('.nav-btn')[0]);
   toast('Switched to '+pid);
@@ -2307,7 +2362,15 @@ function renderPrograms(){
         <span>${isActive?'<span class="prog-badge active-badge">Active</span> ':''}
         <span class="prog-badge phase">${phase}</span></span>
       </div>
-      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'}${p.dates?' &middot; '+p.dates:''} &middot; tap to expand</div>
+      <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'} &middot; ${getProgWeeks(pid)} weeks${p.dates?' &middot; '+p.dates:''} &middot; tap to expand</div>
+      ${(()=>{
+        if(!isActive)return '';
+        const wi=getProgramWeekInfo(pid);
+        if(!wi)return '';
+        const pct=Math.min(100,((wi.currentWeek-1)/wi.totalWeeks)*100);
+        const cls=wi.expired?'expired':wi.currentWeek>=wi.totalWeeks?'warn':'ok';
+        return '<div class="prog-week-bar" onclick="event.stopPropagation();editProgWeeks(\''+pid+'\')" style="cursor:pointer"><div class="prog-week-label"><span>'+(wi.expired?'Completed':'Week '+wi.currentWeek+' of '+wi.totalWeeks)+'</span><span>'+(wi.expired?'Time to switch!':wi.daysLeft+' days left')+'</span></div><div class="prog-week-track"><div class="prog-week-fill '+cls+'" style="width:'+pct+'%"></div></div></div>';
+      })()}
       <div class="prog-days-list">
         ${days.map(d=>{
           const day=p.days[d];
@@ -2347,6 +2410,8 @@ function renderPrograms(){
 }
 function setActiveProgram(pid){
   data.activeProgram=pid;
+  if(!data.programStartDates)data.programStartDates={};
+  data.programStartDates[pid]=dateStr();
   saveData();
   renderPrograms();
   toast(pid+' set as active program');
@@ -2357,6 +2422,17 @@ function renderWorkout(){
   const prog=getProgram(data.activeProgram);if(!prog)return;
   const days=Object.keys(prog.days);
   if(!days.includes(currentDay))currentDay=days[0];
+
+  // Week progress banner
+  const wInfo=getProgramWeekInfo(data.activeProgram);
+  const bannerEl=document.getElementById('workoutWeekBanner');
+  if(wInfo){
+    if(wInfo.expired){
+      bannerEl.innerHTML=`<div class="workout-week-banner expired" onclick="editProgWeeks('${data.activeProgram}')"><div><div class="workout-week-text"><strong>${data.activeProgram}</strong> &middot; ${PHASES[prog.phase]||''}</div><div class="workout-week-switch">Time to switch programs!</div></div><div class="workout-week-days">${wInfo.totalWeeks} weeks done</div></div>`;
+    }else{
+      bannerEl.innerHTML=`<div class="workout-week-banner" onclick="editProgWeeks('${data.activeProgram}')" style="cursor:pointer"><div><div class="workout-week-text"><strong>Week ${wInfo.currentWeek}</strong> of ${wInfo.totalWeeks}</div><div class="workout-week-days">${wInfo.daysLeft} days remaining</div></div><div class="workout-week-text" style="color:var(--iron)">${data.activeProgram}</div></div>`;
+    }
+  }else{bannerEl.innerHTML=''}
 
   // Day tabs
   let tabsHtml='';
@@ -5172,6 +5248,7 @@ function openSettings(){
   <div class="card" style="margin-bottom:8px">
     <div class="card-title">Active Program</div>
     <div style="font-size:0.85rem;color:var(--text)">${data.activeProgram} - ${PHASES[PROGRAMS[data.activeProgram]?.phase]||''}</div>
+    ${(()=>{const wi=getProgramWeekInfo(data.activeProgram);if(!wi)return '';return wi.expired?'<div style="font-size:0.8rem;color:var(--red-bright);margin-top:4px">Program complete — time to switch!</div>':'<div style="font-size:0.8rem;color:var(--iron);margin-top:4px">Week '+wi.currentWeek+' of '+wi.totalWeeks+' ('+wi.daysLeft+' days left)</div>'})()}
   </div>
   <div class="card" style="margin-bottom:8px">
     <div class="card-title">Edit Programs</div>
