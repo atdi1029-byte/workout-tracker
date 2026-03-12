@@ -1972,26 +1972,58 @@ function getProgramWeekInfo(pid){
   const daysLeft=totalWeeks*7-diffDays;
   return{currentWeek:Math.min(currentWeek,totalWeeks+1),totalWeeks,expired:currentWeek>totalWeeks,daysLeft:Math.max(0,daysLeft),startDate:startStr};
 }
+function parseRepToken(tok){
+  // "8-12" → 12, "10" → 10, "30-40s" → 40
+  const rm=tok.match(/(\d+)-(\d+)/);
+  if(rm)return+rm[2];
+  const nm=tok.match(/(\d+)/);
+  return nm?+nm[1]:10;
+}
 function parseSets(str){
   // Parse setsReps string into array of {reps, type}
+  // For ranges like 8-12, always use HIGH end as the target
   if(!str)return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
   const s=str.toLowerCase();
-  // Handle "2x10wu+4x8-12" or "2x10wu+4x8" warmup+working (MUST check before simple NxM)
-  const m2r=s.match(/(\d+)x(\d+)\s*wu\s*\+\s*(\d+)x(\d+)-(\d+)/i);
-  if(m2r){const sets=[];for(let i=0;i<+m2r[1];i++)sets.push({reps:+m2r[2],type:'warmup'});for(let i=0;i<+m2r[3];i++)sets.push({reps:+m2r[5],type:'working'});return sets}
-  const m2=s.match(/(\d+)x(\d+)\s*wu\s*\+\s*(\d+)x(\d+)/i);
-  if(m2){const sets=[];for(let i=0;i<+m2[1];i++)sets.push({reps:+m2[2],type:'warmup'});for(let i=0;i<+m2[3];i++)sets.push({reps:+m2[4],type:'working'});return sets}
-  // Handle pyramid "12/10/8/6"
-  const m3=s.match(/^[\d\/]+$/);
-  if(m3){return s.split('/').map(r=>({reps:+r,type:'working'}))}
-  // Handle "4x8-12" style — use high end of range as target
-  const m1r=s.match(/^(\d+)x(\d+)-(\d+)/);
-  if(m1r){const sets=[];for(let i=0;i<+m1r[1];i++)sets.push({reps:+m1r[3],type:'working'});return sets}
-  const m1=s.match(/^(\d+)x(\d+)/);
-  if(m1){const sets=[];for(let i=0;i<+m1[1];i++)sets.push({reps:+m1[2],type:'working'});return sets}
-  // Handle "1x12/2x10/2x8" style
-  const m4=s.match(/(\d+)x(\d+)/g);
-  if(m4){const sets=[];m4.forEach(p=>{const[n,r]=p.split('x');for(let i=0;i<+n;i++)sets.push({reps:+r,type:'working'})});return sets}
+  // Strip suffixes: "bi-set", "rest-pause", etc
+  const clean=s.replace(/\s*(bi-set|rest-pause|tri-set|superset|sequences?)\s*/gi,'').trim();
+  // Handle warmup+working: "2x10wu+4x8-12" or "2x10wu+12-15/10-12/8-10/5-8"
+  const wuMatch=clean.match(/(\d+)x(\d+)\s*wu\s*\+\s*(.*)/i);
+  if(wuMatch){
+    const sets=[];
+    for(let i=0;i<+wuMatch[1];i++)sets.push({reps:+wuMatch[2],type:'warmup'});
+    const workPart=wuMatch[3];
+    // Working part could be "4x8-12" or "12-15/10-12/8-10"
+    const wxm=workPart.match(/^(\d+)x(.+)/);
+    if(wxm){for(let i=0;i<+wxm[1];i++)sets.push({reps:parseRepToken(wxm[2]),type:'working'})}
+    else{workPart.split('/').forEach(tok=>sets.push({reps:parseRepToken(tok),type:'working'}))}
+    return sets;
+  }
+  // Handle pyramid with ranges: "12-15/10-12/8-10" or "20-30/15-20/10-15/5-10"
+  if(clean.includes('/')){
+    // Check if it has NxM segments like "1x12/2x10"
+    const hasNx=clean.match(/\d+x\d+/);
+    if(hasNx){
+      const sets=[];
+      clean.split('/').forEach(seg=>{
+        const nxm=seg.match(/(\d+)x(.+)/);
+        if(nxm){for(let i=0;i<+nxm[1];i++)sets.push({reps:parseRepToken(nxm[2]),type:'working'})}
+        else sets.push({reps:parseRepToken(seg),type:'working'});
+      });
+      return sets;
+    }
+    return clean.split('/').map(tok=>({reps:parseRepToken(tok),type:'working'}));
+  }
+  // Handle "NxR-R+drop" like "2x8-12+1xDrop" or "3x10-12+1xDrop"
+  const dropMatch=clean.match(/(\d+)x([\d-]+)\+(\d+)x/);
+  if(dropMatch){
+    const sets=[];
+    for(let i=0;i<+dropMatch[1];i++)sets.push({reps:parseRepToken(dropMatch[2]),type:'working'});
+    for(let i=0;i<+dropMatch[3];i++)sets.push({reps:parseRepToken(dropMatch[2]),type:'working'});
+    return sets;
+  }
+  // Handle "NxR" or "NxR-R" (simple sets)
+  const simpleMatch=clean.match(/^(\d+)x(.+)/);
+  if(simpleMatch){const sets=[];for(let i=0;i<+simpleMatch[1];i++)sets.push({reps:parseRepToken(simpleMatch[2]),type:'working'});return sets}
   // Default 4 sets
   return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
 }
