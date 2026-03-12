@@ -1740,17 +1740,18 @@ function loadFromCloud(){
         }
       }
     }
-    // Merge run logs by ID
-    const cloudRunLogs=resp.runLogs||[];
-    if(cloudRunLogs.length>0){
+    // Merge run logs by ID — skip ghost runs (no actual time data)
+    const cloudRunLogs=(resp.runLogs||[]).filter(l=>l.actualMin>0);
+    if(cloudRunLogs.length>0&&!window._runFixJustRan){
       if(!data.runLogs)data.runLogs=[];
       const runMap={};
       data.runLogs.forEach(l=>{runMap[l.id]=l});
       cloudRunLogs.forEach(l=>{if(!runMap[l.id])runMap[l.id]=l});
       data.runLogs=Object.values(runMap).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     }
-    // Dedup run logs after cloud merge
+    // Dedup run logs after cloud merge — also strip ghost runs
     if(data.runLogs&&data.runLogs.length>0){
+      data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
       data.runLogs.forEach(l=>{l.week=l.date?weekStart(l.date):weekStart()});
       const sn=new Set();const sn2=new Set();const dd=[];
       data.runLogs.forEach(l=>{
@@ -2060,14 +2061,16 @@ function migrateData(){
   if(!data.programWeeks)data.programWeeks={};
   // Auto-set start date for current active program if not set
   if(data.activeProgram&&!data.programStartDates[data.activeProgram])data.programStartDates[data.activeProgram]=dateStr();
-  // One-time fix v150: nuke all run log dupes, keep only 1 with data
-  if(!localStorage.getItem('zr_runfix_v150')){
+  // One-time fix v165: nuke ghost run logs, keep only runs with actual time data
+  if(!localStorage.getItem('zr_runfix_v165')){
     const withData=data.runLogs.filter(l=>l.actualMin>0);
     data.runLogs=withData.length>0?[withData[withData.length-1]]:[];
-    localStorage.setItem('zr_runfix_v150','1');
+    localStorage.setItem('zr_runfix_v165','1');
+    window._runFixJustRan=true;
     saveData();
   }
-  // Fix run logs: always recalculate week from date to ensure it's a Monday
+  // Strip ghost runs (0 min) and recalculate weeks
+  data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
   data.runLogs.forEach(l=>{
     l.week=l.date?weekStart(l.date):weekStart();
   });
