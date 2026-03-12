@@ -1976,13 +1976,17 @@ function parseSets(str){
   // Parse setsReps string into array of {reps, type}
   if(!str)return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
   const s=str.toLowerCase();
-  // Handle "2x10wu+4x8" or similar warmup+working (MUST check before simple NxM)
+  // Handle "2x10wu+4x8-12" or "2x10wu+4x8" warmup+working (MUST check before simple NxM)
+  const m2r=s.match(/(\d+)x(\d+)\s*wu\s*\+\s*(\d+)x(\d+)-(\d+)/i);
+  if(m2r){const sets=[];for(let i=0;i<+m2r[1];i++)sets.push({reps:+m2r[2],type:'warmup'});for(let i=0;i<+m2r[3];i++)sets.push({reps:+m2r[5],type:'working'});return sets}
   const m2=s.match(/(\d+)x(\d+)\s*wu\s*\+\s*(\d+)x(\d+)/i);
   if(m2){const sets=[];for(let i=0;i<+m2[1];i++)sets.push({reps:+m2[2],type:'warmup'});for(let i=0;i<+m2[3];i++)sets.push({reps:+m2[4],type:'working'});return sets}
   // Handle pyramid "12/10/8/6"
   const m3=s.match(/^[\d\/]+$/);
   if(m3){return s.split('/').map(r=>({reps:+r,type:'working'}))}
-  // Handle "4x8-12" style
+  // Handle "4x8-12" style — use high end of range as target
+  const m1r=s.match(/^(\d+)x(\d+)-(\d+)/);
+  if(m1r){const sets=[];for(let i=0;i<+m1r[1];i++)sets.push({reps:+m1r[3],type:'working'});return sets}
   const m1=s.match(/^(\d+)x(\d+)/);
   if(m1){const sets=[];for(let i=0;i<+m1[1];i++)sets.push({reps:+m1[2],type:'working'});return sets}
   // Handle "1x12/2x10/2x8" style
