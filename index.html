@@ -3262,10 +3262,7 @@ function toggleSet(ei,si){
   }
 
 
-  // Check for PR
-  if(set.done&&set.type==='working'&&set.weight>0){
-    checkPR(ei,currentWorkout.exercises[ei].name,set.weight,set.reps);
-  }
+  // PRs are only recorded on finish workout — not mid-workout
 
 
   // Auto-save progress on every set toggle
