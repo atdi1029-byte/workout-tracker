@@ -1749,9 +1749,17 @@ function loadFromCloud(){
       if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(np[k]===undefined)np[k]=extra.noPlate[k];}saveNoPlate(np);}
       if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!se[k])se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
     }catch(e){console.warn('Extra merge error',e)}
+    // Restore any new custom subs into SUBS_DATA
+    (data.customSubs||[]).forEach(s=>{
+      let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
+      if(!group){group={muscle:s.muscle,subs:[]};SUBS_DATA.push(group);}
+      let subcat=group.subs.find(c=>c.cat.toLowerCase()===s.cat.toLowerCase());
+      if(!subcat){subcat={cat:s.cat,ex:[]};group.subs.push(subcat);}
+      if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
+    });
     try{saveData()}catch(e){console.warn('Save error after sync',e)}
     syncConfigToCloud();
-    try{if(currentView==='workout')renderWorkout()}catch(e){console.warn('Render error after sync',e)}
+    try{if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();}catch(e){console.warn('Render error after sync',e)}
     toast('Synced from cloud');
   }).catch(()=>{});
 }
