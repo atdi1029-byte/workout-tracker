@@ -2098,10 +2098,13 @@ function migrateData(){
     for(const oldN in renames)migrateExRename(oldN,renames[oldN]);
     data._nameMigV121=true;
   }
-  // v156: remove stale ABS/RUN keys from customPrograms (editor bug)
-  for(const pid in data.customPrograms||{}){
-    const cp=data.customPrograms[pid];
-    if(cp&&cp.days){delete cp.days.ABS;delete cp.days.RUN;if(Object.keys(cp.days).length===0)delete data.customPrograms[pid];}
+  // v156: remove stale ABS/RUN keys from customPrograms (editor bug) — one-time
+  if(!localStorage.getItem('zr_migrate_v156')){
+    for(const pid in data.customPrograms||{}){
+      const cp=data.customPrograms[pid];
+      if(cp&&cp.days){delete cp.days.ABS;delete cp.days.RUN;if(Object.keys(cp.days).length===0)delete data.customPrograms[pid];}
+    }
+    localStorage.setItem('zr_migrate_v156','1');
   }
   saveData();
 }
