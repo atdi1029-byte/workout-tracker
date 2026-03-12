@@ -2007,11 +2007,7 @@ function loadData(){
 }
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 function migrateData(){
-  // Clean up old programs from localStorage
-  if(data.customPrograms){
-    const keep=['ABCD09'];
-    Object.keys(data.customPrograms).forEach(k=>{if(!keep.includes(k))delete data.customPrograms[k]});
-  }
+  // Keep all custom program edits (removed old cleanup that wiped non-ABCD09 edits)
   // Remove old program logs (keep ABCD09 seeds + real workouts)
   if(data.logs){
     data.logs=data.logs.filter(l=>{
