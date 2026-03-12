@@ -2989,11 +2989,14 @@ function initWorkout(){
         sets:sets.map((s,i)=>{
           // Match by type: find the i-th warmup or j-th working set in last log
           let prefillWeight='';
+          const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
           if(lastLog){
             const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
-            const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
             if(sameType[typeIdx])prefillWeight=sameType[typeIdx].weight;
           }
+          // If start weight is set for this exercise, use it for S1
+          const startW=getStartWeight(e[0]);
+          if(s.type==='working'&&typeIdx===0&&startW)prefillWeight=startW;
           const isAbsEx=currentDay==='ABS'&&e[2]==='abs';
           return{
           weight:prefillWeight,
