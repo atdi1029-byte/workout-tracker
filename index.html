@@ -1602,9 +1602,15 @@ function fireGet(url){const img=new Image();img.src=url}
 function syncConfigToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{}};
+    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[]};
     const encoded=encodeURIComponent(JSON.stringify(config));
-    if(encoded.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);
+    if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);}
+    else{
+      // Config too large with PRs — send without PRs (PRs sync via workout logs)
+      const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[]};
+      const enc1=encodeURIComponent(JSON.stringify(lite));
+      if(enc1.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);
+    }
   }catch(e){console.warn('Config sync failed',e)}
 }
 function syncExtraToCloud(){
@@ -1689,7 +1695,16 @@ function loadFromCloud(){
     }
     // Restore any local custom programs that cloud didn't have
     for(const k in localCustom){if(PROGRAMS[k]&&!data.customPrograms[k])data.customPrograms[k]=localCustom[k]}
-    if(config.customSubs)data.customSubs=config.customSubs;
+    if(config.customSubs){
+      // Merge cloud custom subs with local — keep both
+      if(!data.customSubs)data.customSubs=[];
+      const localNames=new Set(data.customSubs.map(s=>s.name));
+      config.customSubs.forEach(s=>{if(!localNames.has(s.name))data.customSubs.push(s)});
+    }
+    if(config.deletedSubs){
+      if(!data.deletedSubs)data.deletedSubs=[];
+      config.deletedSubs.forEach(d=>{if(!data.deletedSubs.includes(d))data.deletedSubs.push(d)});
+    }
     if(config.customExercises)data.customExercises=config.customExercises;
     if(config.settings)data.settings=config.settings;
     if(config.prs){
