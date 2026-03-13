@@ -1619,15 +1619,15 @@ function syncConfigToCloud(){
   try{
     const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const encoded=encodeURIComponent(JSON.stringify(config));
-    if(encoded.length<30000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);return;}
+    if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);return;}
     // Too large with PRs — send without PRs
     const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const enc1=encodeURIComponent(JSON.stringify(lite));
-    if(enc1.length<30000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);return;}
+    if(enc1.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);return;}
     // Still too large — minimal config (just programs + settings)
     const min={activeProgram:data.activeProgram,customPrograms:data.customPrograms,settings:data.settings,programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const enc2=encodeURIComponent(JSON.stringify(min));
-    if(enc2.length<30000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc2);return;}
+    if(enc2.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc2);return;}
     toast('Config too large to sync! Contact dev.');
   }catch(e){console.warn('Config sync failed',e)}
 }
