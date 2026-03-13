@@ -2107,6 +2107,11 @@ function migrateData(){
     window._runFixJustRan=true;
     saveData();
   }
+  // One-time fix v174: reseed ABCD10 with correct hardcoded exercises
+  if(!localStorage.getItem('zr_abcd10_reseed_v174')){
+    delete data.customPrograms.ABCD10;
+    localStorage.setItem('zr_abcd10_reseed_v174','1');
+  }
   // Strip ghost runs (0 min) and recalculate weeks
   data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
   data.runLogs.forEach(l=>{
