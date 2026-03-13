@@ -2278,6 +2278,7 @@ function initCustomABCD09(){
   saveData();
 }
 // Seed ABCD10 custom (bolded exercises only from Treino 10 PDF)
+function initCustomABCD10(){
 if(!data.customPrograms.ABCD10){
   data.customPrograms.ABCD10={days:{
     A:{ex:[
@@ -2319,7 +2320,7 @@ if(!data.customPrograms.ABCD10){
     ]}
   }};
   saveData();
-}
+}}
 
 // ── PROGRAM HELPERS ──
 function getProgram(id){
@@ -5537,6 +5538,7 @@ function importATH(){
 loadData();
 migrateData();
 initCustomABCD09();
+initCustomABCD10();
 // Bootstrap PRs from all logs (seed logs don't call finishWorkout so PRs are missing)
 (data.logs||[]).forEach(log=>{
   (log.exercises||[]).forEach(ex=>{
