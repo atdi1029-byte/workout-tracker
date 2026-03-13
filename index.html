@@ -1705,8 +1705,25 @@ function loadFromCloud(){
     if(config.activeProgram&&PROGRAMS[config.activeProgram])data.activeProgram=config.activeProgram;
     else data.activeProgram='ABCD09';
     if(config.customPrograms){
-      // Merge cloud custom programs with local — local wins on conflict
-      for(const k in config.customPrograms){if(PROGRAMS[k]&&!localCustom[k])data.customPrograms[k]=config.customPrograms[k]}
+      // Merge cloud custom programs with local — day-level merge
+      for(const k in config.customPrograms){
+        if(!PROGRAMS[k])continue;
+        if(!localCustom[k]){data.customPrograms[k]=config.customPrograms[k];continue;}
+        // Merge at day level: import cloud days that have more exercises
+        const cloudDays=config.customPrograms[k].days||{};
+        if(!data.customPrograms[k])data.customPrograms[k]={days:{}};
+        if(!data.customPrograms[k].days)data.customPrograms[k].days={};
+        for(const d in cloudDays){
+          const localDay=data.customPrograms[k].days[d];
+          const cloudDay=cloudDays[d];
+          if(!localDay){data.customPrograms[k].days[d]=cloudDay;}
+          else{
+            const localEx=(localDay.ex||[]).length;
+            const cloudEx=(cloudDay.ex||[]).length;
+            if(cloudEx>localEx)data.customPrograms[k].days[d]=cloudDay;
+          }
+        }
+      }
     }
     // Restore any local custom programs that cloud didn't have
     for(const k in localCustom){if(PROGRAMS[k]&&!data.customPrograms[k])data.customPrograms[k]=localCustom[k]}
@@ -1819,14 +1836,29 @@ function promptExNote(exName){
 // ── START WEIGHTS ──
 function getStartWeights(){try{return JSON.parse(localStorage.getItem('zercher_starts')||'{}')}catch(e){return{}}}
 function saveStartWeights(s){localStorage.setItem('zercher_starts',JSON.stringify(s))}
-function getStartWeight(exName){return getStartWeights()[exName]||''}
+function getStartWeight(exName){
+  const val=getStartWeights()[exName];
+  if(!val)return{wu:'',s1:''};
+  if(typeof val==='string')return{wu:'',s1:val};
+  return{wu:val.wu||'',s1:val.s1||''};
+}
 function promptStartWeight(exName){
   const current=getStartWeight(exName);
-  const val=prompt('Next time start S1 at (lbs):',current);
+  const currentStr=current.wu&&current.s1?current.wu+' / '+current.s1:current.s1?current.s1:current.wu?current.wu+' / ':'';
+  const val=prompt('Start weights (WU / S1):',currentStr);
   if(val===null)return;
   const s=getStartWeights();
-  if(val.trim())s[exName]=val.trim();else delete s[exName];
+  const trimmed=val.trim();
+  if(!trimmed){delete s[exName];}
+  else if(trimmed.includes('/')){
+    const parts=trimmed.split('/').map(p=>p.trim());
+    const obj={};
+    if(parts[0])obj.wu=parts[0];
+    if(parts[1])obj.s1=parts[1];
+    if(Object.keys(obj).length)s[exName]=obj;else delete s[exName];
+  }else{s[exName]={s1:trimmed};}
   saveStartWeights(s);
+  syncExtraToCloud();
   renderExerciseCards();
 }
 
@@ -3033,9 +3065,10 @@ function initWorkout(){
             const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
             if(sameType[typeIdx])prefillWeight=sameType[typeIdx].weight;
           }
-          // If start weight is set for this exercise, use it for S1
+          // If start weight is set for this exercise, use it for WU and S1
           const startW=getStartWeight(e[0]);
-          if(s.type==='working'&&typeIdx===0&&startW)prefillWeight=startW;
+          if(s.type==='warmup'&&startW.wu)prefillWeight=startW.wu;
+          if(s.type==='working'&&typeIdx===0&&startW.s1)prefillWeight=startW.s1;
           const isAbsEx=currentDay==='ABS'&&e[2]==='abs';
           return{
           weight:prefillWeight,
@@ -3236,9 +3269,16 @@ function renderExerciseCards(){
         }
       }
     }
-    const startW=isAbs?'':getStartWeight(ex.name);
+    const startW=isAbs?null:getStartWeight(ex.name);
+    const hasStart=startW&&(startW.wu||startW.s1);
+    let startLabel='ST Start';
+    if(hasStart){
+      if(startW.wu&&startW.s1)startLabel='ST: '+startW.wu+'/'+startW.s1;
+      else if(startW.s1)startLabel='ST: '+startW.s1+'lbs';
+      else if(startW.wu)startLabel='ST: WU '+startW.wu;
+    }
     html+=`<div class="ex-actions">
-      ${!isAbs?`<button class="ex-action-btn${startW?' start-set':''}" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startW?'S1: '+startW+'lbs':'S1 Start'}</button>`:''}
+      ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startLabel}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       ${!isAbs?`<button class="ex-action-btn" onclick="openAltModal(${ei})">Alt.</button>`:''}
