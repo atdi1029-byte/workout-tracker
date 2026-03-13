@@ -4259,8 +4259,9 @@ function renderLibrary(){
     const athVal=findATH(name);
     const isFav=favExercises.has(name);
 
-    html+=`<div class="lib-card" ontouchstart="libLongStart('${name.replace(/'/g,"\\'")}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${name.replace(/'/g,"\\'")}')">
-      <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${name.replace(/'/g,"\\'")}')">${isFav?'&#9733;':'&#9734;'}</span></div>
+    const esc=name.replace(/'/g,"\\'");
+    html+=`<div class="lib-card" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')">
+      <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
       <div class="lib-name-en">${getExerciseEnglish(name)}</div>
       <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
     </div>`;
@@ -4286,6 +4287,87 @@ function restoreLibrary(){
   data.hiddenExercises=[];
   saveData();renderLibrary();
   toast('All exercises restored');
+}
+
+function isCustomExercise(name){
+  return(data.customExercises||[]).some(e=>e[0]===name);
+}
+function openEditExercise(name){
+  const muscle=getExerciseMuscle(name);
+  const enName=getExerciseEnglish(name);
+  const id=exId(name);
+  const athPr=data.prs&&data.prs[id]&&data.prs[id]['ath'];
+  const athVal=athPr?athPr.weight:(findATH(name)||'');
+  const custom=isCustomExercise(name);
+  const usedIn=getUsedInPrograms(name);
+  const allMuscles=[...MUSCLE_GROUPS,'traps','neck','legs (full)','olympic weightlifting','old time lifts','rings','other'];
+  openModal(`
+    <div class="modal-header"><span class="modal-title">Edit Exercise</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <input type="hidden" id="editExOrig" value="${name.replace(/"/g,'&quot;')}">
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Exercise Name</label>
+      <input id="editExName" class="set-input" style="text-align:left" value="${name.replace(/"/g,'&quot;')}">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">English Name</label>
+      <input id="editExEn" class="set-input" style="text-align:left" value="${enName.replace(/"/g,'&quot;')}">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">Muscle Group</label>
+      <select id="editExMuscle" class="set-input" style="text-align:left">
+        ${allMuscles.map(m=>`<option value="${m}"${m===muscle?' selected':''}>${MUSCLE_LABELS[m]||m}</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:0.7rem;color:var(--text-dim);display:block;margin-bottom:4px">ATH Weight (lbs)</label>
+      <input id="editExATH" class="set-input" type="number" value="${athVal}">
+    </div>
+    ${usedIn.length?`<div style="font-size:0.65rem;color:var(--text-dim);margin-bottom:10px">Used in: ${usedIn.join(', ')}</div>`:''}
+    <button class="edit-save-btn" onclick="saveEditExercise()">Save Changes</button>
+  `);
+}
+function saveEditExercise(){
+  const origName=document.getElementById('editExOrig').value;
+  const newName=document.getElementById('editExName').value.trim();
+  const newEn=document.getElementById('editExEn').value.trim();
+  const newMuscle=document.getElementById('editExMuscle').value;
+  const athVal=parseFloat(document.getElementById('editExATH').value)||0;
+  if(!newName){toast('Name cannot be empty');return}
+
+  // Update ATH in PRs
+  const id=exId(newName);
+  if(athVal>0){
+    if(!data.prs)data.prs={};
+    if(!data.prs[id])data.prs[id]={};
+    data.prs[id]['ath']={weight:athVal,date:'',program:'ATH'};
+  }
+
+  // If name changed, migrate all data
+  if(newName!==origName)migrateExRename(origName,newName);
+
+  // Update in customExercises
+  const ce=(data.customExercises||[]).find(e=>e[0]===(newName!==origName?newName:origName));
+  if(ce){
+    ce[0]=newName;ce[1]=newEn;ce[2]=newMuscle;
+  } else {
+    // Promote to custom exercise so edits persist
+    if(!data.customExercises)data.customExercises=[];
+    data.customExercises.push([newName,newEn,newMuscle,'S','4x10',60]);
+  }
+
+  // Update _custom PROGRAMS cache
+  if(PROGRAMS._custom){
+    const ex=PROGRAMS._custom.days.A.ex.find(e=>e[0]===(newName!==origName?newName:origName)||e[0]===origName);
+    if(ex){ex[0]=newName;ex[1]=newEn;ex[2]=newMuscle}
+    else PROGRAMS._custom.days.A.ex.push([newName,newEn,newMuscle,'S','4x10',60]);
+  } else {
+    PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:[[newName,newEn,newMuscle,'S','4x10',60]]}}};
+  }
+
+  saveData();
+  closeModal();
+  toast('Updated: '+newName);
+  renderLibrary();
 }
 
 // ── LIBRARY: SUBSTITUTIONS TAB ──
