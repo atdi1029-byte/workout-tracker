@@ -3200,12 +3200,10 @@ function renderExerciseCards(){
               return'';
             }
             const wuSets=ex.sets.filter(s=>s.type==='warmup');
-            const s1Set=ex.sets.find(s=>s.type==='working');
             const allWuDone=wuSets.length>0&&wuSets.every(s=>s.done);
-            const s1Done=s1Set&&s1Set.done;
             let pw=0,pl='';
             if(!allWuDone&&wuSets.length>0){pw=parseFloat((''+wuSets[0].weight).replace(/,/g,''))||0;pl='WU';}
-            else if(!s1Done&&s1Set){pw=parseFloat((''+s1Set.weight).replace(/,/g,''))||0;pl='S1';}
+            else{const workingSets=ex.sets.filter(s=>s.type==='working');const nextIdx=workingSets.findIndex(s=>!s.done);if(nextIdx>=0){pw=parseFloat((''+workingSets[nextIdx].weight).replace(/,/g,''))||0;pl='S'+(nextIdx+1);}}
             if(pw>0&&pl){
               const pr=calcPlates(pw,getExPlates(ex.name),isSingleEnd(ex.name));
               const ps=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
@@ -3306,12 +3304,14 @@ function updatePlateCorner(ei){
   const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
   if(isAbs||!showPlateForEx(ex.name)){if(old)old.remove();return;}
   const wuSets=ex.sets.filter(s=>s.type==='warmup');
-  const s1Set=ex.sets.find(s=>s.type==='working');
   const allWuDone=wuSets.length>0&&wuSets.every(s=>s.done);
-  const s1Done=s1Set&&s1Set.done;
   let pw=0,pl='';
   if(!allWuDone&&wuSets.length>0){pw=parseFloat((''+wuSets[0].weight).replace(/,/g,''))||0;pl='WU';}
-  else if(!s1Done&&s1Set){pw=parseFloat((''+s1Set.weight).replace(/,/g,''))||0;pl='S1';}
+  else{
+    const workingSets=ex.sets.filter(s=>s.type==='working');
+    const nextIdx=workingSets.findIndex(s=>!s.done);
+    if(nextIdx>=0){pw=parseFloat((''+workingSets[nextIdx].weight).replace(/,/g,''))||0;pl='S'+(nextIdx+1);}
+  }
   if(pw>0&&pl){
     const pr=calcPlates(pw,getExPlates(ex.name),isSingleEnd(ex.name));
     const ps=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
