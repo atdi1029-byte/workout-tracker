@@ -1617,15 +1617,18 @@ function fireGet(url){const img=new Image();img.src=url}
 function syncConfigToCloud(){
   if(!SYNC_ENDPOINT)return;
   try{
-    const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    // Exclude hardcoded seed programs (ABCD09, ABCD10) — they're created by init functions on every device
+    const syncPrograms={};
+    for(const k in data.customPrograms){if(k!=='ABCD09'&&k!=='ABCD10')syncPrograms[k]=data.customPrograms[k];}
+    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const encoded=encodeURIComponent(JSON.stringify(config));
     if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);return;}
     // Too large with PRs — send without PRs
-    const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const lite={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const enc1=encodeURIComponent(JSON.stringify(lite));
     if(enc1.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);return;}
     // Still too large — minimal config (just programs + settings)
-    const min={activeProgram:data.activeProgram,customPrograms:data.customPrograms,settings:data.settings,programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const min={activeProgram:data.activeProgram,customPrograms:syncPrograms,settings:data.settings,programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const enc2=encodeURIComponent(JSON.stringify(min));
     if(enc2.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc2);return;}
     toast('Config too large to sync! Contact dev.');
