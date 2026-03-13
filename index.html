@@ -1619,13 +1619,16 @@ function syncConfigToCloud(){
   try{
     const config={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const encoded=encodeURIComponent(JSON.stringify(config));
-    if(encoded.length<7000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);}
-    else{
-      // Config too large with PRs — send without PRs (PRs sync via workout logs)
-      const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
-      const enc1=encodeURIComponent(JSON.stringify(lite));
-      if(enc1.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);
-    }
+    if(encoded.length<30000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded);return;}
+    // Too large with PRs — send without PRs
+    const lite={activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const enc1=encodeURIComponent(JSON.stringify(lite));
+    if(enc1.length<30000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc1);return;}
+    // Still too large — minimal config (just programs + settings)
+    const min={activeProgram:data.activeProgram,customPrograms:data.customPrograms,settings:data.settings,programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const enc2=encodeURIComponent(JSON.stringify(min));
+    if(enc2.length<30000){fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+enc2);return;}
+    toast('Config too large to sync! Contact dev.');
   }catch(e){console.warn('Config sync failed',e)}
 }
 function syncExtraToCloud(){
@@ -2270,6 +2273,49 @@ function initCustomABCD09(){
       ['Rosca 45','Incline Dumbbell Curl','biceps','S','2x8wu+3x10',80],
       ['Barbell Dead Stop Cheat Curl','Barbell Dead Stop Cheat Curl','biceps','S','1x8wu+3x10',80],
       ['Weighted Sit-ups','Weighted Sit-ups','abs','S','3x10',60]
+    ]}
+  }};
+  saveData();
+}
+// Seed ABCD10 custom (bolded exercises only from Treino 10 PDF)
+if(!data.customPrograms.ABCD10){
+  data.customPrograms.ABCD10={days:{
+    A:{ex:[
+      ['Dumbell Circles','Dumbbell Circles','chest','S','4x12',60],
+      ['Supino Reto Smith','Reverse Grip Smith Bench','chest','P','2x8wu+12/10/8/5',180],
+      ['Paralela','Weighted Dips','chest','P','1x8wu+12/10/8/5',120],
+      ['Viking Press','Viking Press','shoulders','S','1x8wu+3x10',90],
+      ['Triceps Pulley (Barra)','Triceps Bar Pushdown','triceps','P','1x8wu+12/10/8/5',90],
+      ['Barbell Tricep Extension','Barbell Tricep Extension','triceps','S','1x8wu+3x10',80],
+      ['Abdominal Infra No Banco (Com Peso)','Weighted Decline Sit-ups','abs','S','4x10-15',60]
+    ]},
+    B:{ex:[
+      ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
+      ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
+      ['Weighted Chin Ups','Weighted Chin Ups','back','P','2x8wu+12/10/8/5',120],
+      ['Reeves Row (Ez Bar)','Reeves Row EZ Bar','back','P','2x8wu+12/10/8/5',120],
+      ['Klokov Press','Klokov Press','shoulders','S','2x8wu+3x10',80],
+      ['Rosca Scott (Polia)','Cable Preacher Curl','biceps','P','1x8wu+12/10/8/5',90],
+      ['Meadows Curl','Meadows Curl','biceps','S','1x8wu+3x10',80],
+      ['Lying Chest Supported Dumbbell Wrist Curl','Lying DB Wrist Curl','forearms','S','3x8-12',60]
+    ]},
+    C:{ex:[
+      ['Quad Focused Leg Press','Quad Focused Leg Press','quads','P','2x8wu+12/10/8/5',120],
+      ['Barbell Hack Squat','Barbell Hack Squat','quads','S','2x8wu+3x10',90],
+      ['Cadeira Flexora','Seated Leg Curl','hamstrings','P','2x8wu+12/10/8/5',90],
+      ['Wrapped Barbell Romanian Deadlift','Wrapped Barbell RDL','hamstrings','S','2x8wu+3x10',90],
+      ['Calves Leg Press','Calf Raise Leg Press','calves','S','3x8-12',60],
+      ['Abdominal Remador Weighted','Weighted Boat Crunch','abs','S','4x10-15',60]
+    ]},
+    D:{ex:[
+      ['Supino Inclinado (Smith) (30°)','Incline Smith Bench 30°','chest','DS','2x8wu+2x10-12+1xDrop',90],
+      ['Lu Lateral Raise','Lu Lateral Raise','shoulders','S','2x8wu+3x10-12',60],
+      ['JM Press','JM Press','triceps','S','1x8wu+3x10',80],
+      ['Puxada','Lat Pulldown','back','DS','2x8wu+2x10-12+1xDrop',90],
+      ['Smith Machine Upright Row','Smith Machine Upright Row','shoulders','S','2x8wu+3x10-12',60],
+      ['Rosca 45','Incline Dumbbell Curl','biceps','S','2x8wu+3x10',80],
+      ['Zercher Back Curl','Zercher Back Curl','forearms','S','1x5wu+3x5',90],
+      ['Weighted Crunches (Bosu Ball)','Weighted Crunches Bosu','abs','S','3x12',60]
     ]}
   }};
   saveData();
