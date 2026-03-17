@@ -3319,10 +3319,9 @@ function renderExerciseCards(){
       if(set.type!=='warmup')wNum++;
       const label=set.type==='warmup'?'WU'+wuCount:'S'+wNum;
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
-        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}</span>
+        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}${ex.name==='Paralela'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
-          ${ex.name==='Paralela'?`<button onclick="flipSign(this)" style="background:none;border:none;color:var(--text-dim);font-size:0.7rem;padding:2px 4px;cursor:pointer">&#177;</button>`:''}
           <span class="set-unit">lbs</span>
         </div>`}
         <div class="set-input-group">
@@ -3378,7 +3377,7 @@ function renderExerciseCards(){
   container.innerHTML=html;
 }
 
-function flipSign(btn){const inp=btn.previousElementSibling;const v=inp.value;inp.value=v?(v.startsWith('-')?v.slice(1):'-'+v):'-';inp.dispatchEvent(new Event('change'));}
+function flipSign(inp){const v=inp.value;inp.value=v?(v.startsWith('-')?v.slice(1):'-'+v):'-';inp.dispatchEvent(new Event('change'));}
 function updateSet(ei,si,field,val){
   if(!currentWorkout)return;
   const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
