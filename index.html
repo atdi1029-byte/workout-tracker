@@ -1743,8 +1743,11 @@ function loadFromCloud(onComplete){
     }
     // Merge config — preserve ALL local custom programs
     const localCustom=JSON.parse(JSON.stringify(data.customPrograms||{}));
-    if(config.activeProgram&&PROGRAMS[config.activeProgram])data.activeProgram=config.activeProgram;
-    else data.activeProgram='ABCD09';
+    // Don't overwrite local activeProgram from cloud — local switch always wins
+    if(!data.activeProgram||!PROGRAMS[data.activeProgram]){
+      if(config.activeProgram&&PROGRAMS[config.activeProgram])data.activeProgram=config.activeProgram;
+      else data.activeProgram='ABCD09';
+    }
     if(config.customPrograms){
       for(const k in config.customPrograms){
         if(!PROGRAMS[k])continue;
