@@ -3173,6 +3173,23 @@ function initWorkout(){
       };
     })
   };
+  // Restore saved alt exercises
+  currentWorkout.exercises.forEach(ex=>{
+    const saved=getSavedAlt(currentWorkout.program,currentWorkout.day,ex._origName);
+    if(saved){
+      ex.name=saved.name;ex.nameEn=saved.nameEn;ex.muscle=saved.muscle;ex._isAlt=true;
+      // Re-prefill weights from the alt exercise's last log
+      const altLog=getLastLog(saved.name);
+      if(altLog){
+        const sets=ex.sets;
+        sets.forEach((s,i)=>{
+          const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
+          const sameType=altLog.sets.filter(ls=>ls.type===s.type);
+          if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
+        });
+      }
+    }
+  });
   workoutStartTime=Date.now();
 }
 
