@@ -130,6 +130,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .set-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px;padding:4px 0}
 .set-label{font-size:0.75rem;color:var(--iron);min-width:36px}
 .set-label.warmup{color:var(--yellow)}
+.set-label.drop{color:#ef5350;font-size:0.65rem}
 .set-input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.9rem;width:100%;text-align:center}
 .set-input:focus{outline:none;border-color:var(--iron)}
 .set-input::placeholder{color:var(--text-dim)}
@@ -2064,11 +2065,16 @@ function parseSets(str){
   if(wuMatch){
     const sets=[];
     for(let i=0;i<+wuMatch[1];i++)sets.push({reps:+wuMatch[2],type:'warmup'});
-    const workPart=wuMatch[3];
+    let workPart=wuMatch[3];
+    // Check for drop set suffix: "+1xDrop", "+Drop"
+    let dropCount=0;
+    const dropSuffix=workPart.match(/\+(\d*)x?drop$/i);
+    if(dropSuffix){dropCount=+(dropSuffix[1]||1);workPart=workPart.replace(/\+\d*x?drop$/i,'');}
     // Working part could be "4x8-12" or "12-15/10-12/8-10"
     const wxm=workPart.match(/^(\d+)x(.+)/);
     if(wxm){for(let i=0;i<+wxm[1];i++)sets.push({reps:parseRepToken(wxm[2]),type:'working'})}
     else{workPart.split('/').forEach(tok=>sets.push({reps:parseRepToken(tok),type:'working'}))}
+    for(let i=0;i<dropCount;i++)sets.push({reps:'',type:'drop'});
     return sets;
   }
   // Handle pyramid with ranges: "12-15/10-12/8-10" or "20-30/15-20/10-15/5-10"
@@ -2087,11 +2093,12 @@ function parseSets(str){
     return clean.split('/').map(tok=>({reps:parseRepToken(tok),type:'working'}));
   }
   // Handle "NxR-R+drop" like "2x8-12+1xDrop" or "3x10-12+1xDrop"
-  const dropMatch=clean.match(/(\d+)x([\d-]+)\+(\d+)x/);
+  const dropMatch=clean.match(/(\d+)x([\d-]+)\+(\d*)x?drop/i);
   if(dropMatch){
     const sets=[];
     for(let i=0;i<+dropMatch[1];i++)sets.push({reps:parseRepToken(dropMatch[2]),type:'working'});
-    for(let i=0;i<+dropMatch[3];i++)sets.push({reps:parseRepToken(dropMatch[2]),type:'working'});
+    const dc=+(dropMatch[3]||1);
+    for(let i=0;i<dc;i++)sets.push({reps:'',type:'drop'});
     return sets;
   }
   // Handle "NxR" or "NxR-R" (simple sets)
@@ -2145,6 +2152,11 @@ function migrateData(){
   if(!localStorage.getItem('zr_abcd10_reseed_v174')){
     delete data.customPrograms.ABCD10;
     localStorage.setItem('zr_abcd10_reseed_v174','1');
+  }
+  // One-time fix v206: Day D Supino Inclinado + Puxada → 3x10-12 (was 2x)
+  if(!localStorage.getItem('zr_abcd10_dayd_v206')){
+    delete data.customPrograms.ABCD10;
+    localStorage.setItem('zr_abcd10_dayd_v206','1');
   }
   // Strip ghost runs (0 min) and recalculate weeks
   data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
@@ -2351,10 +2363,10 @@ if(!data.customPrograms.ABCD10){
       ['Abdominal Remador Weighted','Weighted Boat Crunch','abs','S','4x10-15',60]
     ]},
     D:{ex:[
-      ['Supino Inclinado (Smith) (30°)','Incline Smith Bench 30°','chest','DS','2x8wu+2x10-12+1xDrop',90],
+      ['Supino Inclinado (Smith) (30°)','Incline Smith Bench 30°','chest','DS','2x8wu+3x10-12+1xDrop',90],
       ['Lu Lateral Raise','Lu Lateral Raise','shoulders','S','2x8wu+3x10-12',60],
       ['JM Press','JM Press','triceps','S','1x8wu+3x10',80],
-      ['Puxada','Lat Pulldown','back','DS','2x8wu+2x10-12+1xDrop',90],
+      ['Puxada','Lat Pulldown','back','DS','2x8wu+3x10-12+1xDrop',90],
       ['Smith Machine Upright Row','Smith Machine Upright Row','shoulders','S','2x8wu+3x10-12',60],
       ['Rosca 45','Incline Dumbbell Curl','biceps','S','2x8wu+3x10',80],
       ['Zercher Back Curl','Zercher Back Curl','forearms','S','1x5wu+3x5',90],
@@ -3336,10 +3348,10 @@ function renderExerciseCards(){
     let wNum=0;let wuCount=0;
     ex.sets.forEach((set,si)=>{
       if(set.type==='warmup'){wuCount++;}
-      if(set.type!=='warmup')wNum++;
-      const label=set.type==='warmup'?'WU'+wuCount:'S'+wNum;
+      if(set.type!=='warmup'&&set.type!=='drop')wNum++;
+      const label=set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DROP':'S'+wNum;
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
-        <span class="set-label${set.type==='warmup'?' warmup':''}">${label}${ex.name==='Paralela'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
+        <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':''}">${label}${ex.name==='Paralela'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
