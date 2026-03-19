@@ -3172,9 +3172,12 @@ function initWorkout(){
           if(s.type==='working'&&typeIdx===0&&startW.s1)prefillWeight=startW.s1;
           const isAbsEx=currentDay==='ABS'&&e[2]==='abs';
           let prefillReps=s.reps;
-          if(isAbsEx&&lastLog){
-            const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
-            if(sameType[typeIdx]&&sameType[typeIdx].reps)prefillReps=sameType[typeIdx].reps;
+          if(isAbsEx){
+            prefillReps='';
+            if(lastLog){
+              const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
+              if(sameType[typeIdx]&&sameType[typeIdx].reps)prefillReps=sameType[typeIdx].reps;
+            }
           }
           return{
           weight:prefillWeight,
