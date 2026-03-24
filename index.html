@@ -1607,7 +1607,7 @@ let currentAbsRoutine = (function(){
   if(savedWeek!==thisWeek){localStorage.removeItem('abs_routine');localStorage.setItem('abs_routine_week',thisWeek);return 1}
   return parseInt(localStorage.getItem('abs_routine'))||1;
 })();
-let favExercises = new Set(JSON.parse(localStorage.getItem('fav_exercises')||'[]'));
+let favExercises = new Set((function(){try{return JSON.parse(localStorage.getItem('fav_exercises')||'[]')}catch(e){return[]}})());
 let currentRunBlock = localStorage.getItem('run_block')||'BLOCK1';
 let currentRunWeek = parseInt(localStorage.getItem('run_week_manual'))||1;
 
@@ -1633,21 +1633,17 @@ function pushChunked(jsonStr,target,onDone){
   if(!jsonStr||jsonStr==='{}'){ if(onDone)onDone(); return; }
   var chunks=[];
   for(var i=0;i<jsonStr.length;i+=CHUNK_SIZE)chunks.push(jsonStr.substring(i,i+CHUNK_SIZE));
-  var completed=0,failed=false;
-  function onChunkDone(err){
-    if(failed)return;
-    if(err){failed=true;if(onDone)onDone(err);return;}
-    completed++;
-    if(completed===chunks.length){
+  var idx=0;
+  function sendNext(){
+    if(idx>=chunks.length){
       jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_done&target='+target+'&n='+chunks.length,function(err2){if(onDone)onDone(err2)});
+      return;
     }
+    var url=SYNC_ENDPOINT+'?action=zercher_save_chunk&i='+idx+'&cd='+encodeURIComponent(chunks[idx]);
+    idx++;
+    jsonpFetch(url,function(err){if(err){if(onDone)onDone(err);return;}sendNext()});
   }
-  for(var j=0;j<chunks.length;j++){
-    (function(idx){
-      var url=SYNC_ENDPOINT+'?action=zercher_save_chunk&i='+idx+'&cd='+encodeURIComponent(chunks[idx]);
-      jsonpFetch(url,function(err){onChunkDone(err)});
-    })(j);
-  }
+  sendNext();
 }
 
 function syncConfigToCloud(){
@@ -2163,7 +2159,7 @@ function loadData(){
     if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
   });
 }
-function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('saveData failed',e)}}
 function migrateData(){
   // Keep all custom program edits (removed old cleanup that wiped non-ABCD09 edits)
   // Remove old program logs (keep ABCD09 seeds + real workouts)
