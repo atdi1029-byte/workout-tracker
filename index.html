@@ -4538,13 +4538,13 @@ function renderLibrary(){
     if(hidden.has(name))return;
     const muscle=getExerciseMuscle(name);
     if(!isFavsMode&&currentLibMuscle!=='all'&&muscle!==currentLibMuscle)return;
-    if(isFavsMode&&!favExercises.has(name))return;
+    if(isFavsMode&&!search&&!favExercises.has(name))return;
     if(search){const words=search.split(/\s+/).filter(Boolean);const nl=name.toLowerCase();const el=getExerciseEnglish(name).toLowerCase();if(!words.every(w=>nl.includes(w)||el.includes(w)))return;}
     filtered.push(name);
   });
 
   let html='';
-  if(isFavsMode&&filtered.length>0){
+  if(isFavsMode&&!search&&filtered.length>0){
     // Group by muscle
     const groups={};
     filtered.forEach(name=>{
