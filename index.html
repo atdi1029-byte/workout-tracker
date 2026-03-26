@@ -1665,7 +1665,7 @@ function syncConfigToCloud(){
 function syncExtraToCloud(){
   if(!syncReady)return;
   try{
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd()};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps()};
     const jsonStr=JSON.stringify(extra);
     const encoded=encodeURIComponent(jsonStr);
     if(encoded.length<7000){
@@ -1826,6 +1826,7 @@ function loadFromCloud(onComplete){
       if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!p[k])p[k]=extra.platePref[k];}savePlatePref(p);}
       if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(np[k]===undefined)np[k]=extra.noPlate[k];}saveNoPlate(np);}
       if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!se[k])se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
+      if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){if(!ar[k])ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
     }catch(e){console.warn('Extra merge error',e)}
     // Restore any new custom subs into SUBS_DATA
     (data.customSubs||[]).forEach(s=>{
@@ -1906,6 +1907,9 @@ function autoNeedsPlates(exName){
   const n=exName.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   return!NO_PLATE_KEYWORDS.test(n);
 }
+function getAbsLastReps(){try{return JSON.parse(localStorage.getItem('zercher_abs_reps')||'{}')}catch(e){return{}}}
+function saveAbsLastReps(r){localStorage.setItem('zercher_abs_reps',JSON.stringify(r))}
+
 function getNoPlate(){try{return JSON.parse(localStorage.getItem('zercher_noplate')||'{}')}catch(e){return{}}}
 function saveNoPlate(n){localStorage.setItem('zercher_noplate',JSON.stringify(n))}
 function showPlateForEx(exName){const np=getNoPlate();if(np[exName]===false)return true;if(np[exName]===true)return false;return autoNeedsPlates(exName)}
@@ -3217,7 +3221,11 @@ function initWorkout(){
           let prefillReps=s.reps;
           if(isAbsEx){
             prefillReps='';
-            if(lastLog){
+            // Check persisted abs reps first (saved on every set check)
+            const absReps=getAbsLastReps();
+            if(absReps[e[0]]&&absReps[e[0]][typeIdx]){
+              prefillReps=absReps[e[0]][typeIdx];
+            } else if(lastLog){
               const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
               if(sameType[typeIdx]&&sameType[typeIdx].reps)prefillReps=sameType[typeIdx].reps;
             }
@@ -3531,6 +3539,13 @@ function toggleSet(ei,si){
     }
   });
   localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+
+  // Persist abs reps immediately so they're remembered even without Finish
+  if(currentDay==='ABS'&&ex.muscle==='abs'){
+    const absReps=getAbsLastReps();
+    absReps[ex.name]=ex.sets.filter(s=>s.done).map(s=>s.reps);
+    saveAbsLastReps(absReps);
+  }
 
   renderExerciseCards();
 }
