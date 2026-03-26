@@ -4500,36 +4500,79 @@ function saveNewExercise(){
 }
 
 // ── LIBRARY VIEW ──
+var openLibMuscleGroups={};
+function toggleLibMuscleGroup(m){
+  const scrollY=window.scrollY;
+  openLibMuscleGroups[m]=!openLibMuscleGroups[m];
+  renderLibrary();
+  window.scrollTo(0,scrollY);
+}
+function renderLibCard(name){
+  const athVal=findATH(name);
+  const isFav=favExercises.has(name);
+  const muscle=getExerciseMuscle(name);
+  const esc=name.replace(/'/g,"\\'");
+  return `<div class="lib-card" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')">
+    <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
+    <div class="lib-name-en">${getExerciseEnglish(name)}</div>
+    <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
+  </div>`;
+}
 function renderLibrary(){
   const tabs=document.getElementById('libMuscleTabs');
-  tabs.innerHTML='<button class="muscle-tab'+(currentLibMuscle==='all'?' active':'')+'" onclick="setLibMuscle(\'all\')">All</button>'+
-    MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentLibMuscle===m?' active':''}" onclick="setLibMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
+  const isFavsMode=currentLibMode==='favs';
+  if(isFavsMode){
+    tabs.innerHTML='';
+  } else {
+    tabs.innerHTML='<button class="muscle-tab'+(currentLibMuscle==='all'?' active':'')+'" onclick="setLibMuscle(\'all\')">All</button>'+
+      MUSCLE_GROUPS.map(m=>`<button class="muscle-tab${currentLibMuscle===m?' active':''}" onclick="setLibMuscle('${m}')">${MUSCLE_LABELS[m]}</button>`).join('');
+  }
 
   const search=(document.getElementById('libSearch').value||'').toLowerCase();
   const allNames=getAllExerciseNames();
   const hidden=new Set(data.hiddenExercises||[]);
 
-  let html='';
+  // Filter exercises
+  const filtered=[];
   allNames.forEach(name=>{
     if(hidden.has(name))return;
     const muscle=getExerciseMuscle(name);
-    if(currentLibMuscle!=='all'&&muscle!==currentLibMuscle)return;
-    if(currentLibMode==='favs'&&!favExercises.has(name))return;
-    if(search&&!name.toLowerCase().includes(search)&&!getExerciseEnglish(name).toLowerCase().includes(search))return;
-
-    const athVal=findATH(name);
-    const isFav=favExercises.has(name);
-
-    const esc=name.replace(/'/g,"\\'");
-    html+=`<div class="lib-card" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')">
-      <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
-      <div class="lib-name-en">${getExerciseEnglish(name)}</div>
-      <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
-    </div>`;
+    if(!isFavsMode&&currentLibMuscle!=='all'&&muscle!==currentLibMuscle)return;
+    if(isFavsMode&&!favExercises.has(name))return;
+    if(search){const words=search.split(/\s+/).filter(Boolean);const nl=name.toLowerCase();const el=getExerciseEnglish(name).toLowerCase();if(!words.every(w=>nl.includes(w)||el.includes(w)))return;}
+    filtered.push(name);
   });
 
-  if(hidden.size)html+=`<div class="sub-restore-btn" onclick="restoreLibrary()">${hidden.size} hidden — tap to restore all</div>`;
-  document.getElementById('libList').innerHTML=html||`<div style="color:var(--text-dim);text-align:center;padding:40px">${currentLibMode==='favs'?'No favorites yet — tap ☆ on any exercise to add it':'No exercises found'}</div>`;
+  let html='';
+  if(isFavsMode&&filtered.length>0){
+    // Group by muscle
+    const groups={};
+    filtered.forEach(name=>{
+      const m=getExerciseMuscle(name)||'other';
+      if(!groups[m])groups[m]=[];
+      groups[m].push(name);
+    });
+    if(search){Object.keys(groups).forEach(m=>{openLibMuscleGroups[m]=true})}
+    const order=[...MUSCLE_GROUPS.filter(m=>groups[m]),...Object.keys(groups).filter(m=>!MUSCLE_GROUPS.includes(m)).sort()];
+    order.forEach(m=>{
+      const label=(MUSCLE_LABELS[m]||m).toUpperCase();
+      const isOpen=!!openLibMuscleGroups[m];
+      html+=`<div class="pc-muscle-row${isOpen?' open':''}" onclick="toggleLibMuscleGroup('${m}')">
+        <span class="pc-muscle-name">${label}</span>
+        <span><span class="pc-muscle-count">${groups[m].length}</span> <span class="pc-muscle-arrow">&#9654;</span></span>
+      </div>`;
+      if(isOpen){
+        html+='<div class="pc-muscle-content open">';
+        groups[m].forEach(name=>{html+=renderLibCard(name)});
+        html+='</div>';
+      }
+    });
+  } else {
+    filtered.forEach(name=>{html+=renderLibCard(name)});
+  }
+
+  if(hidden.size&&!isFavsMode)html+=`<div class="sub-restore-btn" onclick="restoreLibrary()">${hidden.size} hidden — tap to restore all</div>`;
+  document.getElementById('libList').innerHTML=html||`<div style="color:var(--text-dim);text-align:center;padding:40px">${isFavsMode?'No favorites yet — tap ☆ on any exercise to add it':'No exercises found'}</div>`;
 }
 
 function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
@@ -4861,6 +4904,7 @@ function toggleFav(name){
   if(favExercises.has(name))favExercises.delete(name);
   else favExercises.add(name);
   localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));
+  saveData();
   renderLibrary();
 }
 
