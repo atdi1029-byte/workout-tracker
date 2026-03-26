@@ -5084,6 +5084,8 @@ function openSwapModal(ei){
 function doSwap(ei,name,nameEn,muscle){
   if(!currentWorkout)return;
   const ex=currentWorkout.exercises[ei];
+  const pid=currentWorkout.program;
+  const day=currentWorkout.day;
   ex.name=name;ex.nameEn=nameEn;ex.muscle=muscle;
   // Try to pre-populate from last log
   const lastLog=getLastLog(name);
@@ -5092,9 +5094,21 @@ function doSwap(ei,name,nameEn,muscle){
       if(lastLog.sets[i])s.weight=lastLog.sets[i].weight;
     });
   }
+  // Save swap permanently to customPrograms
+  const prog=getProgram(pid);
+  if(prog&&prog.days[day]){
+    const dayEx=prog.days[day].ex.map(e=>[...e]);
+    if(dayEx[ei]){
+      dayEx[ei][0]=name;dayEx[ei][1]=nameEn;dayEx[ei][2]=muscle;
+    }
+    if(!data.customPrograms[pid])data.customPrograms[pid]={days:{}};
+    if(!data.customPrograms[pid].days)data.customPrograms[pid].days={};
+    data.customPrograms[pid].days[day]={ex:dayEx};
+    saveData();
+  }
   closeModal();
   renderExerciseCards();
-  toast('Swapped to '+name);
+  toast('Swapped to '+name+' (saved)');
 }
 
 // ── ALT EXERCISE (session-only swap) ──
