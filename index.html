@@ -1815,33 +1815,18 @@ function loadFromCloud(onComplete){
         if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
       }
     }
-    // Merge config — preserve ALL local custom programs
-    const localCustom=JSON.parse(JSON.stringify(data.customPrograms||{}));
-    // Don't overwrite local activeProgram from cloud — local switch always wins
-    if(!data.activeProgram||!PROGRAMS[data.activeProgram]){
-      if(config.activeProgram&&PROGRAMS[config.activeProgram])data.activeProgram=config.activeProgram;
-      else data.activeProgram='ABCD09';
+    // Merge config — CLOUD WINS (Rule 4: Sheets is source of truth)
+    if(config.activeProgram&&PROGRAMS[config.activeProgram]){
+      data.activeProgram=config.activeProgram;
     }
     if(config.customPrograms){
+      if(!data.customPrograms)data.customPrograms={};
       for(const k in config.customPrograms){
         if(!PROGRAMS[k])continue;
-        if(!localCustom[k]){data.customPrograms[k]=config.customPrograms[k];continue;}
-        const cloudDays=config.customPrograms[k].days||{};
-        if(!data.customPrograms[k])data.customPrograms[k]={days:{}};
-        if(!data.customPrograms[k].days)data.customPrograms[k].days={};
-        for(const d in cloudDays){
-          const localDay=data.customPrograms[k].days[d];
-          const cloudDay=cloudDays[d];
-          if(!localDay){data.customPrograms[k].days[d]=cloudDay;}
-          else{
-            const localEx=(localDay.ex||[]).length;
-            const cloudEx=(cloudDay.ex||[]).length;
-            if(cloudEx>localEx)data.customPrograms[k].days[d]=cloudDay;
-          }
-        }
+        // Cloud wins — adopt cloud's custom program data
+        data.customPrograms[k]=config.customPrograms[k];
       }
     }
-    for(const k in localCustom){if(PROGRAMS[k]&&!data.customPrograms[k])data.customPrograms[k]=localCustom[k]}
     if(config.customSubs){
       if(!data.customSubs)data.customSubs=[];
       const localNames=new Set(data.customSubs.map(s=>s.name));
@@ -1896,14 +1881,14 @@ function loadFromCloud(onComplete){
     // Merge extra (holds, notes, starts)
     const extra=resp.extra||{};
     try{
-      if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!h[k])h[k]=extra.holds[k];}saveHolds(h);}
-      if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!n[k])n[k]=extra.notes[k];}saveExNotes(n);}
-      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!s[k])s[k]=extra.starts[k];}saveStartWeights(s);}
+      if(extra.holds){const h=getHolds();for(const k in extra.holds){h[k]=extra.holds[k];}saveHolds(h);}
+      if(extra.notes){const n=getExNotes();for(const k in extra.notes){n[k]=extra.notes[k];}saveExNotes(n);}
+      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){s[k]=extra.starts[k];}saveStartWeights(s);}
       if(extra.favs){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
-      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!p[k])p[k]=extra.platePref[k];}savePlatePref(p);}
-      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(np[k]===undefined)np[k]=extra.noPlate[k];}saveNoPlate(np);}
-      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!se[k])se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
-      if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){if(!ar[k])ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
+      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){p[k]=extra.platePref[k];}savePlatePref(p);}
+      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){np[k]=extra.noPlate[k];}saveNoPlate(np);}
+      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
+      if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
     }catch(e){console.warn('Extra merge error',e)}
     // Restore any new custom subs into SUBS_DATA
     (data.customSubs||[]).forEach(s=>{
