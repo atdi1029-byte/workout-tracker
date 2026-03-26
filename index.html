@@ -1654,7 +1654,7 @@ function pushChunked(jsonStr,target,onDone){
 function _pushConfig(onDone){
   try{
     const syncPrograms={};
-    for(const k in data.customPrograms){if(k!=='ABCD09'&&k!=='ABCD10')syncPrograms[k]=data.customPrograms[k];}
+    for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
     const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const jsonStr=JSON.stringify(config);
     const encoded=encodeURIComponent(jsonStr);
@@ -1684,17 +1684,53 @@ function syncWorkoutToCloud(logEntry){
   if(!syncReady)return;
   try{
     const encoded=encodeURIComponent(JSON.stringify(logEntry));
-    if(encoded.length<7000)jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(){});
-    else console.warn('Workout too large for GET:',encoded.length);
+    if(encoded.length<7000){
+      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(err){
+        if(err)console.warn('Workout sync failed, will retry on fullSync');
+      });
+    } else {
+      pushChunked(JSON.stringify(logEntry),'workout',function(err){
+        if(err)console.warn('Chunked workout sync failed');
+      });
+    }
   }catch(e){console.warn('Workout sync failed',e)}
 }
 function syncRunToCloud(runEntry){
   if(!syncReady)return;
   try{
     const encoded=encodeURIComponent(JSON.stringify(runEntry));
-    if(encoded.length<7000)jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_run&data='+encoded,function(){});
-    else console.warn('Run log too large for GET:',encoded.length);
+    if(encoded.length<7000){
+      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_run&data='+encoded,function(err){
+        if(err)console.warn('Run sync failed, will retry on fullSync');
+      });
+    } else {
+      pushChunked(JSON.stringify(runEntry),'run',function(err){
+        if(err)console.warn('Chunked run sync failed');
+      });
+    }
   }catch(e){console.warn('Run sync failed',e)}
+}
+// Auto-push unsynced logs on startup after cloud pull completes
+function autoSyncUnsyncedLogs(){
+  jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
+    if(err||!resp)return;
+    const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
+    const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
+    const cloudRunIds=new Set((resp.runLogs||[]).map(l=>l.id));
+    const unsyncedRuns=(data.runLogs||[]).filter(l=>!cloudRunIds.has(l.id));
+    if(unsynced.length===0&&unsyncedRuns.length===0)return;
+    let i=0;
+    const all=[...unsynced.map(l=>({type:'workout',data:l})),...unsyncedRuns.map(l=>({type:'run',data:l}))];
+    function sendNext(){
+      if(i>=all.length)return;
+      const item=all[i++];
+      const action=item.type==='workout'?'zercher_log_workout':'zercher_log_run';
+      const encoded=encodeURIComponent(JSON.stringify(item.data));
+      if(encoded.length<7000)jsonpFetch(SYNC_ENDPOINT+'?action='+action+'&data='+encoded,function(){sendNext()});
+      else sendNext();
+    }
+    sendNext();
+  });
 }
 function _doCloudSave(onDone){
   if(_saveInFlight){_savePending=true;if(onDone)onDone();return;}
@@ -1724,7 +1760,7 @@ function beaconSave(){
   if(!data||!data.activeProgram)return;
   try{
     const syncPrograms={};
-    for(const k in data.customPrograms){if(k!=='ABCD09'&&k!=='ABCD10')syncPrograms[k]=data.customPrograms[k];}
+    for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
     const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const configEnc=encodeURIComponent(JSON.stringify(config));
     if(configEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+configEnc);
@@ -5796,7 +5832,7 @@ currentDay=getNextDay();
 try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.program===data.activeProgram&&_s.day)currentDay=_s.day;}catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
-loadFromCloud(function(){syncReady=true;});
+loadFromCloud(function(){syncReady=true;autoSyncUnsyncedLogs();});
 // Dual visibilitychange: visible=pull, hidden=push
 document.addEventListener('visibilitychange',function(){
   if(!syncReady)return;
