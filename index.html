@@ -1615,6 +1615,11 @@ let currentRunWeek = parseInt(localStorage.getItem('run_week_manual'))||1;
 // ── SYNC ──
 const SYNC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt438APIycBc534W6T66O3IgtxLUU9cczw-PZAN6Mc9p2xfU2ySsND_wEMJDHUvrXyUg/exec';
 let syncReady=false;
+let _saveInFlight=false;
+let _savePending=false;
+let _syncDebounce=null;
+
+function fireGet(url){var img=new Image();img.src=url;}
 
 function jsonpFetch(url,cb){
   const cbName='_zrCb_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
@@ -1646,35 +1651,35 @@ function pushChunked(jsonStr,target,onDone){
   sendNext();
 }
 
-function syncConfigToCloud(){
-  if(!syncReady)return;
+function _pushConfig(onDone){
   try{
     const syncPrograms={};
     for(const k in data.customPrograms){if(k!=='ABCD09'&&k!=='ABCD10')syncPrograms[k]=data.customPrograms[k];}
     const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const jsonStr=JSON.stringify(config);
     const encoded=encodeURIComponent(jsonStr);
-    // If small enough, single JSONP GET; otherwise chunked
     if(encoded.length<7000){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded,function(){});
+      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded,function(){if(onDone)onDone()});
     }else{
-      pushChunked(jsonStr,'config',function(){});
+      pushChunked(jsonStr,'config',function(){if(onDone)onDone()});
     }
-  }catch(e){console.warn('Config sync failed',e)}
+  }catch(e){console.warn('Config sync failed',e);if(onDone)onDone(e)}
 }
-function syncExtraToCloud(){
-  if(!syncReady)return;
+function _pushExtra(onDone){
   try{
     const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps()};
     const jsonStr=JSON.stringify(extra);
     const encoded=encodeURIComponent(jsonStr);
     if(encoded.length<7000){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+encoded,function(){});
+      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+encoded,function(){if(onDone)onDone()});
     }else{
-      pushChunked(jsonStr,'extra',function(){});
+      pushChunked(jsonStr,'extra',function(){if(onDone)onDone()});
     }
-  }catch(e){console.warn('Extra sync failed',e)}
+  }catch(e){console.warn('Extra sync failed',e);if(onDone)onDone(e)}
 }
+// Legacy aliases for direct calls elsewhere
+function syncConfigToCloud(){if(!syncReady)return;_pushConfig()}
+function syncExtraToCloud(){if(!syncReady)return;_pushExtra()}
 function syncWorkoutToCloud(logEntry){
   if(!syncReady)return;
   try{
@@ -1691,7 +1696,43 @@ function syncRunToCloud(runEntry){
     else console.warn('Run log too large for GET:',encoded.length);
   }catch(e){console.warn('Run sync failed',e)}
 }
-function syncToCloud(){syncConfigToCloud();syncExtraToCloud()}
+function _doCloudSave(onDone){
+  if(_saveInFlight){_savePending=true;if(onDone)onDone();return;}
+  if(!data||!data.activeProgram){if(onDone)onDone();return;}
+  _saveInFlight=true;
+  _pushConfig(function(){
+    _pushExtra(function(){
+      _saveInFlight=false;
+      if(_savePending){_savePending=false;_doCloudSave();}
+      if(onDone)onDone();
+    });
+  });
+}
+function syncToCloud(){
+  if(!syncReady)return;
+  clearTimeout(_syncDebounce);
+  _syncDebounce=setTimeout(function(){
+    mergeFromCloud(false,function(){_doCloudSave()});
+  },1500);
+}
+function mergeFromCloud(showFeedback,onComplete){
+  loadFromCloud(function(){
+    if(onComplete)onComplete();
+  });
+}
+function beaconSave(){
+  if(!data||!data.activeProgram)return;
+  try{
+    const syncPrograms={};
+    for(const k in data.customPrograms){if(k!=='ABCD09'&&k!=='ABCD10')syncPrograms[k]=data.customPrograms[k];}
+    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const configEnc=encodeURIComponent(JSON.stringify(config));
+    if(configEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+configEnc);
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps()};
+    const extraEnc=encodeURIComponent(JSON.stringify(extra));
+    if(extraEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+extraEnc);
+  }catch(e){}
+}
 function fullSync(){
   toast('Syncing...');
   syncConfigToCloud();
@@ -1836,8 +1877,7 @@ function loadFromCloud(onComplete){
       if(!subcat){subcat={cat:s.cat,ex:[]};group.subs.push(subcat);}
       if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
     });
-    try{saveData()}catch(e){console.warn('Save error after sync',e)}
-    syncConfigToCloud();
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('Save error after sync',e)}
     try{if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();}catch(e){console.warn('Render error after sync',e)}
     if(onComplete)onComplete();
   });
@@ -2163,7 +2203,7 @@ function loadData(){
     if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
   });
 }
-function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('saveData failed',e)}}
+function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));syncToCloud();}catch(e){console.warn('saveData failed',e)}}
 function migrateData(){
   // Keep all custom program edits (removed old cleanup that wiped non-ABCD09 edits)
   // Remove old program logs (keep ABCD09 seeds + real workouts)
@@ -5699,8 +5739,22 @@ try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.p
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
 loadFromCloud(function(){syncReady=true;});
-// Re-sync when app returns to foreground
-document.addEventListener('visibilitychange',function(){if(!document.hidden&&syncReady)loadFromCloud()});
+// Dual visibilitychange: visible=pull, hidden=push
+document.addEventListener('visibilitychange',function(){
+  if(!syncReady)return;
+  if(document.visibilityState==='visible'){
+    mergeFromCloud(true);
+  }else{
+    clearTimeout(_syncDebounce);
+    _doCloudSave();
+  }
+});
+// Save on app kill (swipe away)
+document.addEventListener('pagehide',function(){beaconSave()});
+// 30s periodic poll for cross-device changes
+setInterval(function(){
+  if(syncReady&&document.visibilityState==='visible')mergeFromCloud(false);
+},30000);
 if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js')}
 
 </script>
