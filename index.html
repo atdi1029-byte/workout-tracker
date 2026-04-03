@@ -3641,6 +3641,13 @@ function renameExercise(ei){
   const n=getExNotes();if(n[oldName]){n[trimmed]=n[oldName];delete n[oldName];saveExNotes(n);}
   // Rename start weights
   const s=getStartWeights();if(s[oldName]){s[trimmed]=s[oldName];delete s[oldName];saveStartWeights(s);}
+  // Rename in customPrograms so it sticks across reloads
+  for(const pid in data.customPrograms||{}){
+    const cp=data.customPrograms[pid];
+    for(const dk in cp.days||{}){
+      (cp.days[dk].ex||[]).forEach(e=>{if(e[0]===oldName)e[0]=trimmed;});
+    }
+  }
   saveData();
   syncToCloud();
   renderExerciseCards();
@@ -5589,6 +5596,13 @@ function migrateExRename(oldName,newName){
     const obj=getter();
     if(obj[oldName]!==undefined){obj[newName]=obj[oldName];delete obj[oldName];setter(obj)}
   });
+  // Migrate customPrograms
+  for(const pid in data.customPrograms||{}){
+    const cp=data.customPrograms[pid];
+    for(const dk in cp.days||{}){
+      (cp.days[dk].ex||[]).forEach(e=>{if(e[0]===oldName)e[0]=newName;});
+    }
+  }
 }
 
 function saveEditorDay(){
