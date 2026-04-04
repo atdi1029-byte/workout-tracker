@@ -1667,7 +1667,7 @@ function _pushConfig(onDone){
 }
 function _pushExtra(onDone){
   try{
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps()};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||''};
     const jsonStr=JSON.stringify(extra);
     const encoded=encodeURIComponent(jsonStr);
     if(encoded.length<7000){
@@ -1764,7 +1764,7 @@ function beaconSave(){
     const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const configEnc=encodeURIComponent(JSON.stringify(config));
     if(configEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+configEnc);
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps()};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||''};
     const extraEnc=encodeURIComponent(JSON.stringify(extra));
     if(extraEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+extraEnc);
   }catch(e){}
@@ -1889,6 +1889,7 @@ function loadFromCloud(onComplete){
       if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){np[k]=extra.noPlate[k];}saveNoPlate(np);}
       if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
       if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
+      if(extra.absRoutine&&extra.absRoutineWeek){const cw=weekStart();if(extra.absRoutineWeek===cw){currentAbsRoutine=extra.absRoutine;localStorage.setItem('abs_routine',extra.absRoutine);localStorage.setItem('abs_routine_week',cw);}}
     }catch(e){console.warn('Extra merge error',e)}
     // Restore any new custom subs into SUBS_DATA
     (data.customSubs||[]).forEach(s=>{
@@ -2081,7 +2082,7 @@ function saveAlt(program,day,origName,altName,altNameEn,altMuscle){
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
 function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
-function weekStart(d){const dt=new Date(d||Date.now());dt.setDate(dt.getDate()-dt.getDay()+1);return dateStr(dt)}
+function weekStart(d){const dt=new Date(d||Date.now());const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));return dateStr(dt)}
 function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
 function getProgWeeks(pid){
   if(data.programWeeks&&data.programWeeks[pid])return data.programWeeks[pid];
