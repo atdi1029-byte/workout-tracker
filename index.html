@@ -4272,7 +4272,7 @@ function renderProgress(){
           if(isExpanded){
             html+=`<div class="progress-card expanded" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
               <div class="pc-header">
-                <div><span class="pc-name">${name}</span>${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}</div>
+                <div style="display:flex;align-items:center;gap:6px"><span class="pc-name">${name}</span><span style="cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 6px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span>${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}</div>
                 <div style="text-align:right">
                   <div class="pc-ath">${athVal||fmt(Math.max(...repCounts.map(r=>prs[r].weight)))} lbs</div>
                   ${best1rm?`<div class="pc-1rm">est. 1RM: ${fmt(best1rm)} lbs</div>`:''}
@@ -4303,7 +4303,7 @@ function renderProgress(){
           } else {
             const tileWeight=athVal||Math.max(...repCounts.map(r=>prs[r].weight));
             html+=`<div class="progress-card" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
-              <span class="pc-name">${name}</span>
+              <div style="display:flex;align-items:center;gap:6px"><span class="pc-name" style="flex:1">${name}</span><span style="cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 6px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span></div>
               ${enName&&enName!==name?`<span class="pc-name-en">${enName}</span>`:''}
               <div class="pc-tile-ath">${fmt(tileWeight)} lbs</div>
             </div>`;
@@ -4722,6 +4722,7 @@ function saveEditExercise(){
   closeModal();
   toast('Updated: '+newName);
   renderLibrary();
+  if(currentView==='progress')renderProgress();
 }
 
 // ── LIBRARY: SUBSTITUTIONS TAB ──
