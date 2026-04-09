@@ -4544,7 +4544,7 @@ function toggleLibMuscleGroup(m){
   window.scrollTo(0,scrollY);
 }
 function renderLibCard(name){
-  const athVal=findATH(name);
+  const athVal=getBestWeight(name);
   const isFav=favExercises.has(name);
   const muscle=getExerciseMuscle(name);
   const esc=name.replace(/'/g,"\\'");
