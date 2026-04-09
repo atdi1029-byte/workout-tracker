@@ -1836,7 +1836,13 @@ function loadFromCloud(onComplete){
       if(!data.deletedSubs)data.deletedSubs=[];
       config.deletedSubs.forEach(d=>{if(!data.deletedSubs.includes(d))data.deletedSubs.push(d)});
     }
-    if(config.customExercises)data.customExercises=config.customExercises;
+    if(config.customExercises){
+      // Merge: local edits win over cloud (user may have just changed muscle group)
+      const localMap={};
+      (data.customExercises||[]).forEach(e=>{localMap[e[0]]=e});
+      config.customExercises.forEach(e=>{if(!localMap[e[0]])localMap[e[0]]=e});
+      data.customExercises=Object.values(localMap);
+    }
     if(config.settings)data.settings=config.settings;
     if(config.programStartDates){
       if(!data.programStartDates)data.programStartDates={};
@@ -1899,8 +1905,12 @@ function loadFromCloud(onComplete){
       if(!subcat){subcat={cat:s.cat,ex:[]};group.subs.push(subcat);}
       if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
     });
+    // Rebuild _custom program cache from merged customExercises
+    if(data.customExercises&&data.customExercises.length){
+      PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
+    }
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('Save error after sync',e)}
-    try{if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();}catch(e){console.warn('Render error after sync',e)}
+    try{if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();}catch(e){console.warn('Render error after sync',e)}
     if(onComplete)onComplete();
   });
 }
