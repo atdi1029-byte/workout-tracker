@@ -3664,10 +3664,14 @@ function renameExercise(ei){
 
 function getBestWeight(exName){
   const id=exId(exName);
-  const pr=data.prs[id];
-  if(!pr)return findATH(exName);
   let best=0;
-  for(const r in pr){if(pr[r].weight>best)best=pr[r].weight}
+  // Check PR records
+  const pr=data.prs[id];
+  if(pr){for(const r in pr){if(pr[r].weight>best)best=pr[r].weight}}
+  // Also scan workout logs for max weight
+  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>{
+    if(exId(ex.name)===id)(ex.sets||[]).forEach(s=>{if(s.weight>best)best=s.weight});
+  }));
   return best||findATH(exName);
 }
 
