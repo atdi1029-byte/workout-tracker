@@ -2644,6 +2644,7 @@ function toggleProgram(el){el.classList.toggle('expanded')}
 function renderPrograms(){
   let html='';
   for(const pid in PROGRAMS){
+    if(pid==='_custom')continue;
     const p=PROGRAMS[pid];
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
