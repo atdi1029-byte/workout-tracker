@@ -2521,7 +2521,11 @@ function getAllExerciseNames(){
   return[...names].sort();
 }
 function getExerciseMuscle(name){
+  // Check user overrides first (customExercises) so edits stick
+  const ce=(data.customExercises||[]).find(e=>e[0]===name);
+  if(ce)return ce[2];
   for(const pid in PROGRAMS){
+    if(pid==='_custom')continue;
     for(const dk in PROGRAMS[pid].days){
       const ex=PROGRAMS[pid].days[dk].ex.find(e=>e[0]===name);
       if(ex)return ex[2];
@@ -2554,7 +2558,10 @@ function getExerciseMuscle(name){
   return'other';
 }
 function getExerciseEnglish(name){
+  const ce=(data.customExercises||[]).find(e=>e[0]===name);
+  if(ce)return ce[1];
   for(const pid in PROGRAMS){
+    if(pid==='_custom')continue;
     for(const dk in PROGRAMS[pid].days){
       const ex=PROGRAMS[pid].days[dk].ex.find(e=>e[0]===name);
       if(ex)return ex[1];
