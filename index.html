@@ -4643,6 +4643,27 @@ function restoreLibrary(){
   toast('All exercises restored');
 }
 
+function deleteExercise(name){
+  if(!confirm('Delete "'+name+'"? This removes it from library, progress, and all PR data.'))return;
+  const id=exId(name);
+  // Hide from library
+  if(!data.hiddenExercises)data.hiddenExercises=[];
+  if(!data.hiddenExercises.includes(name))data.hiddenExercises.push(name);
+  // Remove PRs
+  if(data.prs[id])delete data.prs[id];
+  // Remove from customExercises
+  data.customExercises=(data.customExercises||[]).filter(e=>e[0]!==name);
+  // Remove from favorites
+  favExercises.delete(name);
+  localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));
+  // Remove from _custom program cache
+  if(PROGRAMS._custom)PROGRAMS._custom.days.A.ex=PROGRAMS._custom.days.A.ex.filter(e=>e[0]!==name);
+  saveData();closeModal();
+  toast('Deleted: '+name);
+  renderLibrary();
+  if(currentView==='progress')renderProgress();
+}
+
 function isCustomExercise(name){
   return(data.customExercises||[]).some(e=>e[0]===name);
 }
@@ -4678,6 +4699,7 @@ function openEditExercise(name){
     </div>
     ${usedIn.length?`<div style="font-size:0.65rem;color:var(--text-dim);margin-bottom:10px">Used in: ${usedIn.join(', ')}</div>`:''}
     <button class="edit-save-btn" onclick="saveEditExercise()">Save Changes</button>
+    <button style="width:100%;margin-top:8px;padding:10px;background:rgba(144,80,80,0.15);border:1px solid rgba(144,80,80,0.3);color:var(--red-bright);border-radius:var(--radius);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px" onclick="deleteExercise('${esc}')">Delete Exercise</button>
   `);
 }
 function saveEditExercise(){
