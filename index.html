@@ -2528,8 +2528,8 @@ if(!data.customPrograms.ABCD11){
       ['Abdominal Remador','Rower Crunch','abs','S','3x30',60],
       ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
       ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
-      ['Pull Over','Pull Over','back','P','2x8wu+12/10/8/5',120],
-      ['Weighted Pull Up','Weighted Pull Up','back','P','2x8wu+12/10/8/5',120],
+      ['Pull Over Dumbell','Pull Over Dumbell','back','P','2x8wu+12/10/8/5',120],
+      ['Pull Up Weighted','Pull Up Weighted','back','P','2x8wu+12/10/8/5',120],
       ['Reeves Row','Reeves Row','back','S','2x8wu+3x10',60],
       ['Rosca Scott Polia','Cable Preacher Curl','biceps','P','1x8wu+3x12',60],
       ['Bíceps Direto','Barbell Curl','biceps','S','1x8wu+3x12',60],
@@ -2629,7 +2629,7 @@ function getExerciseMuscle(name){
   if(n.includes('bicep')||n.includes('curl')||n.includes('rosca')||n.includes('scott'))return'biceps';
   if(n.includes('tricep')||n.includes('jm press')||n.includes('pushdown')||n.includes('frances')||n.includes('pulley barra'))return'triceps';
   if(n.includes('chest')||n.includes('bench')||n.includes('supino')||n.includes('fly')||n.includes('pec')||n.includes('dumbell fly'))return'chest';
-  if(n.includes('row')||n.includes('pulldown')||n.includes('lat ')||n.includes('pull-in')||n.includes('pullover')||n.includes('tbar')||n.includes('t-bar')||n.includes('reeves'))return'back';
+  if(n.includes('row')||n.includes('pulldown')||n.includes('lat ')||n.includes('pull-in')||n.includes('pullover')||n.includes('pull over')||n.includes('pull up')||n.includes('pull-up')||n.includes('chin up')||n.includes('tbar')||n.includes('t-bar')||n.includes('reeves'))return'back';
   if(n.includes('squat')||n.includes('quad')||n.includes('leg press')||n.includes('lunge')||n.includes('leg ext'))return'quads';
   if(n.includes('hamstring')||n.includes('leg curl')||n.includes('rdl')||n.includes('stiff'))return'hamstrings';
   if(n.includes('glute')||n.includes('hip thrust'))return'glutes';
@@ -4681,7 +4681,7 @@ function renderLibCard(name){
   const isFav=favExercises.has(name);
   const muscle=getExerciseMuscle(name);
   const esc=name.replace(/'/g,"\\'");
-  return `<div class="lib-card" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')">
+  return `<div class="lib-card" onclick="openEditExercise('${esc}')" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')"  style="cursor:pointer">
     <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
     <div class="lib-name-en">${getExerciseEnglish(name)}</div>
     <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
