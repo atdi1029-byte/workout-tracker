@@ -2272,6 +2272,14 @@ function migrateData(){
     delete data.customPrograms.ABCD10;
     localStorage.setItem('zr_abcd10_dayd_v206','1');
   }
+  // One-time fix v208: switch active program to ABCD11
+  if(!localStorage.getItem('zr_abcd11_switch_v208')){
+    data.activeProgram='ABCD11';
+    if(!data.programStartDates)data.programStartDates={};
+    data.programStartDates['ABCD11']=dateStr();
+    localStorage.setItem('zr_abcd11_switch_v208','1');
+    setTimeout(function(){syncConfigToCloud()},2000);
+  }
   // Strip ghost runs (0 min) and recalculate weeks
   data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
   data.runLogs.forEach(l=>{
