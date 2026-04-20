@@ -2367,6 +2367,10 @@ function migrateData(){
     for(const oldN in renames)migrateExRename(oldN,renames[oldN]);
     data._nameMigV214=true;
   }
+  if(!data._nameMigV216){
+    migrateExRename('Bíceps Direto','Bíceps Direto Sentado');
+    data._nameMigV216=true;
+  }
   // v156: remove stale ABS/RUN keys from customPrograms (editor bug) — one-time
   if(!localStorage.getItem('zr_migrate_v156')){
     for(const pid in data.customPrograms||{}){
@@ -2538,7 +2542,7 @@ if(!data.customPrograms.ABCD11){
       ['Pull Up Weighted','Pull Up Weighted','back','P','2x8wu+12/10/8/5',120],
       ['Reeves Row','Reeves Row','back','S','2x8wu+3x10',60],
       ['Rosca Scott Polia','Cable Preacher Curl','biceps','P','1x8wu+3x12',60],
-      ['Bíceps Direto','Barbell Curl','biceps','S','1x8wu+3x12',60],
+      ['Bíceps Direto Sentado','Seated Barbell Curl','biceps','S','1x8wu+3x12',60],
       ['Bíceps Pulley Corda','Cable Rope Curl','biceps','S','1x8wu+3x12',60],
       ['Finger Plate Grip with Dipbelt','Finger Plate Grip with Dipbelt','forearms','S','3x8-12',60]
     ]},
