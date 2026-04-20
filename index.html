@@ -2225,7 +2225,7 @@ function parseSets(str){
 // ── STORAGE ──
 function loadData(){
   try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
-  catch(e){data={activeProgram:'ABCD09',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},runLogs:[],programStartDates:{}}}
+  catch(e){data={activeProgram:'ABCD11',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},runLogs:[],programStartDates:{}}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -2246,7 +2246,7 @@ function migrateData(){
     });
   }
   // Ensure activeProgram is valid
-  if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD09';
+  if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD11';
   // Migrate: add runLogs if missing
   if(!data.runLogs)data.runLogs=[];
   // Migrate: add programStartDates and programWeeks if missing
@@ -2279,6 +2279,14 @@ function migrateData(){
     data.programStartDates['ABCD11']=dateStr();
     localStorage.setItem('zr_abcd11_switch_v208','1');
     setTimeout(function(){syncConfigToCloud()},2000);
+  }
+  // v210: force ABCD11 as active + push to cloud so cloud stops reverting to ABCD10
+  if(!localStorage.getItem('zr_abcd11_force_v210')){
+    data.activeProgram='ABCD11';
+    if(!data.programStartDates)data.programStartDates={};
+    if(!data.programStartDates['ABCD11'])data.programStartDates['ABCD11']=dateStr();
+    localStorage.setItem('zr_abcd11_force_v210','1');
+    setTimeout(function(){syncConfigToCloud()},3000);
   }
   // Strip ghost runs (0 min) and recalculate weeks
   data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
@@ -2674,7 +2682,7 @@ function showView(name,btn){
 }
 
 function getNextDay(){
-  const prog=getProgram(data.activeProgram)||getProgram('ABCD09');
+  const prog=getProgram(data.activeProgram)||getProgram('ABCD11');
   const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='RUN'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
