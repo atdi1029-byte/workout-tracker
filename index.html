@@ -3611,6 +3611,12 @@ function renderExerciseCards(){
           html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
         }
       }
+    } else if(!isAbs){
+      const bestW=getBestWeight(ex.name);
+      if(bestW){
+        html+=`<div class="ex-last">No log yet &middot; <span class="pr-badge">PR: ${bestW} lbs</span></div>`;
+        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on PR)</div></div>`;
+      }
     }
     const startW=isAbs?null:getStartWeight(ex.name);
     const hasStart=startW&&(startW.wu||startW.s1);
