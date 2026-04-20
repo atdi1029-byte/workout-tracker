@@ -2684,6 +2684,7 @@ function selectProgram(pid){
   if(!data.programStartDates)data.programStartDates={};
   data.programStartDates[pid]=dateStr();
   saveData();
+  syncConfigToCloud();
   currentDay=getNextDay();
   showView('workout',document.querySelectorAll('.nav-btn')[0]);
   toast('Switched to '+pid);
@@ -2758,6 +2759,7 @@ function setActiveProgram(pid){
   if(!data.programStartDates)data.programStartDates={};
   data.programStartDates[pid]=dateStr();
   saveData();
+  syncConfigToCloud();
   renderPrograms();
   toast(pid+' set as active program');
 }
