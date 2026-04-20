@@ -1815,8 +1815,8 @@ function loadFromCloud(onComplete){
         if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
       }
     }
-    // Merge config — CLOUD WINS (Rule 4: Sheets is source of truth)
-    if(config.activeProgram&&PROGRAMS[config.activeProgram]){
+    // Merge config — cloud wins EXCEPT activeProgram (local intent wins)
+    if(config.activeProgram&&PROGRAMS[config.activeProgram]&&!data.activeProgram){
       data.activeProgram=config.activeProgram;
     }
     if(config.customPrograms){
@@ -2287,6 +2287,11 @@ function migrateData(){
     if(!data.programStartDates['ABCD11'])data.programStartDates['ABCD11']=dateStr();
     localStorage.setItem('zr_abcd11_force_v210','1');
     setTimeout(function(){syncConfigToCloud()},3000);
+  }
+  // v212: push ABCD11 to cloud AFTER loadFromCloud completes (via callback)
+  if(!localStorage.getItem('zr_abcd11_push_v212')){
+    data.activeProgram='ABCD11';
+    localStorage.setItem('zr_abcd11_push_v212','1');
   }
   // Strip ghost runs (0 min) and recalculate weeks
   data.runLogs=data.runLogs.filter(l=>l.actualMin>0);
@@ -5985,7 +5990,7 @@ currentDay=getNextDay();
 try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.program===data.activeProgram&&_s.day)currentDay=_s.day;}catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
-loadFromCloud(function(){syncReady=true;autoSyncUnsyncedLogs();});
+loadFromCloud(function(){syncReady=true;autoSyncUnsyncedLogs();syncConfigToCloud();});
 // Dual visibilitychange: visible=pull, hidden=push
 document.addEventListener('visibilitychange',function(){
   if(!syncReady)return;
