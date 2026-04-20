@@ -2361,6 +2361,12 @@ function migrateData(){
     for(const oldN in renames)migrateExRename(oldN,renames[oldN]);
     data._nameMigV121=true;
   }
+  // v214: rename Pull Over → Pull Over Dumbell, Weighted Pull Up → Pull Up Weighted
+  if(!data._nameMigV214){
+    const renames={'Pull Over':'Pull Over Dumbell','Weighted Pull Up':'Pull Up Weighted'};
+    for(const oldN in renames)migrateExRename(oldN,renames[oldN]);
+    data._nameMigV214=true;
+  }
   // v156: remove stale ABS/RUN keys from customPrograms (editor bug) — one-time
   if(!localStorage.getItem('zr_migrate_v156')){
     for(const pid in data.customPrograms||{}){
