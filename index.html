@@ -1910,7 +1910,7 @@ function loadFromCloud(onComplete){
       PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
     }
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('Save error after sync',e)}
-    try{if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();}catch(e){console.warn('Render error after sync',e)}
+    try{flushInputs();if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();}catch(e){console.warn('Render error after sync',e)}
     if(onComplete)onComplete();
   });
 }
@@ -3498,6 +3498,22 @@ function getSuggestion(lastLog, targetReps, exName){
   return{type,text:'<div class="sug-main">'+icon+' '+weightTip+'</div>'+trendHtml};
 }
 
+function flushInputs(){
+  if(!currentWorkout)return;
+  currentWorkout.exercises.forEach((ex,ei)=>{
+    const card=document.getElementById('ex-'+ei);
+    if(!card)return;
+    const rows=card.querySelectorAll('.set-row');
+    const isAbsEx=currentDay==='ABS'&&ex.muscle==='abs';
+    ex.sets.forEach((s,si)=>{
+      if(!rows[si])return;
+      const inp=rows[si].querySelectorAll('.set-input');
+      if(isAbsEx){s.weight=0;s.reps=parseInt(inp[0].value)||0;}
+      else{s.weight=parseFloat((inp[0].value||'').replace(/,/g,''))||0;s.reps=parseInt(inp[1].value)||0;}
+    });
+  });
+  localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+}
 function renderExerciseCards(){
   if(!currentWorkout)return;
   const container=document.getElementById('workoutExercises');
@@ -3555,11 +3571,11 @@ function renderExerciseCards(){
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':''}">${label}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
-          <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" onchange="updateSet(${ei},${si},'weight',this.value)">
+          <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" oninput="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
         </div>`}
         <div class="set-input-group">
-          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" onchange="updateSet(${ei},${si},'reps',this.value)">
+          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)">
           <span class="set-unit">reps</span>
         </div>
         <button class="set-done-btn${set.done?' done':''}" onclick="toggleSet(${ei},${si})">&#10003;</button>
