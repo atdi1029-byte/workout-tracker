@@ -1975,8 +1975,10 @@ function promptStartWeight(exName){
 // ── PLATE CALCULATOR ──
 const ALL_PLATES=[45,35,25,10,5,2.5];
 const NO_PLATE_KEYWORDS=/halter|dumbbell|halteres|polia|cable|cabo|pulley|maquina|machine|cadeira|mesa flexora|voador|flexao|apoio|prancha|plank|paralela|abdominal|elevacao|crucifixo|concentrado|coice|kickback|kettlebell|elastico|band|bodyweight|dragon|crunch|canivete|remador|carrinho/i;
+const PLATE_MACHINE_OVERRIDE=/supino.*maquina|supino.*machine/i;
 function autoNeedsPlates(exName){
   const n=exName.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(PLATE_MACHINE_OVERRIDE.test(n))return true;
   return!NO_PLATE_KEYWORDS.test(n);
 }
 function getAbsLastReps(){try{return JSON.parse(localStorage.getItem('zercher_abs_reps')||'{}')}catch(e){return{}}}
