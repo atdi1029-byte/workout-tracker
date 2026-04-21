@@ -2892,7 +2892,8 @@ function renderWorkout(){
     overlay.innerHTML=`<div class="start-overlay">
       <div class="day-label">${currentDay==='ABS'?'Abs '+currentAbsRoutine:'Day '+currentDay} — ${dayData.labelEn||dayData.label}</div>
       <div class="ex-count">${exCount} exercises</div>
-      <button class="start-workout-btn" onclick="beginWorkout()">Start Workout</button>
+      ${syncReady?'':'<div style="font-size:0.75rem;color:var(--gold);margin-bottom:6px">Syncing data...</div>'}
+      <button class="start-workout-btn" onclick="beginWorkout()" ${syncReady?'':'disabled style="opacity:0.4;cursor:wait"'}>Start Workout</button>
     </div>`;
     overlay.style.display='block';
     exContainer.innerHTML='';
