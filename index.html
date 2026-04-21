@@ -1910,7 +1910,28 @@ function loadFromCloud(onComplete){
       PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
     }
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('Save error after sync',e)}
-    try{flushInputs();if(currentView==='workout'&&!workoutStartTime){currentWorkout=null;renderWorkout();}if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();}catch(e){console.warn('Render error after sync',e)}
+    try{
+      flushInputs();
+      if(currentView==='workout'){
+        if(!workoutStartTime){currentWorkout=null;renderWorkout();}
+        else if(currentWorkout){
+          // Re-prefill 0-weight sets from cloud data (race condition fix)
+          currentWorkout.exercises.forEach(ex=>{
+            const lastLog=getLastLog(ex.name);
+            if(!lastLog)return;
+            ex.sets.forEach((s,i)=>{
+              if(s.weight===''||s.weight===0||s.weight==='0'){
+                const typeIdx=ex.sets.slice(0,i).filter(ps=>ps.type===s.type).length;
+                const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
+                if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
+              }
+            });
+          });
+          renderExerciseCards();
+        }
+      }
+      if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();
+    }catch(e){console.warn('Render error after sync',e)}
     if(onComplete)onComplete();
   });
 }
