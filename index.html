@@ -4830,7 +4830,7 @@ function openEditExercise(name){
     </div>
     ${usedIn.length?`<div style="font-size:0.65rem;color:var(--text-dim);margin-bottom:10px">Used in: ${usedIn.join(', ')}</div>`:''}
     <button class="edit-save-btn" onclick="saveEditExercise()">Save Changes</button>
-    <button style="width:100%;margin-top:8px;padding:10px;background:rgba(144,80,80,0.15);border:1px solid rgba(144,80,80,0.3);color:var(--red-bright);border-radius:var(--radius);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px" onclick="deleteExercise('${esc}')">Delete Exercise</button>
+    <button style="width:100%;margin-top:8px;padding:10px;background:rgba(144,80,80,0.15);border:1px solid rgba(144,80,80,0.3);color:var(--red-bright);border-radius:var(--radius);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px" onclick="deleteExercise('${name.replace(/'/g,"\\'")}')">Delete Exercise</button>
   `);
 }
 function saveEditExercise(){
@@ -4912,7 +4912,7 @@ const SUBS_DATA=[
 {muscle:'Triceps',subs:[
 {cat:'Barbell / EZ Bar',ex:['Tricep Testa (Floor Style)','Smith Machine Seated Overhead Tricep Extension','Smith Machine Incline Tricep Extension','Smith Machine JM Press','Incline Close Grip Bench Press','Reverse Grip Skull Crusher','Tricep Barbell Kickback','Neutral Grip Overhead Extensions (Hammer Bar)','Hammer Bar Close Grip Bench Press','Smith Machine Close Grip Bench Press','Elbows Out Tricep Press']},
 {cat:'Cable',ex:['Pushdown Facing Away','Single Cable Extension','Incline Tricep Pushdown','Katana Tricep Extension','Cable Concentration Tricep','Cross-Body Cable Extensions','Tricep Frances Cable Closer Grip (Seated)','Long Rope Tricep Extension','Tricep Pulldown 21s','Behind The Back Tricep Pushdown','Reverse Grip Pushdown']},
-{cat:'Dumbbell',ex:['Lying Cross Face Extension','Dumbbell Tate Press','Incline Two Dumbbell Extension','Dumbbell Kickbacks Lying','Decline Tricep Skull Crusher','Rolling Dumbbell Tricep Extension','Incline Rolling Tricep Extension','Dumbbell JM Press','Kettlebell Tricep Extensions','Lying Tricep Kettlebell Extensions']},
+{cat:'Dumbbell',ex:['Lying Cross Face Extension','Dumbbell Tate Press','Incline Two Dumbbell Extension','Dumbbell Kickbacks Lying','Decline Tricep Skull Crusher','Rolling Dumbbell Tricep Extension','Incline Rolling Tricep Extension','Dumbbell JM Press','Kettlebell Tricep Extensions']},
 {cat:'Body Weight',ex:['Weighted Behind The Back Dips','Tricep Extension Dip / Impossible Dip']},
 {cat:'Machine',ex:['Tricep Machine Articulada','Tricep Machine Pin Loaded']}
 ]},
@@ -5041,7 +5041,6 @@ const SUB_LINKS={
 'Decline Tricep Skull Crusher':'https://youtu.be/4xy47xdQo5w?t=12m59s',
 'Incline Rolling Tricep Extension':'https://youtu.be/mf-FsBTR5VU?t=7m18s',
 'Kettlebell Tricep Extensions':'https://youtu.be/bTzJTIM0NpI',
-'Lying Tricep Kettlebell Extensions':'https://youtu.be/d24nAtn8w4E?t=10m33s',
 'Weighted Behind The Back Dips':'https://youtu.be/d24nAtn8w4E?t=10m33s',
 'Dumbbell Finger Wrist Curl':'https://youtu.be/rwMB5Ef6Cmo',
 'T-Bar Forearm Curl':'https://youtu.be/rwMB5Ef6Cmo?t=1m47s',
