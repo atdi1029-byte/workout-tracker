@@ -1604,7 +1604,7 @@ let currentLibMuscle = 'all';
 let currentAbsRoutine = (function(){
   const savedWeek=localStorage.getItem('abs_routine_week');
   const thisWeek=weekStart();
-  if(savedWeek!==thisWeek){localStorage.removeItem('abs_routine');localStorage.setItem('abs_routine_week',thisWeek);return 1}
+  if(savedWeek!==thisWeek){const prev=parseInt(localStorage.getItem('abs_routine'))||1;const next=(prev%7)+1;localStorage.setItem('abs_routine',next);localStorage.setItem('abs_routine_week',thisWeek);return next}
   return parseInt(localStorage.getItem('abs_routine'))||1;
 })();
 let favExercises = new Set((function(){try{return JSON.parse(localStorage.getItem('fav_exercises')||'[]')}catch(e){return[]}})());
