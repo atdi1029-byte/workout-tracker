@@ -1910,7 +1910,7 @@ function loadFromCloud(onComplete){
       PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
     }
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('Save error after sync',e)}
-    try{flushInputs();if(currentView==='workout')renderWorkout();if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();}catch(e){console.warn('Render error after sync',e)}
+    try{flushInputs();if(currentView==='workout'&&!workoutStartTime){currentWorkout=null;renderWorkout();}if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();}catch(e){console.warn('Render error after sync',e)}
     if(onComplete)onComplete();
   });
 }
