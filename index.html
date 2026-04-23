@@ -4716,7 +4716,7 @@ function renderLibCard(name){
   const muscle=getExerciseMuscle(name);
   const esc=name.replace(/'/g,"\\'");
   return `<div class="lib-card" onclick="openEditExercise('${esc}')" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')"  style="cursor:pointer">
-    <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
+    <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="event.stopPropagation();toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
     <div class="lib-name-en">${getExerciseEnglish(name)}</div>
     <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
   </div>`;
