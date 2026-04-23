@@ -3404,6 +3404,11 @@ function initWorkout(){
           const startW=getStartWeight(e[0]);
           if(s.type==='warmup'&&startW.wu)prefillWeight=startW.wu;
           if(s.type==='working'&&typeIdx===0&&startW.s1)prefillWeight=startW.s1;
+          // Fallback: no log + no start weight → use PR/ATH for working sets
+          if(!prefillWeight&&!lastLog&&s.type==='working'){
+            const best=getBestWeight(e[0]);
+            if(best)prefillWeight=best;
+          }
           const isAbsEx=currentDay==='ABS'&&e[2]==='abs';
           let prefillReps=s.reps;
           if(isAbsEx){
