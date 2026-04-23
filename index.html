@@ -1795,7 +1795,7 @@ function fullSync(){
     sendNext();
   });
 }
-function loadFromCloud(onComplete,isPrePush){
+function loadFromCloud(onComplete,isPrePush,isInitialLoad){
   jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
     if(err||!resp||resp.status!=='ok'){if(onComplete)onComplete();return}
     const cloudLogs=resp.logs||[];
@@ -1890,7 +1890,7 @@ function loadFromCloud(onComplete,isPrePush){
       if(extra.holds){const h=getHolds();for(const k in extra.holds){h[k]=extra.holds[k];}saveHolds(h);}
       if(extra.notes){const n=getExNotes();for(const k in extra.notes){n[k]=extra.notes[k];}saveExNotes(n);}
       if(extra.starts){const s=getStartWeights();for(const k in extra.starts){s[k]=extra.starts[k];}saveStartWeights(s);}
-      if(extra.favs&&!isPrePush){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
+      if(extra.favs&&isInitialLoad){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
       if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){p[k]=extra.platePref[k];}savePlatePref(p);}
       if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){np[k]=extra.noPlate[k];}saveNoPlate(np);}
       if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
@@ -6029,7 +6029,7 @@ currentDay=getNextDay();
 try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.program===data.activeProgram&&_s.day)currentDay=_s.day;}catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
-loadFromCloud(function(){syncReady=true;autoSyncUnsyncedLogs();syncConfigToCloud();});
+loadFromCloud(function(){syncReady=true;autoSyncUnsyncedLogs();syncConfigToCloud();},false,true);
 // Dual visibilitychange: visible=pull, hidden=push
 document.addEventListener('visibilitychange',function(){
   if(!syncReady)return;
