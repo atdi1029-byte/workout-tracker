@@ -3829,9 +3829,10 @@ function getBestWeight(exName){
 }
 
 function findATH(name){
-  // Exact match only — no partial/substring matching
-  if(ATH_DATA[name])return ATH_DATA[name];
-  return 0;
+  const staticAth=ATH_DATA[name]||0;
+  const id=exId(name);
+  const prAth=(data.prs[id]&&data.prs[id]['ath'])?data.prs[id]['ath'].weight:0;
+  return Math.max(staticAth,prAth);
 }
 
 // ── PR DETECTION ──
@@ -3939,14 +3940,23 @@ function finishWorkout(){
 
   // Auto-detect PRs for all completed sets
   logEntry.exercises.forEach(ex=>{
+    const id=exId(ex.name);
+    if(!data.prs[id])data.prs[id]={};
+    // Per-rep PRs (working sets only)
     ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
-      const id=exId(ex.name);
-      if(!data.prs[id])data.prs[id]={};
       const current=data.prs[id][s.reps];
       if(!current||s.weight>current.weight){
         data.prs[id][s.reps]={weight:s.weight,date:logEntry.date,program:logEntry.program};
       }
     });
+    // Overall ATH — best weight from any done set (warmup included)
+    const bestWeight=Math.max(0,...ex.sets.filter(s=>s.weight>0).map(s=>s.weight));
+    if(bestWeight>0){
+      const curAth=data.prs[id]['ath'];
+      if(!curAth||bestWeight>curAth.weight){
+        data.prs[id]['ath']={weight:bestWeight,date:logEntry.date,program:logEntry.program};
+      }
+    }
   });
 
   saveData();
