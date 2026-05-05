@@ -1641,7 +1641,7 @@ function pushChunked(jsonStr,target,onDone){
   var idx=0;
   function sendNext(){
     if(idx>=chunks.length){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_done&target='+target+'&n='+chunks.length,function(err2){if(onDone)onDone(err2)});
+      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_done&target='+target+'&n='+chunks.length,function(err2,resp2){if(resp2&&resp2.ts)localStorage.setItem('zercher_lastSyncedAt',resp2.ts);if(onDone)onDone(err2)});
       return;
     }
     var url=SYNC_ENDPOINT+'?action=zercher_save_chunk&i='+idx+'&cd='+encodeURIComponent(chunks[idx]);
@@ -1798,6 +1798,7 @@ function fullSync(){
 function loadFromCloud(onComplete,isPrePush,isInitialLoad){
   jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
     if(err||!resp||resp.status!=='ok'){if(onComplete)onComplete();return}
+    if(resp.ts){localStorage.setItem('zercher_lastSyncedAt',resp.ts);}
     const cloudLogs=resp.logs||[];
     const cloudPrs=resp.prs||{};
     const config=resp.config||{};
@@ -1995,7 +1996,7 @@ function promptStartWeight(exName){
 
 // ── PLATE CALCULATOR ──
 const ALL_PLATES=[45,35,25,10,5,2.5];
-const NO_PLATE_KEYWORDS=/halter|dumbbell|halteres|polia|cable|cabo|pulley|maquina|machine|cadeira|mesa flexora|voador|flexao|apoio|prancha|plank|paralela|abdominal|elevacao|crucifixo|concentrado|coice|kickback|kettlebell|elastico|band|bodyweight|dragon|crunch|canivete|remador|carrinho/i;
+const NO_PLATE_KEYWORDS=/halter|dumbbell|halteres|polia|cable|cabo|pulley|maquina|machine|cadeira|mesa flexora|voador|flexao|apoio|prancha|plank|paralela|abdominal|elevacao|crucifixo|concentrado|coice|kettlebell|elastico|band|bodyweight|dragon|crunch|canivete|remador|carrinho/i;
 const PLATE_MACHINE_OVERRIDE=/supino.*maquina|supino.*machine/i;
 function autoNeedsPlates(exName){
   const n=exName.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -6057,6 +6058,10 @@ document.addEventListener('visibilitychange',function(){
 });
 // Save on app kill (swipe away)
 document.addEventListener('pagehide',function(){beaconSave()});
+// Sync when reconnecting after going offline
+window.addEventListener('online',function(){
+  if(syncReady)setTimeout(function(){mergeFromCloud(false,function(){_doCloudSave();});},1000);
+});
 // 30s periodic poll for cross-device changes
 setInterval(function(){
   if(syncReady&&document.visibilityState==='visible')mergeFromCloud(false);
