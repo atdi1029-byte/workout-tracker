@@ -1800,7 +1800,7 @@ function fullSync(){
 }
 function loadFromCloud(onComplete,isPrePush,isInitialLoad){
   jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
-    if(err||!resp||resp.status!=='ok'){if(onComplete)onComplete();return}
+    if(err||!resp||resp.status!=='ok'){if(onComplete)onComplete(false);return}
     if(resp.ts){localStorage.setItem('zercher_lastSyncedAt',resp.ts);}
     const cloudLogs=resp.logs||[];
     const cloudPrs=resp.prs||{};
@@ -1936,7 +1936,7 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       }
       if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();
     }catch(e){console.warn('Render error after sync',e)}
-    if(onComplete)onComplete();
+    if(onComplete)onComplete(true);
   });
 }
 
@@ -6050,7 +6050,7 @@ currentDay=getNextDay();
 try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.program===data.activeProgram&&_s.day)currentDay=_s.day;}catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
-loadFromCloud(function(){syncReady=true;autoSyncUnsyncedLogs();syncConfigToCloud();},false,true);
+loadFromCloud(function(ok){syncReady=true;if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}},false,true);
 // Dual visibilitychange: visible=pull, hidden=push
 document.addEventListener('visibilitychange',function(){
   if(!syncReady)return;
