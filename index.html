@@ -1771,29 +1771,32 @@ function beaconSave(){
 }
 function fullSync(){
   toast('Syncing...');
-  syncConfigToCloud();
-  syncExtraToCloud();
-  jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
-    if(err||!resp){toast('Sync failed');return}
-    const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
-    const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
-    const cloudRunIds=new Set((resp.runLogs||[]).map(l=>l.id));
-    const unsyncedRuns=(data.runLogs||[]).filter(l=>!cloudRunIds.has(l.id));
-    const total=unsynced.length+unsyncedRuns.length;
-    if(total===0){toast('All synced!');return}
-    const allToSync=[...unsynced.map(l=>({type:'workout',data:l})),...unsyncedRuns.map(l=>({type:'run',data:l}))];
-    let i=0;
-    function sendNext(){
-      if(i>=allToSync.length){toast('Synced '+total+' entries!');return}
-      const item=allToSync[i];
-      const encoded=encodeURIComponent(JSON.stringify(item.data));
-      const action=item.type==='run'?'zercher_log_run':'zercher_log_workout';
-      jsonpFetch(SYNC_ENDPOINT+'?action='+action+'&data='+encoded,function(){});
-      i++;
-      setTimeout(sendNext,600);
-    }
-    sendNext();
-  });
+  // Pull from cloud first, merge PRs/config, then push merged result + unsynced logs
+  loadFromCloud(function(){
+    syncConfigToCloud();
+    syncExtraToCloud();
+    jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
+      if(err||!resp){toast('Sync failed');return}
+      const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
+      const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
+      const cloudRunIds=new Set((resp.runLogs||[]).map(l=>l.id));
+      const unsyncedRuns=(data.runLogs||[]).filter(l=>!cloudRunIds.has(l.id));
+      const total=unsynced.length+unsyncedRuns.length;
+      if(total===0){toast('All synced!');return}
+      const allToSync=[...unsynced.map(l=>({type:'workout',data:l})),...unsyncedRuns.map(l=>({type:'run',data:l}))];
+      let i=0;
+      function sendNext(){
+        if(i>=allToSync.length){toast('Synced '+total+' entries!');return}
+        const item=allToSync[i];
+        const encoded=encodeURIComponent(JSON.stringify(item.data));
+        const action=item.type==='run'?'zercher_log_run':'zercher_log_workout';
+        jsonpFetch(SYNC_ENDPOINT+'?action='+action+'&data='+encoded,function(){});
+        i++;
+        setTimeout(sendNext,600);
+      }
+      sendNext();
+    });
+  },false,false);
 }
 function loadFromCloud(onComplete,isPrePush,isInitialLoad){
   jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
@@ -6055,7 +6058,7 @@ document.addEventListener('visibilitychange',function(){
     mergeFromCloud(true);
   }else{
     clearTimeout(_syncDebounce);
-    _doCloudSave();
+    mergeFromCloud(false,function(){_doCloudSave();});
   }
 });
 // Save on app kill (swipe away)
