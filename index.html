@@ -1757,7 +1757,7 @@ function mergeFromCloud(showFeedback,onComplete,isPrePush){
   },isPrePush);
 }
 function beaconSave(){
-  if(!data||!data.activeProgram)return;
+  if(!syncReady||!data||!data.activeProgram)return;
   try{
     const syncPrograms={};
     for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
@@ -1847,7 +1847,7 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       config.customExercises.forEach(e=>{if(!localMap[e[0]])localMap[e[0]]=e});
       data.customExercises=Object.values(localMap);
     }
-    if(config.settings)data.settings=config.settings;
+    if(config.settings){if(!data.settings)data.settings={};for(const k in config.settings){if(!(k in data.settings))data.settings[k]=config.settings[k];}}
     if(config.programStartDates){
       if(!data.programStartDates)data.programStartDates={};
       for(const k in config.programStartDates){if(!data.programStartDates[k])data.programStartDates[k]=config.programStartDates[k]}
