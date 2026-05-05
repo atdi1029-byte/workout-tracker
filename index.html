@@ -4668,6 +4668,7 @@ function saveManualPR(){
   if(current&&current.weight>=weight){toast('Not a PR — existing: '+fmt(current.weight)+' lbs');return}
   data.prs[id][reps]={weight,date:dateStr(),program:'Manual'};
   saveData();
+  syncConfigToCloud();
   closeModal();
   toast('PR saved: '+name+' '+fmt(weight)+'lbs x'+reps);
   renderProgress();
@@ -4713,6 +4714,7 @@ function saveNewExercise(){
   if(!data.customExercises)data.customExercises=[];
   if(!data.customExercises.find(e=>e[0]===name))data.customExercises.push([name,name,muscle,'S','4x10',60]);
   saveData();
+  syncConfigToCloud();
   closeModal();
   toast('Added: '+name);
   renderLibrary();
