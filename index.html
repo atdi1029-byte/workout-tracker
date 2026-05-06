@@ -1608,18 +1608,29 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
         if(!workoutStartTime){currentWorkout=null;renderWorkout();}
         else if(currentWorkout){
           // Re-prefill 0-weight sets from cloud data (race condition fix)
-          currentWorkout.exercises.forEach(ex=>{
+          // Patch inputs in-place — do NOT call renderExerciseCards() which
+          // tears down the DOM, dismisses the keyboard, and feels like a reset.
+          currentWorkout.exercises.forEach((ex,ei)=>{
             const lastLog=getLastLog(ex.name);
-            if(!lastLog)return;
+            const card=document.getElementById('ex-'+ei);
             ex.sets.forEach((s,i)=>{
               if(s.weight===''||s.weight===0||s.weight==='0'){
-                const typeIdx=ex.sets.slice(0,i).filter(ps=>ps.type===s.type).length;
-                const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
-                if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
+                if(lastLog){
+                  const typeIdx=ex.sets.slice(0,i).filter(ps=>ps.type===s.type).length;
+                  const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
+                  if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
+                }
+                // Patch the DOM input directly if it's still blank
+                if(card&&s.weight){
+                  const rows=card.querySelectorAll('.set-row');
+                  if(rows[i]){
+                    const wInput=rows[i].querySelectorAll('.set-input')[0];
+                    if(wInput&&!wInput.value)wInput.value=s.weight;
+                  }
+                }
               }
             });
           });
-          renderExerciseCards();
         }
       }
       if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();
