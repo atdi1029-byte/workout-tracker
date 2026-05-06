@@ -1579,13 +1579,13 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     // Merge extra (holds, notes, starts)
     const extra=resp.extra||{};
     try{
-      if(extra.holds){const h=getHolds();for(const k in extra.holds){h[k]=extra.holds[k];}saveHolds(h);}
-      if(extra.notes){const n=getExNotes();for(const k in extra.notes){n[k]=extra.notes[k];}saveExNotes(n);}
-      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){s[k]=extra.starts[k];}saveStartWeights(s);}
+      if(extra.holds){const h=getHolds();for(const k in extra.holds){if(isInitialLoad||!(k in h))h[k]=extra.holds[k];}saveHolds(h);}
+      if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(isInitialLoad||!(k in n))n[k]=extra.notes[k];}saveExNotes(n);}
+      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(isInitialLoad||!(k in s))s[k]=extra.starts[k];}saveStartWeights(s);}
       if(extra.favs&&isInitialLoad){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
-      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){p[k]=extra.platePref[k];}savePlatePref(p);}
-      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){np[k]=extra.noPlate[k];}saveNoPlate(np);}
-      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
+      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(isInitialLoad||!(k in p))p[k]=extra.platePref[k];}savePlatePref(p);}
+      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(isInitialLoad||!(k in np))np[k]=extra.noPlate[k];}saveNoPlate(np);}
+      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(isInitialLoad||!(k in se))se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
       if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
       if(extra.absRoutine&&extra.absRoutineWeek){const cw=weekStart();if(extra.absRoutineWeek===cw){currentAbsRoutine=extra.absRoutine;localStorage.setItem('abs_routine',extra.absRoutine);localStorage.setItem('abs_routine_week',cw);}}
     }catch(e){console.warn('Extra merge error',e)}
@@ -1646,6 +1646,7 @@ function toggleHold(exName){
   const h=getHolds();
   if(h[exName])delete h[exName];else h[exName]=true;
   saveHolds(h);
+  flushInputs();
   renderExerciseCards();
 }
 function isHeld(exName){return!!getHolds()[exName]}
@@ -1659,6 +1660,7 @@ function setExNote(exName,note){
   if(note.trim())n[exName]=note.trim();else delete n[exName];
   saveExNotes(n);
   syncExtraToCloud();
+  flushInputs();
   renderExerciseCards();
 }
 function promptExNote(exName){
@@ -1693,6 +1695,7 @@ function promptStartWeight(exName){
   }else{s[exName]={s1:trimmed};}
   saveStartWeights(s);
   syncExtraToCloud();
+  flushInputs();
   renderExerciseCards();
 }
 
@@ -1711,7 +1714,7 @@ function saveAbsLastReps(r){localStorage.setItem('zercher_abs_reps',JSON.stringi
 function getNoPlate(){try{return JSON.parse(localStorage.getItem('zercher_noplate')||'{}')}catch(e){return{}}}
 function saveNoPlate(n){localStorage.setItem('zercher_noplate',JSON.stringify(n))}
 function showPlateForEx(exName){const np=getNoPlate();if(np[exName]===false)return true;if(np[exName]===true)return false;return autoNeedsPlates(exName)}
-function toggleNoPlate(exName){const n=getNoPlate();const currently=showPlateForEx(exName);n[exName]=currently;saveNoPlate(n);renderExerciseCards()}
+function toggleNoPlate(exName){const n=getNoPlate();const currently=showPlateForEx(exName);n[exName]=currently;saveNoPlate(n);flushInputs();renderExerciseCards()}
 function getPlatePref(){try{return JSON.parse(localStorage.getItem('zercher_platepref')||'{}')}catch(e){return{}}}
 function savePlatePref(p){localStorage.setItem('zercher_platepref',JSON.stringify(p))}
 function getExPlates(exName){return getPlatePref()[exName]||ALL_PLATES.slice()}
