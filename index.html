@@ -1536,8 +1536,9 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(!data.customPrograms)data.customPrograms={};
       for(const k in config.customPrograms){
         if(!PROGRAMS[k])continue;
-        // Cloud wins — adopt cloud's custom program data
-        data.customPrograms[k]=config.customPrograms[k];
+        // Initial load: cloud wins (sync from other devices).
+        // Pre-push sync: local wins — don't overwrite recent edits.
+        if(isInitialLoad||!data.customPrograms[k])data.customPrograms[k]=config.customPrograms[k];
       }
     }
     if(config.customSubs){
