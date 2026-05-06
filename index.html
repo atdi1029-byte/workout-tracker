@@ -1579,13 +1579,13 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     // Merge extra (holds, notes, starts)
     const extra=resp.extra||{};
     try{
-      if(extra.holds){const h=getHolds();for(const k in extra.holds){if(isInitialLoad||!(k in h))h[k]=extra.holds[k];}saveHolds(h);}
-      if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(isInitialLoad||!(k in n))n[k]=extra.notes[k];}saveExNotes(n);}
-      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(isInitialLoad||!(k in s))s[k]=extra.starts[k];}saveStartWeights(s);}
+      if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!(k in h))h[k]=extra.holds[k];}saveHolds(h);}
+      if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!(k in n))n[k]=extra.notes[k];}saveExNotes(n);}
+      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!(k in s))s[k]=extra.starts[k];}saveStartWeights(s);}
       if(extra.favs&&isInitialLoad){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
-      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(isInitialLoad||!(k in p))p[k]=extra.platePref[k];}savePlatePref(p);}
-      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(isInitialLoad||!(k in np))np[k]=extra.noPlate[k];}saveNoPlate(np);}
-      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(isInitialLoad||!(k in se))se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
+      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!(k in p))p[k]=extra.platePref[k];}savePlatePref(p);}
+      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(!(k in np))np[k]=extra.noPlate[k];}saveNoPlate(np);}
+      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!(k in se))se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
       if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
       if(extra.absRoutine&&extra.absRoutineWeek){const cw=weekStart();if(extra.absRoutineWeek===cw){currentAbsRoutine=extra.absRoutine;localStorage.setItem('abs_routine',extra.absRoutine);localStorage.setItem('abs_routine_week',cw);}}
     }catch(e){console.warn('Extra merge error',e)}
@@ -2600,7 +2600,16 @@ function showTechPopup(code,e){
   setTimeout(()=>{document.addEventListener('click',function closePop(){document.getElementById('techPopup')?.remove();document.removeEventListener('click',closePop)},{once:true})},100);
 }
 
-function switchDay(d){currentDay=d;currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
+function switchDay(d){
+  // Save current workout state before switching so values aren't lost
+  if(currentWorkout&&workoutStartTime){
+    flushInputs();
+    localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  }
+  currentDay=d;currentWorkout=null;workoutStartTime=null;
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+  renderWorkout();
+}
 function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routine',n);localStorage.setItem('abs_routine_week',weekStart());currentWorkout=null;workoutStartTime=null;if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);renderWorkout()}
 
 function initWorkout(){
