@@ -499,7 +499,9 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
    ============================================ */
 
 // ── CONSTANTS ──
-const STORAGE_KEY = 'workout_data_v1';
+const STORAGE_KEY = 'workout_data_v1'; // legacy — migrated on first load
+const SK_CORE = 'zercher_core_v1';
+const SK_LOGS = 'zercher_logs_v1';
 const MUSCLE_GROUPS = ['chest','back','shoulders','biceps','triceps','forearms','quads','hamstrings','glutes','calves','abs'];
 const MUSCLE_LABELS = {chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs',traps:'Traps',neck:'Neck','legs (full)':'Legs (Full)','olympic weightlifting':'Olympic Lifting','old time lifts':'Old Time Lifts',rings:'Rings'};
 const PHASES = {acc:'Accumulation',int:'Intensification',spe:'Specialization',rea:'Realization',peak:'Peak Strength',freq:'Frequency'};
@@ -1601,7 +1603,7 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     if(data.customExercises&&data.customExercises.length){
       PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
     }
-    safeLocalSave(STORAGE_KEY,JSON.stringify(data));
+    _splitSave(data);
     try{
       flushInputs();
       if(currentView==='workout'){
@@ -1953,8 +1955,11 @@ function parseSets(str){
 
 // ── STORAGE ──
 function loadData(){
-  try{data=JSON.parse(localStorage.getItem(STORAGE_KEY));if(!data)throw 0}
-  catch(e){data={activeProgram:'ABCD11',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},programStartDates:{}}}
+  try{
+    var legacy=localStorage.getItem(STORAGE_KEY);
+    if(legacy){data=JSON.parse(legacy);if(!data)throw 0;_splitSave(data);localStorage.removeItem(STORAGE_KEY);}
+    else{var core=JSON.parse(localStorage.getItem(SK_CORE)||'null');if(!core)throw 0;data=Object.assign({},core,{logs:JSON.parse(localStorage.getItem(SK_LOGS)||'[]')});}
+  }catch(e){data={activeProgram:'ABCD11',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},programStartDates:{}}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -1965,7 +1970,13 @@ function loadData(){
   });
 }
 function safeLocalSave(key,payload){try{localStorage.setItem(key,payload);return true;}catch(e){console.error('[Zercher] localStorage QUOTA ERROR:',e);toast('Storage full — data not saved locally');return false;}}
-function saveData(){var ok=safeLocalSave(STORAGE_KEY,JSON.stringify(data));if(ok)syncToCloud();}
+function _splitSave(d){
+  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt};
+  var ok=safeLocalSave(SK_CORE,JSON.stringify(core));
+  safeLocalSave(SK_LOGS,JSON.stringify(d.logs||[]));
+  return ok;
+}
+function saveData(){var ok=_splitSave(data);if(ok)syncToCloud();}
 function migrateData(){
   // Keep all custom program edits (removed old cleanup that wiped non-ABCD09 edits)
   // Remove old program logs (keep ABCD09 seeds + real workouts)
@@ -5117,7 +5128,7 @@ function openSettings(){
       <textarea id="import-json" placeholder="Paste exported JSON here..." style="width:100%;height:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-bright);font-size:0.8rem;padding:8px;resize:vertical;font-family:monospace"></textarea>
       <button class="ex-action-btn" onclick="importData()" style="margin-top:4px;color:var(--green)">Load Imported Data</button>
     </div>
-    <button class="ex-action-btn" onclick="if(confirm('Clear ALL data?')){localStorage.removeItem(STORAGE_KEY);location.reload()}" style="margin-top:4px;color:var(--red)">Reset All Data</button>
+    <button class="ex-action-btn" onclick="if(confirm('Clear ALL data?')){localStorage.removeItem(SK_CORE);localStorage.removeItem(SK_LOGS);location.reload()}" style="margin-top:4px;color:var(--red)">Reset All Data</button>
   </div>`;
   openModal(html);
 }
