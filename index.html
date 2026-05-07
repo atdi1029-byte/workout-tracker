@@ -1601,7 +1601,7 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     if(data.customExercises&&data.customExercises.length){
       PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
     }
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){console.warn('Save error after sync',e)}
+    safeLocalSave(STORAGE_KEY,JSON.stringify(data));
     try{
       flushInputs();
       if(currentView==='workout'){
@@ -1964,7 +1964,8 @@ function loadData(){
     if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
   });
 }
-function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));syncToCloud();}catch(e){console.warn('saveData failed',e)}}
+function safeLocalSave(key,payload){try{localStorage.setItem(key,payload);return true;}catch(e){console.error('[Zercher] localStorage QUOTA ERROR:',e);toast('Storage full — data not saved locally');return false;}}
+function saveData(){var ok=safeLocalSave(STORAGE_KEY,JSON.stringify(data));if(ok)syncToCloud();}
 function migrateData(){
   // Keep all custom program edits (removed old cleanup that wiped non-ABCD09 edits)
   // Remove old program logs (keep ABCD09 seeds + real workouts)
