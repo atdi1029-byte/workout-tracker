@@ -1562,7 +1562,8 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     if(config.settings){if(!data.settings)data.settings={};for(const k in config.settings){if(!(k in data.settings))data.settings[k]=config.settings[k];}}
     if(config.programStartDates){
       if(!data.programStartDates)data.programStartDates={};
-      for(const k in config.programStartDates){if(!data.programStartDates[k])data.programStartDates[k]=config.programStartDates[k]}
+      // Earliest date wins — cloud's original start beats a freshly-migrated local date
+      for(const k in config.programStartDates){if(!data.programStartDates[k]||config.programStartDates[k]<data.programStartDates[k])data.programStartDates[k]=config.programStartDates[k]}
     }
     if(config.programWeeks){
       if(!data.programWeeks)data.programWeeks={};
