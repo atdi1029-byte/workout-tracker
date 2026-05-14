@@ -2617,7 +2617,7 @@ function switchDay(d){
   // Save current workout state before switching so values aren't lost
   if(currentWorkout&&workoutStartTime){
     flushInputs();
-    localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+    localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
   }
   currentDay=d;currentWorkout=null;workoutStartTime=null;
   if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
@@ -2628,7 +2628,7 @@ function switchAbsRoutine(n){currentAbsRoutine=n;localStorage.setItem('abs_routi
 function initWorkout(){
   // Try to recover in-progress workout
   try{
-    const saved=JSON.parse(localStorage.getItem('workout_in_progress'));
+    const saved=JSON.parse(localStorage.getItem('workout_in_progress_'+currentDay));
     if(saved&&saved.program===data.activeProgram&&saved.day===currentDay){
       currentWorkout=saved.workout;workoutStartTime=saved.startTime;
       if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
@@ -2707,6 +2707,8 @@ function initWorkout(){
     }
   });
   workoutStartTime=Date.now();
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+  window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
 }
 
 function getLastLog(exName){
@@ -2814,7 +2816,7 @@ function flushInputs(){
       else{s.weight=parseFloat((inp[0].value||'').replace(/,/g,''))||0;s.reps=parseInt(inp[1].value)||0;}
     });
   });
-  localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
 }
 function renderExerciseCards(){
   if(!currentWorkout)return;
@@ -2941,7 +2943,7 @@ function updateSet(ei,si,field,val){
   const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
   currentWorkout.exercises[ei].sets[si][field]=v;
   if(field==='weight')updatePlateCorner(ei);
-  localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
   // Persist abs reps on every input change so typed numbers stick even without toggling done
   const ex=currentWorkout.exercises[ei];
   if(currentDay==='ABS'&&ex.muscle==='abs'&&field==='reps'){
@@ -3017,7 +3019,7 @@ function toggleSet(ei,si){
       }
     }
   });
-  localStorage.setItem('workout_in_progress',JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
 
   // Persist abs reps immediately so they're remembered even without Finish
   // Save ALL sets (not just done ones) keyed by set index so prefill aligns correctly
@@ -3221,7 +3223,7 @@ function finishWorkout(){
   syncWorkoutToCloud(logEntry);
   syncConfigToCloud();
   syncExtraToCloud();
-  localStorage.removeItem('workout_in_progress');
+  localStorage.removeItem('workout_in_progress_'+currentDay);
   currentWorkout=null;
   workoutStartTime=null;
   skipRest();
@@ -5214,7 +5216,19 @@ for(const name in ATH_DATA){
 saveData();
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
-try{const _s=JSON.parse(localStorage.getItem('workout_in_progress'));if(_s&&_s.program===data.activeProgram&&_s.day)currentDay=_s.day;}catch(e){}
+try{
+  const prog=getProgram(data.activeProgram);
+  if(prog){
+    let best=null;
+    for(const d of Object.keys(prog.days)){
+      const _s=JSON.parse(localStorage.getItem('workout_in_progress_'+d));
+      if(_s&&_s.program===data.activeProgram&&_s.day){
+        if(!best||(_s.startTime>best.startTime))best=_s;
+      }
+    }
+    if(best)currentDay=best.day;
+  }
+}catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
 loadFromCloud(function(ok){syncReady=true;if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}},false,true);
