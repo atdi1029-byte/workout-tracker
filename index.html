@@ -1633,6 +1633,8 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
                 }
               }
             });
+            // Update Last: and Suggestion lines in-place after cloud data arrives
+            if(card)updateLastLine(ex,ei,card);
           });
         }
       }
@@ -2817,6 +2819,41 @@ function flushInputs(){
     });
   });
   localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+}
+function updateLastLine(ex,ei,card){
+  const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
+  const lastLog=getLastLog(ex.name);
+  let lastHtml='',sugHtml='';
+  if(lastLog){
+    const ws=lastLog.sets.filter(s=>s.type!=='warmup');
+    const weights=ws.map(s=>s.weight).join('/');
+    const reps=ws.map(s=>s.reps).join('/');
+    if(isAbs){
+      lastHtml=`<div class="ex-last">Last: ${reps} reps</div>`;
+    } else {
+      lastHtml=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
+    }
+    if(isHeld(ex.name)){
+      const s1w=ws[0]?ws[0].weight:'?';
+      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
+    } else {
+      const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+      const sug=getSuggestion(lastLog,targetReps,ex.name);
+      if(sug)sugHtml=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
+    }
+  } else if(!isAbs){
+    const bestW=getBestWeight(ex.name);
+    if(bestW){
+      lastHtml=`<div class="ex-last">No log yet &middot; <span class="pr-badge">PR: ${bestW} lbs</span></div>`;
+      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on PR)</div></div>`;
+    }
+  }
+  const oldLast=card.querySelector('.ex-last');
+  const oldSug=card.querySelector('.ex-suggest');
+  if(oldLast)oldLast.outerHTML=lastHtml;
+  else if(lastHtml){const pf=card.querySelector('.pr-flash');if(pf)pf.insertAdjacentHTML('afterend',lastHtml);}
+  if(oldSug)oldSug.outerHTML=sugHtml;
+  else if(sugHtml){const el=card.querySelector('.ex-last');if(el)el.insertAdjacentHTML('afterend',sugHtml);}
 }
 function renderExerciseCards(){
   if(!currentWorkout)return;
