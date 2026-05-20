@@ -2646,6 +2646,8 @@ function beginWorkout(){
 function updateWorkoutTimer(){
   if(!workoutStartTime)return;
   const elapsed=Math.floor((Date.now()-workoutStartTime)/1000);
+  // 3-hour cap
+  if(elapsed>=3*60*60){autoFinishWorkout();renderWorkout();return;}
   const m=Math.floor(elapsed/60);const s=elapsed%60;
   document.getElementById('workoutTimer').textContent=m+':'+(s<10?'0':'')+s+' elapsed';
 }
@@ -2680,6 +2682,13 @@ function initWorkout(){
   try{
     const saved=JSON.parse(localStorage.getItem('workout_in_progress_'+currentDay));
     if(saved&&saved.program===data.activeProgram&&saved.day===currentDay){
+      // 3-hour cap: auto-finish stale workouts
+      const elapsed=Date.now()-saved.startTime;
+      if(elapsed>3*60*60*1000){
+        currentWorkout=saved.workout;workoutStartTime=saved.startTime;
+        autoFinishWorkout();
+        return;
+      }
       currentWorkout=saved.workout;workoutStartTime=saved.startTime;
       if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
       window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
@@ -2756,9 +2765,7 @@ function initWorkout(){
       }
     }
   });
-  workoutStartTime=Date.now();
-  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
-  window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
+  // Don't auto-start timer — wait for user to click Start Workout
 }
 
 function getLastLog(exName){
@@ -3238,6 +3245,29 @@ function skipRest(){
 }
 
 // ── FINISH WORKOUT ──
+function autoFinishWorkout(){
+  // Auto-save after 3-hour cap — saves whatever sets were completed
+  if(!currentWorkout)return;
+  const hasSets=currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done));
+  if(hasSets){
+    // Reuse finish logic but skip the DOM flush (cards may not exist)
+    const logEntry={
+      id:'log_'+Date.now(),date:currentWorkout.date,
+      program:currentWorkout.program,day:currentWorkout.day,
+      exercises:currentWorkout.exercises.map(ex=>({
+        name:ex.name,
+        sets:ex.sets.filter(s=>s.done).map(s=>({weight:s.weight,reps:s.reps,type:s.type}))
+      })).filter(ex=>ex.sets.length>0),
+      duration:workoutStartTime?Math.round((Date.now()-workoutStartTime)/60000):0
+    };
+    data.logs.push(logEntry);saveData();
+    syncWorkoutToCloud(logEntry);syncConfigToCloud();syncExtraToCloud();
+    toast('Workout auto-saved (3h cap) — '+logEntry.exercises.length+' exercises logged');
+  }
+  localStorage.removeItem('workout_in_progress_'+currentDay);
+  currentWorkout=null;workoutStartTime=null;
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+}
 function finishWorkout(){
   if(!currentWorkout)return;
   if(!currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done))){
