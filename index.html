@@ -1385,7 +1385,15 @@ let currentLibMuscle = 'all';
 let currentAbsRoutine = (function(){
   const savedWeek=localStorage.getItem('abs_routine_week');
   const thisWeek=weekStart();
-  if(savedWeek!==thisWeek){const prev=parseInt(localStorage.getItem('abs_routine'))||1;const next=(prev%7)+1;localStorage.setItem('abs_routine',next);localStorage.setItem('abs_routine_week',thisWeek);return next}
+  if(savedWeek!==thisWeek){
+    const prev=parseInt(localStorage.getItem('abs_routine'))||1;
+    const next=(prev%7)+1;
+    localStorage.setItem('abs_routine',next);
+    localStorage.setItem('abs_routine_week',thisWeek);
+    // Clear abs reps on new week so stale reps don't prefill
+    localStorage.removeItem('zercher_abs_reps');
+    return next;
+  }
   return parseInt(localStorage.getItem('abs_routine'))||1;
 })();
 let favExercises = new Set((function(){try{return JSON.parse(localStorage.getItem('fav_exercises')||'[]')}catch(e){return[]}})());
@@ -1633,8 +1641,23 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!(k in p))p[k]=extra.platePref[k];}savePlatePref(p);}
       if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(!(k in np))np[k]=extra.noPlate[k];}saveNoPlate(np);}
       if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!(k in se))se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
-      if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
-      if(extra.absRoutine&&extra.absRoutineWeek){const cw=weekStart();if(extra.absRoutineWeek===cw){currentAbsRoutine=extra.absRoutine;localStorage.setItem('abs_routine',extra.absRoutine);localStorage.setItem('abs_routine_week',cw);}}
+      if(extra.absRoutine&&extra.absRoutineWeek){
+        const cw=weekStart();
+        if(extra.absRoutineWeek===cw){
+          // Same week — restore routine and reps from cloud
+          currentAbsRoutine=extra.absRoutine;
+          localStorage.setItem('abs_routine',extra.absRoutine);
+          localStorage.setItem('abs_routine_week',cw);
+          if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
+        } else {
+          // Different week — advance from cloud's routine number, clear stale reps
+          const next=((extra.absRoutine)%7)+1;
+          currentAbsRoutine=next;
+          localStorage.setItem('abs_routine',next);
+          localStorage.setItem('abs_routine_week',cw);
+          localStorage.removeItem('zercher_abs_reps');
+        }
+      }
     }catch(e){console.warn('Extra merge error',e)}
     // Restore any new custom subs into SUBS_DATA
     (data.customSubs||[]).forEach(s=>{
