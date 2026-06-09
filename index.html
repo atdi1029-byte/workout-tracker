@@ -623,7 +623,7 @@ ABC01:{name:'ABC01',phase:'acc',type:'ABC',weeks:10,days:{
     ['Panturrilha Sentado','Seated Calf Raise','calves','S','6x15',40]
   ]}
 }},
-ABC01X:{name:'ABC01X',phase:'acc',type:'ABCD',weeks:10,days:{
+ABC_D1:{name:'ABC+D1',phase:'acc',type:'ABCD',weeks:10,days:{
   A:{label:'Push (Peito + Ombros + Tríceps + Abs)',labelEn:'Push (Chest + Shoulders + Triceps + Abs)',ex:[
     ['Dumbell Circles','Dumbbell Circles','chest','S','4x10-15',60],
     ['Supino Reto Smith','Smith Bench Press','chest','S','2x10wu+4x8-12',80],
@@ -640,7 +640,7 @@ ABC01X:{name:'ABC01X',phase:'acc',type:'ABCD',weeks:10,days:{
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
     ['Yates Row','Yates Row','back','S','2x10wu+4x8-12',80],
     ['Puxada Frente Triângulo Body Weight','BW V-Bar Pulldown','back','S','4x8-12',60],
-    ['Helms Row','Helms Row','back','S','4x8-12',60],
+    ['Déficit Remada Curvada com Barra','Deficit Bent Over Barbell Row','back','S','4x8-12',60],
     ['Crucifixo Inverso (Cable)','Cable Reverse Fly','shoulders','S','4x10-12',45],
     ['Rosca Scott Polia','Cable Preacher Curl','biceps','S','4x8-12',60],
     ['Bíceps Pulley Corda','Cable Rope Curl','biceps','AP','20-30/15-20/10-15/5-10',60],
@@ -664,7 +664,7 @@ ABC01X:{name:'ABC01X',phase:'acc',type:'ABCD',weeks:10,days:{
     ['JM Press','JM Press','triceps','S','4x8-12',60],
     ['Smith Machine Upright Row','Smith Upright Row','shoulders','S','4x8-12',60],
     ['Single Arm Pulldown with Bend','Single Arm Pulldown','back','S','4x8-12',60],
-    ['Remada Curvada com Barra','Bent Over Barbell Row','back','S','4x8-12',60],
+    ['Helms Row','Helms Row','back','S','4x8-12',60],
     ['Rosca Direta (Ez Bar)','Ez Bar Curl','biceps','S','4x8-12',60]
   ]}
 }},
@@ -2034,7 +2034,7 @@ function loadData(){
     var legacy=localStorage.getItem(STORAGE_KEY);
     if(legacy){data=JSON.parse(legacy);if(!data)throw 0;_splitSave(data);localStorage.removeItem(STORAGE_KEY);}
     else{var core=JSON.parse(localStorage.getItem(SK_CORE)||'null');if(!core)throw 0;data=Object.assign({},core,{logs:JSON.parse(localStorage.getItem(SK_LOGS)||'[]')});}
-  }catch(e){data={activeProgram:'ABCD11',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},programStartDates:{}}}
+  }catch(e){data={activeProgram:'ABC_D1',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},programStartDates:{}}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -2062,7 +2062,7 @@ function migrateData(){
     });
   }
   // Ensure activeProgram is valid
-  if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD11';
+  if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABC_D1';
   // Migrate: add programStartDates and programWeeks if missing
   if(!data.programStartDates)data.programStartDates={};
   if(!data.programWeeks)data.programWeeks={};
@@ -2098,6 +2098,12 @@ function migrateData(){
   if(!localStorage.getItem('zr_abcd11_push_v212')){
     data.activeProgram='ABCD11';
     localStorage.setItem('zr_abcd11_push_v212','1');
+  }
+  // v244: ABC01X renamed to ABC_D1 — migrate activeProgram
+  if(!localStorage.getItem('zr_abcd1_rename_v244')){
+    if(data.activeProgram==='ABC01X')data.activeProgram='ABC_D1';
+    localStorage.setItem('zr_abcd1_rename_v244','1');
+    setTimeout(function(){syncConfigToCloud()},2000);
   }
   // Exercise name migration (v97): standardize old variants to canonical names
   const NAME_MAP={
@@ -2485,7 +2491,7 @@ function showView(name,btn){
 }
 
 function getNextDay(){
-  const prog=getProgram(data.activeProgram)||getProgram('ABCD11');
+  const prog=getProgram(data.activeProgram)||getProgram('ABC_D1');
   const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
