@@ -1387,13 +1387,9 @@ let currentAbsRoutine = (function(){
   const savedWeek=localStorage.getItem('abs_routine_week');
   const thisWeek=weekStart();
   if(savedWeek!==thisWeek){
-    const prev=parseInt(localStorage.getItem('abs_routine'))||1;
-    const next=(prev%7)+1;
-    localStorage.setItem('abs_routine',next);
+    // New week — clear stale reps but keep routine number (advances on finish, not weekly)
     localStorage.setItem('abs_routine_week',thisWeek);
-    // Clear abs reps on new week so stale reps don't prefill
     localStorage.removeItem('zercher_abs_reps');
-    return next;
   }
   return parseInt(localStorage.getItem('abs_routine'))||1;
 })();
@@ -1645,16 +1641,17 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(extra.absRoutine&&extra.absRoutineWeek){
         const cw=weekStart();
         if(extra.absRoutineWeek===cw){
-          // Same week — restore routine and reps from cloud
-          currentAbsRoutine=extra.absRoutine;
-          localStorage.setItem('abs_routine',extra.absRoutine);
+          // Same week — only take cloud if it's initial load (local may have advanced past cloud)
+          if(isInitialLoad){
+            currentAbsRoutine=extra.absRoutine;
+            localStorage.setItem('abs_routine',extra.absRoutine);
+          }
           localStorage.setItem('abs_routine_week',cw);
           if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
         } else {
-          // Different week — advance from cloud's routine number, clear stale reps
-          const next=((extra.absRoutine)%7)+1;
-          currentAbsRoutine=next;
-          localStorage.setItem('abs_routine',next);
+          // Different week — restore cloud routine (advances on finish, not weekly), clear stale reps
+          currentAbsRoutine=extra.absRoutine;
+          localStorage.setItem('abs_routine',extra.absRoutine);
           localStorage.setItem('abs_routine_week',cw);
           localStorage.removeItem('zercher_abs_reps');
         }
@@ -3365,6 +3362,12 @@ function finishWorkout(){
   });
 
   saveData();
+  // Advance abs routine after each ABS workout (cycles 1→2→…→7→1)
+  if(currentDay==='ABS'){
+    const next=(currentAbsRoutine%7)+1;
+    currentAbsRoutine=next;
+    localStorage.setItem('abs_routine',next);
+  }
   syncWorkoutToCloud(logEntry);
   syncConfigToCloud();
   syncExtraToCloud();
