@@ -623,49 +623,48 @@ ABC01:{name:'ABC01',phase:'acc',type:'ABC',weeks:10,days:{
     ['Panturrilha Sentado','Seated Calf Raise','calves','S','6x15',40]
   ]}
 }},
-ABC_D1:{name:'ABC+D1',phase:'acc',type:'ABCD',weeks:10,days:{
-  A:{label:'Push (Peito + Ombros + Tríceps + Abs)',labelEn:'Push (Chest + Shoulders + Triceps + Abs)',ex:[
-    ['Dumbell Circles','Dumbbell Circles','chest','S','4x10-15',60],
-    ['Supino Reto Smith','Smith Bench Press','chest','S','2x10wu+4x8-12',80],
-    ['Incline Seated Cable Fly','Incline Seated Cable Fly','chest','S','4x8-12',80],
-    ['Crucifixo Halter Flat','Flat DB Fly','chest','S','4x8-12',60],
-    ['Viking Press (Seated)','Seated Viking Press','shoulders','S','4x8-12',60],
-    ['Lu Lateral Raise','Lu Lateral Raise','shoulders','S','4x10',60],
+ABC01X:{name:'ABC01X',phase:'acc',type:'ABCD',weeks:10,days:{
+  A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
+    ['Supino Reto','Barbell Bench Press','chest','S','2x10wu+4x8-12',80],
+    ['Supino Máquina Inclinado','Incline Machine Press','chest','S','4x8-12',80],
+    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Supino Reto com Halteres','DB Bench Press','chest','S','4x8-12',60],
+    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x8-12',60],
+    ['Elevação Lateral e Frontal com Halteres','Side & Front Raises','shoulders','S','4x10 Sequences',60],
     ['Tríceps Corda','Triceps Rope Pushdown','triceps','AP','20-30/15-20/10-15/5-10',60],
-    ['Tríceps Kickback (Standing Head Height)','Standing Triceps Kickback','triceps','Fail','4x10-15',60],
-    ['Abdominal Remador Weighted','Weighted Rower Crunch','abs','BS','4x20',0]
+    ['Tríceps Kickback','Triceps Kickback','triceps','Fail','4x10-15',60],
+    ['Abdominal Remador','Rower Crunch','abs','BS','4x20 Bi-Set',0],
+    ['Prancha','Plank','abs','BS','4x30-40s Bi-Set',0]
   ]},
-  B:{label:'Pull (Costas + Ombros + Bíceps + Abs)',labelEn:'Pull (Back + Shoulders + Biceps + Abs)',ex:[
-    ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
-    ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
-    ['Yates Row','Yates Row','back','S','2x10wu+4x8-12',80],
-    ['Puxada Frente Triângulo Body Weight','BW V-Bar Pulldown','back','S','4x8-12',60],
-    ['Déficit Remada Curvada com Barra','Deficit Bent Over Barbell Row','back','S','4x8-12',60],
-    ['Crucifixo Inverso (Cable)','Cable Reverse Fly','shoulders','S','4x10-12',45],
-    ['Rosca Scott Polia','Cable Preacher Curl','biceps','S','4x8-12',60],
-    ['Bíceps Pulley Corda','Cable Rope Curl','biceps','AP','20-30/15-20/10-15/5-10',60],
-    ['Smith Finger Curl','Smith Finger Curl','forearms','S','6x15',40],
-    ['Abdominal Infra No Banco (Com Peso)','Weighted Reverse Crunch','abs','S','4x10-15',60]
+  B:{label:'Costas + Ombros + Bíceps + Abs',labelEn:'Back + Shoulders + Biceps + Abs',ex:[
+    ['Puxada','Lat Pulldown','back','S','2x10wu+4x8-12',80],
+    ['Puxada Frente Triângulo','V-Bar Pulldown','back','S','4x8-12',60],
+    ['Remada Unilateral com Halter','One-Arm DB Row','back','S','4x8-12',60],
+    ['Remada Curvada com Barra','Bent Over Barbell Row','back','S','4x8-12',60],
+    ['Crucifixo Inverso','Reverse Fly','shoulders','S','4x10-12',45],
+    ['Elevação Unilateral','Single-Arm Lateral Raise','shoulders','S','4x10-15',45],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
+    ['Bíceps Pulley Corda','Cable Rope Curl','biceps','AP','20-30/15-20/10-15/5-10',60]
   ]},
-  C:{label:'Pernas',labelEn:'Legs',ex:[
+  C:{label:'Pernas + Panturrilhas',labelEn:'Legs + Calves',ex:[
     ['Agachamento Hack','Hack Squat','quads','S','2x10wu+3x8-12',60],
-    ['Zercher Sissy Squat','Zercher Sissy Squat','quads','AP','12-15/10-12/8-10',80],
-    ['Quad Focused Leg Press','Quad Focused Leg Press','quads','S','3x8-12',60],
-    ['Witches Squat','Witches Squat','quads','DS','3x8-12+2xDrop',60],
+    ['Back Squat','Barbell Squat','quads','AP','12-15/10-12/8-10',80],
+    ['Leg 45','Leg Press','quads','S','3x8-12',60],
+    ['Cadeira Extensora','Leg Extension','quads','DS','2x8-12+1xDrop',60],
     ['Passada com Halteres','Dumbbell Lunges','quads','S','3x20',60],
-    ['Good Morning Smith Single Leg','Single Leg Smith Good Morning','hamstrings','S','3x8-12',60],
-    ['Calves Leg Press','Calf Press','calves','S','6x15',40],
-    ['Hip Thruster','Glute Hip Thrust','glutes','S','3x8-12',60],
-    ['Weighted Crunches (Bosu Ball)','Bosu Ball Weighted Crunches','abs','S','6x15',40]
+    ['Cadeira Flexora','Seated Leg Curl','hamstrings','S','3x8-12',60],
+    ['Panturrilha Sentado','Seated Calf Raise','calves','S','6x15',40]
   ]},
   D:{label:'Upper Body Completo',labelEn:'Full Upper Body',ex:[
-    ['Weighted Push Ups','Weighted Push Ups','chest','S','2x10wu+4x8-12',80],
-    ['Supino Inclinado Smith','Incline Smith Bench Press','chest','S','4x8-12',80],
-    ['JM Press','JM Press','triceps','S','4x8-12',60],
-    ['Smith Machine Upright Row','Smith Upright Row','shoulders','S','4x8-12',60],
-    ['Single Arm Pulldown with Bend','Single Arm Pulldown','back','S','4x8-12',60],
-    ['Helms Row','Helms Row','back','S','4x8-12',60],
-    ['Rosca Direta (Ez Bar)','Ez Bar Curl','biceps','S','4x8-12',60]
+    ['Supino Reto','Barbell Bench Press','chest','S','4x8-12',80],
+    ['Puxada','Lat Pulldown','back','S','4x8-12',80],
+    ['Remada Curvada com Barra','Bent Over Barbell Row','back','S','4x8-12',60],
+    ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x8-12',60],
+    ['Elevação Lateral com Halteres','Lateral Raise','shoulders','S','4x10-12',45],
+    ['Rosca Direta','Barbell Curl','biceps','S','4x8-12',60],
+    ['Tríceps Corda','Triceps Rope Pushdown','triceps','S','4x10-12',60],
+    ['Abdominal Remador','Rower Crunch','abs','BS','4x20 Bi-Set',0],
+    ['Prancha','Plank','abs','BS','4x30-40s Bi-Set',0]
   ]}
 }},
 ABC02:{name:'ABC02',phase:'int',type:'ABC',weeks:10,days:{
@@ -1386,11 +1385,7 @@ let currentLibMuscle = 'all';
 let currentAbsRoutine = (function(){
   const savedWeek=localStorage.getItem('abs_routine_week');
   const thisWeek=weekStart();
-  if(savedWeek!==thisWeek){
-    // New week — clear stale reps but keep routine number (advances on finish, not weekly)
-    localStorage.setItem('abs_routine_week',thisWeek);
-    localStorage.removeItem('zercher_abs_reps');
-  }
+  if(savedWeek!==thisWeek){const prev=parseInt(localStorage.getItem('abs_routine'))||1;const next=(prev%7)+1;localStorage.setItem('abs_routine',next);localStorage.setItem('abs_routine_week',thisWeek);return next}
   return parseInt(localStorage.getItem('abs_routine'))||1;
 })();
 let favExercises = new Set((function(){try{return JSON.parse(localStorage.getItem('fav_exercises')||'[]')}catch(e){return[]}})());
@@ -1499,8 +1494,6 @@ function autoSyncUnsyncedLogs(){
 function _doCloudSave(onDone){
   if(_saveInFlight){_savePending=true;if(onDone)onDone();return;}
   if(!data||!data.activeProgram){if(onDone)onDone();return;}
-  // Never push empty skeleton — protects cloud data after cache wipe
-  if((!data.logs||data.logs.length===0)&&(!data.customPrograms||Object.keys(data.customPrograms).length===0)){console.warn('[SYNC] BLOCKED — no logs or custom programs, refusing to overwrite cloud');if(onDone)onDone();return;}
   _saveInFlight=true;
   _pushConfig(function(){
     _pushExtra(function(){
@@ -1640,24 +1633,8 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!(k in p))p[k]=extra.platePref[k];}savePlatePref(p);}
       if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(!(k in np))np[k]=extra.noPlate[k];}saveNoPlate(np);}
       if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!(k in se))se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
-      if(extra.absRoutine&&extra.absRoutineWeek){
-        const cw=weekStart();
-        if(extra.absRoutineWeek===cw){
-          // Same week — only take cloud if it's initial load (local may have advanced past cloud)
-          if(isInitialLoad){
-            currentAbsRoutine=extra.absRoutine;
-            localStorage.setItem('abs_routine',extra.absRoutine);
-          }
-          localStorage.setItem('abs_routine_week',cw);
-          if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
-        } else {
-          // Different week — restore cloud routine (advances on finish, not weekly), clear stale reps
-          currentAbsRoutine=extra.absRoutine;
-          localStorage.setItem('abs_routine',extra.absRoutine);
-          localStorage.setItem('abs_routine_week',cw);
-          localStorage.removeItem('zercher_abs_reps');
-        }
-      }
+      if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
+      if(extra.absRoutine&&extra.absRoutineWeek){const cw=weekStart();if(extra.absRoutineWeek===cw){currentAbsRoutine=extra.absRoutine;localStorage.setItem('abs_routine',extra.absRoutine);localStorage.setItem('abs_routine_week',cw);}}
     }catch(e){console.warn('Extra merge error',e)}
     // Restore any new custom subs into SUBS_DATA
     (data.customSubs||[]).forEach(s=>{
@@ -1896,7 +1873,7 @@ function saveAlt(program,day,origName,altName,altNameEn,altMuscle){
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
-function dateStr(d){const dt=d||new Date();return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0')}
+function dateStr(d){return(d||new Date()).toISOString().split('T')[0]}
 function weekStart(d){const dt=new Date(d||Date.now());const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));return dateStr(dt)}
 function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
 function getProgWeeks(pid){
@@ -2033,7 +2010,7 @@ function loadData(){
     var legacy=localStorage.getItem(STORAGE_KEY);
     if(legacy){data=JSON.parse(legacy);if(!data)throw 0;_splitSave(data);localStorage.removeItem(STORAGE_KEY);}
     else{var core=JSON.parse(localStorage.getItem(SK_CORE)||'null');if(!core)throw 0;data=Object.assign({},core,{logs:JSON.parse(localStorage.getItem(SK_LOGS)||'[]')});}
-  }catch(e){data={activeProgram:'ABC_D1',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},programStartDates:{}}}
+  }catch(e){data={activeProgram:'ABCD11',customPrograms:{},logs:[],prs:{},settings:{weightUnit:'lbs',language:'pt'},programStartDates:{}}}
   // Restore custom subs into SUBS_DATA
   (data.customSubs||[]).forEach(s=>{
     let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
@@ -2061,7 +2038,7 @@ function migrateData(){
     });
   }
   // Ensure activeProgram is valid
-  if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABC_D1';
+  if(data.activeProgram&&!PROGRAMS[data.activeProgram])data.activeProgram='ABCD11';
   // Migrate: add programStartDates and programWeeks if missing
   if(!data.programStartDates)data.programStartDates={};
   if(!data.programWeeks)data.programWeeks={};
@@ -2097,12 +2074,6 @@ function migrateData(){
   if(!localStorage.getItem('zr_abcd11_push_v212')){
     data.activeProgram='ABCD11';
     localStorage.setItem('zr_abcd11_push_v212','1');
-  }
-  // v244: ABC01X renamed to ABC_D1 — migrate activeProgram
-  if(!localStorage.getItem('zr_abcd1_rename_v244')){
-    if(data.activeProgram==='ABC01X')data.activeProgram='ABC_D1';
-    localStorage.setItem('zr_abcd1_rename_v244','1');
-    setTimeout(function(){syncConfigToCloud()},2000);
   }
   // Exercise name migration (v97): standardize old variants to canonical names
   const NAME_MAP={
@@ -2490,7 +2461,7 @@ function showView(name,btn){
 }
 
 function getNextDay(){
-  const prog=getProgram(data.activeProgram)||getProgram('ABC_D1');
+  const prog=getProgram(data.activeProgram)||getProgram('ABCD11');
   const days=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_');
   // Find most recent log for the active program
   for(let i=data.logs.length-1;i>=0;i--){
@@ -2675,8 +2646,6 @@ function beginWorkout(){
 function updateWorkoutTimer(){
   if(!workoutStartTime)return;
   const elapsed=Math.floor((Date.now()-workoutStartTime)/1000);
-  // 3-hour cap
-  if(elapsed>=3*60*60){autoFinishWorkout();renderWorkout();return;}
   const m=Math.floor(elapsed/60);const s=elapsed%60;
   document.getElementById('workoutTimer').textContent=m+':'+(s<10?'0':'')+s+' elapsed';
 }
@@ -2711,13 +2680,6 @@ function initWorkout(){
   try{
     const saved=JSON.parse(localStorage.getItem('workout_in_progress_'+currentDay));
     if(saved&&saved.program===data.activeProgram&&saved.day===currentDay){
-      // 3-hour cap: auto-finish stale workouts
-      const elapsed=Date.now()-saved.startTime;
-      if(elapsed>3*60*60*1000){
-        currentWorkout=saved.workout;workoutStartTime=saved.startTime;
-        autoFinishWorkout();
-        return;
-      }
       currentWorkout=saved.workout;workoutStartTime=saved.startTime;
       if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
       window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
@@ -2794,7 +2756,9 @@ function initWorkout(){
       }
     }
   });
-  // Don't auto-start timer — wait for user to click Start Workout
+  workoutStartTime=Date.now();
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+  window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
 }
 
 function getLastLog(exName){
@@ -3274,29 +3238,6 @@ function skipRest(){
 }
 
 // ── FINISH WORKOUT ──
-function autoFinishWorkout(){
-  // Auto-save after 3-hour cap — saves whatever sets were completed
-  if(!currentWorkout)return;
-  const hasSets=currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done));
-  if(hasSets){
-    // Reuse finish logic but skip the DOM flush (cards may not exist)
-    const logEntry={
-      id:'log_'+Date.now(),date:currentWorkout.date,
-      program:currentWorkout.program,day:currentWorkout.day,
-      exercises:currentWorkout.exercises.map(ex=>({
-        name:ex.name,
-        sets:ex.sets.filter(s=>s.done).map(s=>({weight:s.weight,reps:s.reps,type:s.type}))
-      })).filter(ex=>ex.sets.length>0),
-      duration:workoutStartTime?Math.round((Date.now()-workoutStartTime)/60000):0
-    };
-    data.logs.push(logEntry);saveData();
-    syncWorkoutToCloud(logEntry);syncConfigToCloud();syncExtraToCloud();
-    toast('Workout auto-saved (3h cap) — '+logEntry.exercises.length+' exercises logged');
-  }
-  localStorage.removeItem('workout_in_progress_'+currentDay);
-  currentWorkout=null;workoutStartTime=null;
-  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
-}
 function finishWorkout(){
   if(!currentWorkout)return;
   if(!currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done))){
@@ -3364,12 +3305,6 @@ function finishWorkout(){
   });
 
   saveData();
-  // Advance abs routine after each ABS workout (cycles 1→2→…→7→1)
-  if(currentDay==='ABS'){
-    const next=(currentAbsRoutine%7)+1;
-    currentAbsRoutine=next;
-    localStorage.setItem('abs_routine',next);
-  }
   syncWorkoutToCloud(logEntry);
   syncConfigToCloud();
   syncExtraToCloud();
@@ -5381,12 +5316,7 @@ try{
 }catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
 // Startup pull — set syncReady after cloud pull completes
-var _localWasEmpty=!data.logs||data.logs.length===0;
-loadFromCloud(function(ok){
-  if(!ok&&_localWasEmpty){console.warn('[SYNC] Cloud pull failed on empty device — syncReady stays false to protect cloud data');return;}
-  syncReady=true;
-  if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}
-},false,true);
+loadFromCloud(function(ok){syncReady=true;if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}},false,true);
 // Dual visibilitychange: visible=pull, hidden=push
 document.addEventListener('visibilitychange',function(){
   if(!syncReady)return;
