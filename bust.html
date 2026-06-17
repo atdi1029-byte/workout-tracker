@@ -10,17 +10,6 @@
   }
   const keys = await caches.keys();
   for (const k of keys) await caches.delete(k);
-  // Clear app localStorage (cloud will restore on next load)
-  localStorage.removeItem('workout_data_v1');
-  localStorage.removeItem('zercher_holds');
-  localStorage.removeItem('zercher_notes');
-  localStorage.removeItem('zercher_starts');
-  localStorage.removeItem('zercher_noplate');
-  localStorage.removeItem('zercher_platepref');
-  localStorage.removeItem('zercher_singleend');
-  localStorage.removeItem('zercher_alts');
-  localStorage.removeItem('fav_exercises');
-  localStorage.removeItem('workout_in_progress');
   window.location.replace('./');
 })();
 </script>
