@@ -1734,7 +1734,11 @@ document.addEventListener('touchstart',e=>{
   const tag=e.target.closest('.hold-tag');
   if(!tag)return;
   e.preventDefault();_holdFired=false;
-  _holdTimer=setTimeout(()=>{_holdFired=true;toggleHold(tag.dataset.hold)},500);
+  if(tag.classList.contains('active')){
+    _holdFired=true;toggleHold(tag.dataset.hold);
+  }else{
+    _holdTimer=setTimeout(()=>{_holdFired=true;toggleHold(tag.dataset.hold)},500);
+  }
 },{passive:false});
 document.addEventListener('touchend',e=>{if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}});
 document.addEventListener('touchmove',e=>{if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}});
