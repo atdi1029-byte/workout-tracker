@@ -1728,6 +1728,17 @@ function toggleHold(exName){
 }
 function isHeld(exName){return!!getHolds()[exName]}
 
+// Long-press for hold toggle (prevents accidental taps)
+let _holdTimer=null,_holdFired=false;
+document.addEventListener('touchstart',e=>{
+  const tag=e.target.closest('.hold-tag');
+  if(!tag)return;
+  e.preventDefault();_holdFired=false;
+  _holdTimer=setTimeout(()=>{_holdFired=true;toggleHold(tag.dataset.hold)},500);
+},{passive:false});
+document.addEventListener('touchend',e=>{if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}});
+document.addEventListener('touchmove',e=>{if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}});
+
 // ── EXERCISE NOTES ──
 function getExNotes(){try{return JSON.parse(localStorage.getItem('zercher_notes')||'{}')}catch(e){return{}}}
 function saveExNotes(n){localStorage.setItem('zercher_notes',JSON.stringify(n))}
@@ -2985,7 +2996,7 @@ function renderExerciseCards(){
         <span class="ex-tag">${ex.targetSets.replace(/\+/g,' + ')}</span>
         <span class="ex-tag tech" onclick="showTechPopup('${ex.technique}',event)">${techLabel}</span>
         <span class="ex-tag">${ex.restSec}s rest</span>
-        ${isAbs?'':`<span class="hold-tag${isHeld(ex.name)?' active':''}" onclick="event.stopPropagation();toggleHold('${ex.name.replace(/'/g,"\\'")}')">${isHeld(ex.name)?'JUST':'J'}</span>`}
+        ${isAbs?'':`<span class="hold-tag${isHeld(ex.name)?' active':''}" data-hold="${ex.name.replace(/'/g,"&#39;")}">${isHeld(ex.name)?'JUST':'J'}</span>`}
       </div>`;
 
     // Set rows
