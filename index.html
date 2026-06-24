@@ -2190,6 +2190,14 @@ function migrateData(){
     }
     localStorage.setItem('zr_migrate_v156','1');
   }
+  // v251: fix Witches Squat in ABC_D1 Day C — custom override had 2x8-12+1xDrop, should be 3x8-12+2xDrop
+  if(!localStorage.getItem('zr_migrate_v251')){
+    const cp=data.customPrograms&&data.customPrograms.ABC_D1;
+    if(cp&&cp.days&&cp.days.C&&cp.days.C.ex){
+      cp.days.C.ex.forEach(e=>{if(e[0]==='Witches Squat')e[4]='3x8-12+2xDrop';});
+    }
+    localStorage.setItem('zr_migrate_v251','1');
+  }
   saveData();
 }
 
