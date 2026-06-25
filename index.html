@@ -1735,13 +1735,19 @@ document.addEventListener('touchstart',e=>{
   if(!tag)return;
   e.preventDefault();_holdFired=false;
   if(tag.classList.contains('active')){
-    _holdFired=true;toggleHold(tag.dataset.hold);
+    // Turning OFF: fire on touchend (tap), not touchstart
+    _holdTimer='off';
   }else{
     _holdTimer=setTimeout(()=>{_holdFired=true;toggleHold(tag.dataset.hold)},500);
   }
 },{passive:false});
-document.addEventListener('touchend',e=>{if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}});
-document.addEventListener('touchmove',e=>{if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}});
+document.addEventListener('touchend',e=>{
+  const tag=e.target.closest('.hold-tag');
+  if(_holdTimer==='off'&&tag){
+    _holdFired=true;toggleHold(tag.dataset.hold);_holdTimer=null;
+  }else if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}
+});
+document.addEventListener('touchmove',e=>{if(_holdTimer){if(_holdTimer!=='off')clearTimeout(_holdTimer);_holdTimer=null}});
 
 // ── EXERCISE NOTES ──
 function getExNotes(){try{return JSON.parse(localStorage.getItem('zercher_notes')||'{}')}catch(e){return{}}}
