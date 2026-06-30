@@ -1728,14 +1728,14 @@ function toggleHold(exName){
 }
 function isHeld(exName){return!!getHolds()[exName]}
 
-// Long-press for hold toggle (prevents accidental taps)
-let _holdTimer=null,_holdFired=false;
+// Long-press to turn ON hold, tap to turn OFF
+let _holdTimer=null,_holdFired=false,_holdStartXY=null;
 document.addEventListener('touchstart',e=>{
   const tag=e.target.closest('.hold-tag');
   if(!tag)return;
   e.preventDefault();_holdFired=false;
+  _holdStartXY={x:e.touches[0].clientX,y:e.touches[0].clientY};
   if(tag.classList.contains('active')){
-    // Turning OFF: fire on touchend (tap), not touchstart
     _holdTimer='off';
   }else{
     _holdTimer=setTimeout(()=>{_holdFired=true;toggleHold(tag.dataset.hold)},500);
@@ -1744,10 +1744,24 @@ document.addEventListener('touchstart',e=>{
 document.addEventListener('touchend',e=>{
   const tag=e.target.closest('.hold-tag');
   if(_holdTimer==='off'&&tag){
-    _holdFired=true;toggleHold(tag.dataset.hold);_holdTimer=null;
-  }else if(_holdTimer){clearTimeout(_holdTimer);_holdTimer=null}
+    _holdFired=true;toggleHold(tag.dataset.hold);
+  }
+  if(_holdTimer&&_holdTimer!=='off')clearTimeout(_holdTimer);
+  _holdTimer=null;_holdStartXY=null;
 });
-document.addEventListener('touchmove',e=>{if(_holdTimer){if(_holdTimer!=='off')clearTimeout(_holdTimer);_holdTimer=null}});
+document.addEventListener('touchmove',e=>{
+  if(!_holdTimer||_holdTimer==='off')return;
+  if(_holdStartXY){
+    const dx=e.touches[0].clientX-_holdStartXY.x,dy=e.touches[0].clientY-_holdStartXY.y;
+    if(Math.abs(dx)>10||Math.abs(dy)>10){clearTimeout(_holdTimer);_holdTimer=null;_holdStartXY=null}
+  }
+});
+// Desktop: click to toggle (long-press not needed on desktop)
+document.addEventListener('click',e=>{
+  const tag=e.target.closest('.hold-tag');
+  if(!tag)return;
+  toggleHold(tag.dataset.hold);
+});
 
 // ── EXERCISE NOTES ──
 function getExNotes(){try{return JSON.parse(localStorage.getItem('zercher_notes')||'{}')}catch(e){return{}}}
