@@ -3214,9 +3214,11 @@ function renameExercise(ei){
 
 function getBestWeight(exName){
   const id=exId(exName);
+  // If user manually set ATH via edit screen, that's authoritative
+  const pr=data.prs[id];
+  if(pr&&pr['ath']&&pr['ath'].program==='ATH')return pr['ath'].weight;
   let best=0;
   // Check PR records
-  const pr=data.prs[id];
   if(pr){for(const r in pr){if(pr[r].weight>best)best=pr[r].weight}}
   // Also scan workout logs for max weight
   (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>{
@@ -3370,10 +3372,12 @@ function finishWorkout(){
       }
     });
     // Overall ATH — best weight from any done set (warmup included)
+    // Skip if user manually set ATH via edit screen
     const bestWeight=Math.max(0,...ex.sets.filter(s=>s.weight>0).map(s=>s.weight));
     if(bestWeight>0){
       const curAth=data.prs[id]['ath'];
-      if(!curAth||bestWeight>curAth.weight){
+      if(curAth&&curAth.program==='ATH'){}// manual override, don't touch
+      else if(!curAth||bestWeight>curAth.weight){
         data.prs[id]['ath']={weight:bestWeight,date:logEntry.date,program:logEntry.program};
       }
     }
