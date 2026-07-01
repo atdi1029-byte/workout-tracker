@@ -1723,6 +1723,7 @@ function toggleHold(exName){
   const h=getHolds();
   if(h[exName])delete h[exName];else h[exName]=true;
   saveHolds(h);
+  syncExtraToCloud();
   flushInputs();
   renderExerciseCards();
 }
