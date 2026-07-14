@@ -2808,6 +2808,13 @@ function initWorkout(){
           if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
         });
       }
+      // Apply start weights for the alt exercise (overrides last log for WU/S1)
+      const altStartW=getStartWeight(saved.name);
+      ex.sets.forEach((s,i)=>{
+        const typeIdx=ex.sets.slice(0,i).filter(ps=>ps.type===s.type).length;
+        if(s.type==='warmup'&&altStartW.wu)s.weight=altStartW.wu;
+        if(s.type==='working'&&typeIdx===0&&altStartW.s1)s.weight=altStartW.s1;
+      });
     }
   });
   // Don't auto-start timer — wait for user to click Start Workout
