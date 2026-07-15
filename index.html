@@ -1496,7 +1496,7 @@ function _pushConfig(onDone){
 }
 function _pushExtra(onDone){
   try{
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||''};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||'',absLastWeek:localStorage.getItem('abs_last_completed_week')||''};
     const jsonStr=JSON.stringify(extra);
     const encoded=encodeURIComponent(jsonStr);
     if(encoded.length<7000){
@@ -1576,7 +1576,7 @@ function beaconSave(){
     const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
     const configEnc=encodeURIComponent(JSON.stringify(config));
     if(configEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+configEnc);
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||''};
+    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||'',absLastWeek:localStorage.getItem('abs_last_completed_week')||''};
     const extraEnc=encodeURIComponent(JSON.stringify(extra));
     if(extraEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+extraEnc);
   }catch(e){}
@@ -1689,7 +1689,6 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(extra.absRoutine&&extra.absRoutineWeek){
         const cw=weekStart();
         if(extra.absRoutineWeek===cw){
-          // Same week — only take cloud if it's initial load (local may have advanced past cloud)
           if(isInitialLoad){
             currentAbsRoutine=extra.absRoutine;
             localStorage.setItem('abs_routine',extra.absRoutine);
@@ -1697,12 +1696,12 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
           localStorage.setItem('abs_routine_week',cw);
           if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
         } else {
-          // Different week — restore cloud routine (advances on finish, not weekly), clear stale reps
           currentAbsRoutine=extra.absRoutine;
           localStorage.setItem('abs_routine',extra.absRoutine);
           localStorage.setItem('abs_routine_week',cw);
           localStorage.removeItem('zercher_abs_reps');
         }
+        if(extra.absLastWeek)localStorage.setItem('abs_last_completed_week',extra.absLastWeek);
       }
     }catch(e){console.warn('Extra merge error',e)}
     // Restore any new custom subs into SUBS_DATA
@@ -3436,11 +3435,16 @@ function finishWorkout(){
   });
 
   saveData();
-  // Advance abs routine after each ABS workout (cycles 1→2→…→7→1)
+  // Advance abs routine only when a new week starts (stay on same routine all week)
   if(currentDay==='ABS'){
-    const next=(currentAbsRoutine%7)+1;
-    currentAbsRoutine=next;
-    localStorage.setItem('abs_routine',next);
+    const lastAbsWeek=localStorage.getItem('abs_last_completed_week')||'';
+    const thisWeek=weekStart();
+    if(lastAbsWeek&&lastAbsWeek!==thisWeek){
+      const next=(currentAbsRoutine%7)+1;
+      currentAbsRoutine=next;
+      localStorage.setItem('abs_routine',next);
+    }
+    localStorage.setItem('abs_last_completed_week',thisWeek);
   }
   syncWorkoutToCloud(logEntry);
   syncConfigToCloud();
