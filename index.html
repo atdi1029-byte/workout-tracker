@@ -2788,6 +2788,9 @@ function initWorkout(){
   const prog=getProgram(data.activeProgram);if(!prog)return;
   const dayData=prog.days[currentDay];if(!dayData)return;
 
+  // Clear stale abs reps from previous workout so prefill comes cleanly from lastLog
+  if(currentDay==='ABS')localStorage.removeItem('zercher_abs_reps');
+
   currentWorkout={
     program:data.activeProgram,
     day:currentDay,
@@ -2819,13 +2822,13 @@ function initWorkout(){
           let prefillReps=s.reps;
           if(isAbsEx){
             prefillReps='';
-            // Check persisted abs reps first (saved on every set check)
+            // Check persisted abs reps first (saved during current workout session)
             const absReps=getAbsLastReps();
-            if(absReps[e[0]]&&absReps[e[0]][typeIdx]){
-              prefillReps=absReps[e[0]][typeIdx];
+            if(absReps[e[0]]&&absReps[e[0]][i]>0){
+              prefillReps=absReps[e[0]][i];
             } else if(lastLog){
-              const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
-              if(sameType[typeIdx]&&sameType[typeIdx].reps)prefillReps=sameType[typeIdx].reps;
+              // Use same set index from last log (abs have no warmups so index = typeIdx)
+              if(lastLog.sets[i]&&lastLog.sets[i].reps>0)prefillReps=lastLog.sets[i].reps;
             }
           }
           return{
