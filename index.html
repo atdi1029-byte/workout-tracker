@@ -131,6 +131,7 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .set-label{font-size:0.75rem;color:var(--iron);min-width:36px}
 .set-label.warmup{color:var(--yellow)}
 .set-label.drop{color:#ef5350;font-size:0.65rem}
+.set-label.rp{color:#ff9800;font-size:0.65rem}
 .set-input{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text-bright);font-size:0.9rem;width:100%;text-align:center}
 .set-input:focus{outline:none;border-color:var(--iron)}
 .set-input::placeholder{color:var(--text-dim)}
@@ -531,7 +532,7 @@ const MOVEMENT_PATTERNS = {
   'Supino Reto':'Horizontal Press','Supino Reto com Halteres':'Horizontal Press','Supino Maquina':'Horizontal Press',
   'Supino Inclinado':'Incline Press','Supino Inclinado com Halteres':'Incline Press','Supino Inclinado Maquina':'Incline Press',
   'Crucifixo Inclinado com Halteres':'Chest Fly','Crucifixo Inclinado':'Chest Fly','Crucifixo na Polia':'Chest Fly',
-  'Crucifixo Adutor na Polia':'Chest Fly','Crucifixo Voador':'Chest Fly','Crucifixo na Maquina':'Chest Fly',
+  'Crucifixo na Polia':'Chest Fly','Crucifixo Voador':'Chest Fly','Crucifixo na Maquina':'Chest Fly',
   'Crucifixo Halter Flat':'Chest Fly','Paralela':'Vertical Press / Dip','Flexao':'Horizontal Push','Apoio':'Horizontal Push',
   'Hex Press Smith':'Horizontal Press',
   // Back
@@ -594,7 +595,7 @@ ABC01:{name:'ABC01',phase:'acc',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Supino Reto','Barbell Bench Press','chest','S','2x10wu+4x8-12',80],
     ['Supino Máquina Inclinado','Incline Machine Press','chest','S','4x8-12',80],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Crucifixo na Polia','Cable Fly','chest','S','4x8-12',60],
     ['Supino Reto com Halteres','DB Bench Press','chest','S','4x8-12',60],
     ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x8-12',60],
     ['Elevação Lateral e Frontal com Halteres','Side & Front Raises','shoulders','S','4x10 Sequences',60],
@@ -705,10 +706,10 @@ ABC_D2:{name:'ABC+D2',phase:'int',type:'ABCD',weeks:10,days:{
   D:{label:'Upper Body Completo',labelEn:'Full Upper Body',ex:[
     ['Dumbell Circles','Dumbbell Circles','chest','S','2x15',60],
     ['Descending Pin Press','Descending Pin Press','chest','S','1x10wu+4x8-12',80],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','RestP','3x10-12+RP 3xFail/15s',60],
+    ['Crucifixo na Polia','Cable Fly','chest','RestP','3x10-12+RP 3xFail/15s',60],
     ['Tríceps Francês Halter','DB French Press','triceps','S','1x10wu+4x10-12',60],
     ['Tbar Row','T-Bar Row','back','S','1x10wu+4x8-12',80],
-    ['Remada Unilateral com Halter','One-Arm DB Row','back','AP','12-15/10-12/8-10',60],
+    ['Remada Unilateral com Halter','One-Arm DB Row','back','AP','1x10wu+12-15/10-12/8-10',60],
     ['Rosca Martelo Alternada','Alternating Hammer Curl','biceps','S','4x10-12',60],
     ['Barra','Pull-ups','back','BS','3xFailure Bi-Set',0],
     ['Apoio','Push-ups','chest','BS','3xFailure Bi-Set',90]
@@ -720,7 +721,7 @@ ABC02:{name:'ABC02',phase:'int',type:'ABC',weeks:10,days:{
     ['Crucifixo (Voador)','Chest Fly Machine','chest','BS','3x10-12 Bi-Set',0],
     ['Apoio','Push-ups','chest','BS','3xFailure Bi-Set',90],
     ['Supino Máquina Inclinado','Incline Machine Press','chest','S','4x8-12',80],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','RestP','2x10-12+Rest-Pause',60],
+    ['Crucifixo na Polia','Cable Fly','chest','RestP','2x10-12+Rest-Pause',60],
     ['Supino Máquina Declinado','Decline Machine Press','chest','S','4x8-12',80],
     ['Desenvolvimento Máquina 2','Machine Shoulder Press','shoulders','S','4x10-12',60],
     ['Tríceps Testa Halteres','DB Skull Crushers','triceps','S','4x10-12',60],
@@ -818,7 +819,7 @@ ABC05:{name:'ABC05',phase:'acc',type:'ABC',weeks:10,days:{
     ['Abdominal com Carrinho','Ab Wheel','abs','Fail','4xFailure',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','2x10',60],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','2x10-12',60],
+    ['Crucifixo na Polia','Cable Fly','chest','S','2x10-12',60],
     ['Supino Reto com Halteres','DB Bench Press','chest','P','1x12/2x8-10/2x5-8',90],
     ['Supino Inclinado','Incline Barbell Press','chest','S','4x8-12',60],
     ['Desenvolvimento Máquina','Machine Shoulder Press','shoulders','P','2x15-20/2x10-12/2x6-8',60],
@@ -853,7 +854,7 @@ ABCD01:{name:'ABCD01',phase:'int',type:'ABCD',weeks:7,days:{
   A:{label:'Peito + Ombros',labelEn:'Chest + Shoulders',ex:[
     ['Crucifixo (Voador)','Chest Fly Machine','chest','DS','3x8-12+Drop',60],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','S','5x5-8',90],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Crucifixo na Polia','Cable Fly','chest','S','4x8-12',60],
     ['Desenvolvimento Máquina','Machine Shoulder Press','shoulders','DS','3x8-12+Drop',60],
     ['Elevação Frontal com Halteres','Front Raise','shoulders','BS','4x10 each Bi-Set',0],
     ['Remada Alta','Upright Row','shoulders','BS','4x10-15 Bi-Set',60]
@@ -896,7 +897,7 @@ ABCD02:{name:'ABCD02',phase:'spe',type:'ABCD',weeks:7,days:{
     ['Abdominal com Carrinho','Ab Wheel','abs','S','4x15',45],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','2x10',60],
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','2x10',60],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','PE','1x10-12wu+6x10-12',60],
+    ['Crucifixo na Polia','Cable Fly','chest','PE','1x10-12wu+6x10-12',60],
     ['Supino Reto com Halteres','DB Bench Press','chest','S','1x12/2x10/2x8',60],
     ['Supino Inclinado','Incline Barbell Press','chest','S','4x8',90],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','S','4x8',90],
@@ -940,7 +941,7 @@ ABCD03:{name:'ABCD03',phase:'int',type:'ABCD',weeks:7,days:{
     ['Supino Reto','Barbell Bench Press','chest','AP','2x10-12wu+12/10/8/6',120],
     ['Supino Máquina','Machine Chest Press','chest','DS','3x10-12+1xDrop',90],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','AP','12/10/8/6',120],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','RestP','4x8-12+Rest-Pause',60],
+    ['Crucifixo na Polia','Cable Fly','chest','RestP','4x8-12+Rest-Pause',60],
     ['Apoio','Push-ups','chest','Fail','4xFailure',60],
     ['Desenvolvimento Máquina 2','Machine Shoulder Press','shoulders','DS','3x10+1xDrop',60],
     ['Elevação Frontal com Halteres','Front Raise','shoulders','S','4x10 each',60]
@@ -1022,7 +1023,7 @@ ABCD05:{name:'ABCD05',phase:'peak',type:'ABCD',weeks:7,days:{
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','S','2x8wu+4x8',120],
     ['Supino Reto','Barbell Bench Press','chest','S','2x8wu+4x8',120],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',60],
+    ['Crucifixo na Polia','Cable Fly','chest','S','4x8-12',60],
     ['Elevação Frontal com Halteres','Front Raise','shoulders','P','15/12/2x10',60],
     ['Tríceps Francês','French Press','triceps','S','2x8-10wu+4x8',90]
   ]},
@@ -1059,7 +1060,7 @@ ABCD06:{name:'ABCD06',phase:'int',type:'ABCD',weeks:7,days:{
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
     ['Supino Reto','Barbell Bench Press','chest','S','2x8wu+10/8/6/6',180],
     ['Paralela','Dips','chest','S','2x8wu+4x8',120],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','4x8-12',90],
+    ['Crucifixo na Polia','Cable Fly','chest','S','4x8-12',90],
     ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','4x8',90],
     ['Tríceps Francês','French Press','triceps','S','2x8-10wu+4x8',90],
     ['Tríceps Francês Unilateral','Single Arm French Press','triceps','S','4x6-8',90]
@@ -1098,7 +1099,7 @@ ABCD07:{name:'ABCD07',phase:'spe',type:'ABCD',weeks:7,days:{
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
     ['Supino Inclinado com Halteres','Incline DB Press','chest','S','2x8wu+3x8',180],
     ['Supino Reto','Barbell Bench Press','chest','AP','2x8wu+3x8',180],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','2x8wu+3x8',120],
+    ['Crucifixo na Polia','Cable Fly','chest','S','2x8wu+3x8',120],
     ['Desenvolvimento com Halteres','DB Shoulder Press','shoulders','S','2x8wu+3x8',120],
     ['Tríceps Testa','Skull Crushers','triceps','S','2x8wu+3x8',120],
     ['Tríceps Corda','Triceps Rope Pushdown','triceps','S','2x8wu+3x8',120]
@@ -1137,7 +1138,7 @@ ABCD08:{name:'ABCD08',phase:'rea',type:'ABCD',weeks:7,days:{
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
     ['Supino Reto','Barbell Bench Press','chest','S','2x8wu+3x6',180],
     ['Paralela','Dips','chest','S','1x8wu+3x6',120],
-    ['Crucifixo Adutor na Polia','Cable Fly','chest','S','2x8wu+3x6-8',120],
+    ['Crucifixo na Polia','Cable Fly','chest','S','2x8wu+3x6-8',120],
     ['Desenvolvimento Máquina 2','Machine Shoulder Press','shoulders','S','2x8wu+3x6',120],
     ['Tríceps Pulley','Triceps Pushdown','triceps','S','2x8wu+3x6',120],
     ['Tríceps Testa','Skull Crushers','triceps','S','2x8wu+3x6',120]
@@ -1355,7 +1356,7 @@ const ATH_DATA = {
 // Warm Up
 'Rotacao Interna Ombro':8,'Rotacao Externa Ombro':6,
 // Chest
-'Crucifixo Adutor na Polia':44,'Crucifixo Halter Flat':30,'Crucifixo Halter Inclinado':20,
+'Crucifixo na Polia':44,'Crucifixo Halter Flat':30,'Crucifixo Halter Inclinado':20,
 'Crucifixo Voador':140,'Hex Press Smith':105,'Incline Seated Cable Fly (37°)':32,
 'Low To High Cable Fly':19,'Paralela':55,'Reverse Grip Smith Bench':135,
 'Supino Inclinado':80,'Supino Inclinado Smith':125,'Supino Inclinado com Halteres':80,
@@ -2796,7 +2797,13 @@ function initWorkout(){
     day:currentDay,
     date:dateStr(),
     exercises:dayData.ex.map((e,idx)=>{
-      const sets=parseSets(e[4]);
+      let sets=parseSets(e[4]);
+      // Add separate RP sets for Rest-Pause exercises
+      if(e[3]==='RestP'){
+        const rpMatch=e[4].match(/\+RP\s*(\d+)/i);
+        const rpCount=rpMatch?+rpMatch[1]:sets.filter(s=>s.type==='working').length;
+        for(let r=0;r<rpCount;r++)sets.push({reps:'',type:'rp'});
+      }
       const lastLog=getLastLog(e[0]);
       return{
         name:e[0],nameEn:e[1],muscle:e[2],technique:e[3],
@@ -2817,6 +2824,18 @@ function initWorkout(){
           if(!prefillWeight&&!lastLog&&s.type==='working'){
             const best=getBestWeight(e[0]);
             if(best)prefillWeight=best;
+          }
+          // RP sets: inherit weight from last working set if no prior RP log
+          if(!prefillWeight&&s.type==='rp'){
+            const workingSets=sets.filter(ps=>ps.type==='working');
+            if(workingSets.length){
+              const lastW=workingSets[workingSets.length-1];
+              const wIdx=sets.indexOf(lastW);
+              if(lastLog){
+                const logWorking=lastLog.sets.filter(ls=>ls.type==='working');
+                if(logWorking.length)prefillWeight=logWorking[logWorking.length-1].weight;
+              }
+            }
           }
           const isAbsEx=currentDay==='ABS'&&e[2]==='abs';
           let prefillReps=s.reps;
@@ -3058,15 +3077,15 @@ function renderExerciseCards(){
       </div>`;
 
     // Set rows
-    let wNum=0;let wuCount=0;let dsNum=0;
+    let wNum=0;let wuCount=0;let dsNum=0;let rpNum=0;
     ex.sets.forEach((set,si)=>{
       if(set.type==='warmup'){wuCount++;}
       if(set.type==='drop'){dsNum++;}
-      if(set.type!=='warmup'&&set.type!=='drop')wNum++;
-      const rpSuffix=ex.technique==='RestP'&&set.type!=='warmup'&&set.type!=='drop'?'+RP':'';
-      const label=set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:'S'+wNum+rpSuffix;
+      if(set.type==='rp'){rpNum++;}
+      if(set.type!=='warmup'&&set.type!=='drop'&&set.type!=='rp')wNum++;
+      const label=set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:set.type==='rp'?'RP'+rpNum:'S'+wNum;
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
-        <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':''}">${label}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
+        <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':set.type==='rp'?' rp':''}">${label}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" oninput="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
