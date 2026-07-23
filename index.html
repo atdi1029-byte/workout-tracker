@@ -698,7 +698,7 @@ ABC_D2:{name:'ABC+D2',phase:'int',type:'ABCD',weeks:10,days:{
     ['Behind The Back Deadlift','Behind The Back Deadlift','hamstrings','S','3x10-12',90],
     ['Cadeira Extensora','Leg Extension','quads','S','3x10',60],
     ['Passada com Halteres','Dumbbell Lunges','quads','S','3x20',60],
-    ['Mesa Flexora','Lying Leg Curl','hamstrings','DS','3x10-12+10/Fail/Fail',60],
+    ['Mesa Flexora','Lying Leg Curl','hamstrings','DS','3x10-12+3xDrop',60],
     ['Hip Thruster (Glute Builder)','Glute Builder Hip Thrust','glutes','S','3x10',60],
     ['Weighted Crunches (Bosu Ball)','Weighted Crunches Bosu','abs','S','4x12-15',60]
   ]},
@@ -3058,12 +3058,13 @@ function renderExerciseCards(){
       </div>`;
 
     // Set rows
-    let wNum=0;let wuCount=0;
+    let wNum=0;let wuCount=0;let dsNum=0;
     ex.sets.forEach((set,si)=>{
       if(set.type==='warmup'){wuCount++;}
+      if(set.type==='drop'){dsNum++;}
       if(set.type!=='warmup'&&set.type!=='drop')wNum++;
       const rpSuffix=ex.technique==='RestP'&&set.type!=='warmup'&&set.type!=='drop'?'+RP':'';
-      const label=set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DROP':'S'+wNum+rpSuffix;
+      const label=set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:'S'+wNum+rpSuffix;
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':''}">${label}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
