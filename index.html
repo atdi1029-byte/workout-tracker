@@ -2031,8 +2031,8 @@ function parseSets(str){
   // For ranges like 8-12, always use HIGH end as the target
   if(!str)return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
   const s=str.toLowerCase();
-  // Strip suffixes: "bi-set", "rest-pause", etc
-  const clean=s.replace(/\s*(bi-set|rest-pause|tri-set|superset|sequences?)\s*/gi,'').trim();
+  // Strip suffixes: "bi-set", "rest-pause", "+RP ..." etc
+  const clean=s.replace(/\+rp\s.*/i,'').replace(/\s*(bi-set|rest-pause|tri-set|superset|sequences?)\s*/gi,'').trim();
   // Handle warmup+working: "2x10wu+4x8-12" or "2x10wu+12-15/10-12/8-10/5-8"
   const wuMatch=clean.match(/(\d+)x(\d+)\s*wu\s*\+\s*(.*)/i);
   if(wuMatch){
