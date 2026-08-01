@@ -702,7 +702,7 @@ ABC_D2:{name:'ABC+D2',phase:'int',type:'ABCD',weeks:10,days:{
     ['Mesa Flexora','Lying Leg Curl','hamstrings','DS','4x10-12+2xDrop',60],
     ['Hip Thruster (Glute Builder)','Glute Builder Hip Thrust','glutes','S','3x10',60],
     ['Weighted Crunches (Bosu Ball)','Weighted Crunches Bosu','abs','S','4x12-15',60],
-    ['Panturrilha Smith Pés Para Dentro','Smith Calf Raise Toes Inward','calves','S','4x12-15',60]
+    ['Calves On Glutebuilder (Toes Inward)','Calves On Glutebuilder (Toes Inward)','calves','S','4x12-15',30]
   ]},
   D:{label:'Upper Body Completo',labelEn:'Full Upper Body',ex:[
     ['Dumbell Circles','Dumbbell Circles','chest','S','2x15',60],
@@ -2773,17 +2773,27 @@ function initWorkout(){
   try{
     const saved=JSON.parse(localStorage.getItem('workout_in_progress_'+currentDay));
     if(saved&&saved.program===data.activeProgram&&saved.day===currentDay){
-      // 3-hour cap: auto-finish stale workouts
-      const elapsed=Date.now()-saved.startTime;
-      if(elapsed>3*60*60*1000){
+      // Check if program definition changed (exercises added/removed/reordered)
+      const prog=getProgram(data.activeProgram);
+      const dayData=prog&&prog.days[currentDay];
+      const savedExCount=saved.workout&&saved.workout.exercises?saved.workout.exercises.length:0;
+      const progExCount=dayData?dayData.ex.length:0;
+      if(savedExCount!==progExCount){
+        // Program changed — discard stale workout, rebuild fresh
+        localStorage.removeItem('workout_in_progress_'+currentDay);
+      } else {
+        // 3-hour cap: auto-finish stale workouts
+        const elapsed=Date.now()-saved.startTime;
+        if(elapsed>3*60*60*1000){
+          currentWorkout=saved.workout;workoutStartTime=saved.startTime;
+          autoFinishWorkout();
+          return;
+        }
         currentWorkout=saved.workout;workoutStartTime=saved.startTime;
-        autoFinishWorkout();
+        if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+        window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
         return;
       }
-      currentWorkout=saved.workout;workoutStartTime=saved.startTime;
-      if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
-      window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
-      return;
     }
   }catch(e){}
 
