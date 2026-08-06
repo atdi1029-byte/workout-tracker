@@ -5506,6 +5506,17 @@ var _localWasEmpty=!data.logs||data.logs.length===0;
 loadFromCloud(function(ok){
   if(!ok&&_localWasEmpty){console.warn('[SYNC] Cloud pull failed on empty device — syncReady stays false to protect cloud data');return;}
   syncReady=true;
+  // v268: clear corrupted ABC_D2 custom overrides AFTER cloud pull (cloud was restoring them)
+  if(!localStorage.getItem('zr_abcd2_post_v268')){
+    data.activeProgram='ABC_D2';
+    if(!data.programStartDates)data.programStartDates={};
+    data.programStartDates['ABC_D2']=dateStr();
+    delete data.customPrograms.ABC_D2;
+    localStorage.setItem('zr_abcd2_post_v268','1');
+    saveData();
+    syncConfigToCloud();
+    showView('workout',document.querySelector('.nav-btn'));
+  }
   if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}
 },false,true);
 // Dual visibilitychange: visible=pull, hidden=push
