@@ -2236,6 +2236,16 @@ function migrateData(){
     }
     localStorage.setItem('zr_migrate_v251','1');
   }
+  // v268: switch to ABC_D2 + clear corrupted custom overrides
+  if(!localStorage.getItem('zr_abcd2_switch_v268')){
+    data.activeProgram='ABC_D2';
+    if(!data.programStartDates)data.programStartDates={};
+    data.programStartDates['ABC_D2']=dateStr();
+    // Clear corrupted custom program data for ABC_D2 (causes [object Object], missing exercises, wrong set strings)
+    delete data.customPrograms.ABC_D2;
+    localStorage.setItem('zr_abcd2_switch_v268','1');
+    setTimeout(function(){syncConfigToCloud()},2000);
+  }
   saveData();
 }
 
