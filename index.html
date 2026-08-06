@@ -1486,7 +1486,7 @@ function _pushConfig(onDone){
   try{
     const syncPrograms={};
     for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
-    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{},schemaVersion:data.schemaVersion||0};
     const jsonStr=JSON.stringify(config);
     const encoded=encodeURIComponent(jsonStr);
     if(encoded.length<7000){
@@ -1575,7 +1575,7 @@ function beaconSave(){
   try{
     const syncPrograms={};
     for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
-    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{}};
+    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{},schemaVersion:data.schemaVersion||0};
     const configEnc=encodeURIComponent(JSON.stringify(config));
     if(configEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+configEnc);
     const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||'',absLastWeek:localStorage.getItem('abs_last_completed_week')||''};
@@ -1668,6 +1668,8 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(!data.programWeeks)data.programWeeks={};
       for(const k in config.programWeeks){data.programWeeks[k]=config.programWeeks[k]}
     }
+    // Merge schemaVersion — higher wins
+    if((config.schemaVersion||0)>(data.schemaVersion||0))data.schemaVersion=config.schemaVersion;
     if(config.prs){
       for(const eid in config.prs){
         if(!data.prs[eid])data.prs[eid]={};
@@ -1717,6 +1719,17 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     // Rebuild _custom program cache from merged customExercises
     if(data.customExercises&&data.customExercises.length){
       PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
+    }
+    // v270: migrate AFTER cloud merge — clean corrupted ABC_D2 custom overrides
+    // and push cleaned data back to cloud so stale copy can't restore them.
+    // Idempotent: safe to run on every cloud pull.
+    if((data.schemaVersion||0)<270){
+      data.activeProgram='ABC_D2';
+      if(!data.programStartDates)data.programStartDates={};
+      if(!data.programStartDates['ABC_D2'])data.programStartDates['ABC_D2']=dateStr();
+      delete data.customPrograms.ABC_D2;
+      data.schemaVersion=270;
+      _pushConfig();
     }
     _splitSave(data);
     try{
@@ -2099,7 +2112,7 @@ function loadData(){
 }
 function safeLocalSave(key,payload){try{localStorage.setItem(key,payload);return true;}catch(e){console.error('[Zercher] localStorage QUOTA ERROR:',e);toast('Storage full — data not saved locally');return false;}}
 function _splitSave(d){
-  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt};
+  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0};
   var ok=safeLocalSave(SK_CORE,JSON.stringify(core));
   safeLocalSave(SK_LOGS,JSON.stringify(d.logs||[]));
   return ok;
@@ -2235,16 +2248,6 @@ function migrateData(){
       cp.days.C.ex.forEach(e=>{if(e[0]==='Witches Squat')e[4]='3x8-12+2xDrop';});
     }
     localStorage.setItem('zr_migrate_v251','1');
-  }
-  // v268: switch to ABC_D2 + clear corrupted custom overrides
-  if(!localStorage.getItem('zr_abcd2_switch_v268')){
-    data.activeProgram='ABC_D2';
-    if(!data.programStartDates)data.programStartDates={};
-    data.programStartDates['ABC_D2']=dateStr();
-    // Clear corrupted custom program data for ABC_D2 (causes [object Object], missing exercises, wrong set strings)
-    delete data.customPrograms.ABC_D2;
-    localStorage.setItem('zr_abcd2_switch_v268','1');
-    setTimeout(function(){syncConfigToCloud()},2000);
   }
   saveData();
 }
@@ -5506,17 +5509,6 @@ var _localWasEmpty=!data.logs||data.logs.length===0;
 loadFromCloud(function(ok){
   if(!ok&&_localWasEmpty){console.warn('[SYNC] Cloud pull failed on empty device — syncReady stays false to protect cloud data');return;}
   syncReady=true;
-  // v268: clear corrupted ABC_D2 custom overrides AFTER cloud pull (cloud was restoring them)
-  if(!localStorage.getItem('zr_abcd2_post_v268')){
-    data.activeProgram='ABC_D2';
-    if(!data.programStartDates)data.programStartDates={};
-    data.programStartDates['ABC_D2']=dateStr();
-    delete data.customPrograms.ABC_D2;
-    localStorage.setItem('zr_abcd2_post_v268','1');
-    saveData();
-    syncConfigToCloud();
-    showView('workout',document.querySelector('.nav-btn'));
-  }
   if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}
 },false,true);
 // Dual visibilitychange: visible=pull, hidden=push
