@@ -1637,6 +1637,8 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(!data.customPrograms)data.customPrograms={};
       for(const k in config.customPrograms){
         if(!PROGRAMS[k])continue;
+        // v270: if cloud hasn't been migrated yet, skip its ABC_D2 (corrupted)
+        if(k==='ABC_D2'&&(config.schemaVersion||0)<270)continue;
         // Initial load: cloud wins (sync from other devices).
         // Pre-push sync: local wins — don't overwrite recent edits.
         if(isInitialLoad||!data.customPrograms[k])data.customPrograms[k]=config.customPrograms[k];
@@ -2248,6 +2250,14 @@ function migrateData(){
       cp.days.C.ex.forEach(e=>{if(e[0]==='Witches Squat')e[4]='3x8-12+2xDrop';});
     }
     localStorage.setItem('zr_migrate_v251','1');
+  }
+  // v270: switch to ABC_D2 + purge corrupted custom overrides (idempotent)
+  if((data.schemaVersion||0)<270){
+    data.activeProgram='ABC_D2';
+    if(!data.programStartDates)data.programStartDates={};
+    if(!data.programStartDates['ABC_D2'])data.programStartDates['ABC_D2']=dateStr();
+    delete data.customPrograms.ABC_D2;
+    data.schemaVersion=270;
   }
   saveData();
 }
@@ -5488,6 +5498,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
+console.log('[Zercher] v270 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no'));
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
