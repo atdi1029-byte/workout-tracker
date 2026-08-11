@@ -2155,6 +2155,10 @@ function _splitSave(d){
 }
 function saveData(){var ok=_splitSave(data);if(ok)syncToCloud();}
 function migrateData(){
+  // Fix corrupted log weights (object instead of number)
+  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>(ex.sets||[]).forEach(s=>{
+    if(typeof s.weight==='object')s.weight=parseFloat(s.weight&&(s.weight.s1||s.weight.wu)||0)||0;
+  })));
   // Keep all custom program edits (removed old cleanup that wiped non-ABCD09 edits)
   // Remove old program logs (keep ABCD09 seeds + real workouts)
   if(data.logs){
@@ -2882,7 +2886,7 @@ function initWorkout(){
           const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
           if(lastLog){
             const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
-            if(sameType[typeIdx])prefillWeight=sameType[typeIdx].weight;
+            if(sameType[typeIdx]){const w=sameType[typeIdx].weight;prefillWeight=typeof w==='object'?parseFloat(w&&w.s1||w&&w.wu||0)||'':w;}
           }
           // If start weight is set for this exercise, use it for WU and S1
           const startW=getStartWeight(e[0]);
@@ -2901,7 +2905,7 @@ function initWorkout(){
               const wIdx=sets.indexOf(lastW);
               if(lastLog){
                 const logWorking=lastLog.sets.filter(ls=>ls.type==='working');
-                if(logWorking.length)prefillWeight=logWorking[logWorking.length-1].weight;
+                if(logWorking.length){const w=logWorking[logWorking.length-1].weight;prefillWeight=typeof w==='object'?parseFloat(w&&w.s1||w&&w.wu||0)||'':w;}
               }
             }
           }
@@ -2939,7 +2943,7 @@ function initWorkout(){
         sets.forEach((s,i)=>{
           const typeIdx=sets.slice(0,i).filter(ps=>ps.type===s.type).length;
           const sameType=altLog.sets.filter(ls=>ls.type===s.type);
-          if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
+          if(sameType[typeIdx]){const w=sameType[typeIdx].weight;s.weight=typeof w==='object'?parseFloat(w&&w.s1||w&&w.wu||0)||'':w;}
         });
       }
       // Apply start weights for the alt exercise (overrides last log for WU/S1)
@@ -2954,11 +2958,15 @@ function initWorkout(){
   // Don't auto-start timer — wait for user to click Start Workout
 }
 
+function _sanitizeLogWeights(ex){
+  if(ex&&ex.sets)ex.sets.forEach(s=>{if(typeof s.weight==='object'){s.weight=parseFloat(s.weight&&(s.weight.s1||s.weight.wu)||0)||0;}});
+  return ex;
+}
 function getLastLog(exName){
   for(let i=data.logs.length-1;i>=0;i--){
     const log=data.logs[i];
     const ex=log.exercises.find(e=>e.name===exName);
-    if(ex)return ex;
+    if(ex)return _sanitizeLogWeights(ex);
   }
   return null;
 }
@@ -2967,7 +2975,7 @@ function getLastNLogs(exName,n){
   const results=[];
   for(let i=data.logs.length-1;i>=0&&results.length<n;i--){
     const ex=data.logs[i].exercises.find(e=>e.name===exName);
-    if(ex)results.push(ex);
+    if(ex)results.push(_sanitizeLogWeights(ex));
   }
   return results;
 }
