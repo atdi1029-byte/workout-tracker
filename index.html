@@ -1643,6 +1643,8 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     data.logs.forEach(l=>{logMap[l.id]=l});
     cloudLogs.forEach(l=>{if(!logMap[l.id])logMap[l.id]=l});
     data.logs=Object.values(logMap).sort((a,b)=>a.date.localeCompare(b.date));
+    // Sanitize weights from cloud (may have object weights)
+    data.logs.forEach(log=>(log.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex)));
     // Merge PRs: take higher weight
     for(const eid in cloudPrs){
       if(!data.prs[eid])data.prs[eid]={};
@@ -2847,10 +2849,12 @@ function initWorkout(){
         const elapsed=Date.now()-saved.startTime;
         if(elapsed>3*60*60*1000){
           currentWorkout=saved.workout;workoutStartTime=saved.startTime;
+          (currentWorkout.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex));
           autoFinishWorkout();
           return;
         }
         currentWorkout=saved.workout;workoutStartTime=saved.startTime;
+        (currentWorkout.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex));
         if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
         window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
         return;
@@ -4112,7 +4116,7 @@ function renderCardHistory(exName,idx){
   let entries=[];
   data.logs.forEach(log=>{
     const ex=log.exercises.find(e=>e.name===exName);
-    if(ex)entries.push({date:log.date,sets:ex.sets,program:log.program});
+    if(ex){_sanitizeLogWeights(ex);entries.push({date:log.date,sets:ex.sets,program:log.program});}
   });
   entries.reverse();
 
