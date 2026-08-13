@@ -3527,11 +3527,12 @@ function finishWorkout(){
       }
     });
     // Overall ATH — best weight from any done set (warmup included)
-    // Skip if user manually set ATH via edit screen
+    // Skip ONLY if user manually set ATH via edit screen (program==='ATH')
+    // Auto-seeded static data uses program==='STATIC' and CAN be beaten
     const bestWeight=Math.max(0,...ex.sets.filter(s=>s.weight>0).map(s=>s.weight));
     if(bestWeight>0){
       const curAth=data.prs[id]['ath'];
-      if(curAth&&curAth.program==='ATH'){}// manual override, don't touch
+      if(curAth&&curAth.program==='ATH'&&bestWeight<=curAth.weight){}// manual override, don't lower
       else if(!curAth||bestWeight>curAth.weight){
         data.prs[id]['ath']={weight:bestWeight,date:logEntry.date,program:logEntry.program};
       }
@@ -5503,7 +5504,7 @@ function importATH(){
     if(!data.prs[id])data.prs[id]={};
     // Store as "ATH" rep range (unknown reps)
     if(!data.prs[id]['ath']||ATH_DATA[name]>data.prs[id]['ath'].weight){
-      data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'ATH'};
+      data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'STATIC'};
     }
   }
   saveData();
@@ -5537,15 +5538,16 @@ if(data.customExercises&&data.customExercises.length){
   PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
 }
 // Auto-seed ATH data into PRs on every load
+// Uses program='STATIC' so finishWorkout can beat these (program='ATH' = manual user override only)
 for(const name in ATH_DATA){
   const id=exId(name);
   if(!data.prs[id])data.prs[id]={};
   if(!data.prs[id]['ath']||ATH_DATA[name]>data.prs[id]['ath'].weight){
-    data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'ATH'};
+    data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'STATIC'};
   }
 }
 saveData();
-console.log('[Zercher] v273 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v276 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
