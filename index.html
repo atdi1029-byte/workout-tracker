@@ -2150,7 +2150,7 @@ function loadData(){
 }
 function safeLocalSave(key,payload){try{localStorage.setItem(key,payload);return true;}catch(e){console.error('[Zercher] localStorage QUOTA ERROR:',e);toast('Storage full — data not saved locally');return false;}}
 function _splitSave(d){
-  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],hiddenExercises:d.hiddenExercises||[],subLinks:d.subLinks||{},lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0};
+  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],hiddenExercises:d.hiddenExercises||[],subLinks:d.subLinks||{},lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0,_migATHtoSTATIC:d._migATHtoSTATIC||false};
   var coreOk=safeLocalSave(SK_CORE,JSON.stringify(core));
   var logsOk=safeLocalSave(SK_LOGS,JSON.stringify(d.logs||[]));
   return coreOk&&logsOk;
@@ -3084,7 +3084,12 @@ function updateLastLine(ex,ei,card){
     if(isAbs){
       lastHtml=`<div class="ex-last">Last: ${reps} reps</div>`;
     } else {
-      lastHtml=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
+      const tgtR=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+      const repPr=getRepPR(ex.name,tgtR);
+      const athW=getBestWeight(ex.name);
+      let prStr=`<span class="pr-badge">ATH: ${athW} lbs</span>`;
+      if(repPr&&repPr<athW) prStr+=` &middot; <span class="pr-badge">${tgtR}-rep PR: ${repPr} lbs</span>`;
+      lastHtml=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; ${prStr}</div>`;
     }
     if(isHeld(ex.name)){
       const s1w=ws[0]?ws[0].weight:'?';
@@ -3097,8 +3102,8 @@ function updateLastLine(ex,ei,card){
   } else if(!isAbs){
     const bestW=getBestWeight(ex.name);
     if(bestW){
-      lastHtml=`<div class="ex-last">No log yet &middot; <span class="pr-badge">PR: ${bestW} lbs</span></div>`;
-      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on PR)</div></div>`;
+      lastHtml=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
+      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
     }
   }
   const oldLast=card.querySelector('.ex-last');
@@ -3190,7 +3195,12 @@ function renderExerciseCards(){
       if(isAbs){
         html+=`<div class="ex-last">Last: ${reps} reps</div>`;
       } else {
-        html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; <span class="pr-badge">PR: ${getBestWeight(ex.name)} lbs</span></div>`;
+        const tgtR2=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+        const repPr2=getRepPR(ex.name,tgtR2);
+        const athW2=getBestWeight(ex.name);
+        let prStr2=`<span class="pr-badge">ATH: ${athW2} lbs</span>`;
+        if(repPr2&&repPr2<athW2) prStr2+=` &middot; <span class="pr-badge">${tgtR2}-rep PR: ${repPr2} lbs</span>`;
+        html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; ${prStr2}</div>`;
       }
       if(isHeld(ex.name)){
         const s1w=workingSets[0]?workingSets[0].weight:'?';
@@ -3205,8 +3215,8 @@ function renderExerciseCards(){
     } else if(!isAbs){
       const bestW=getBestWeight(ex.name);
       if(bestW){
-        html+=`<div class="ex-last">No log yet &middot; <span class="pr-badge">PR: ${bestW} lbs</span></div>`;
-        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on PR)</div></div>`;
+        html+=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
+        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
       }
     }
     const startW=isAbs?null:getStartWeight(ex.name);
@@ -3382,6 +3392,13 @@ function getBestWeight(exName){
   return best||findATH(exName);
 }
 
+function getRepPR(exName,targetReps){
+  const id=exId(exName);
+  const pr=data.prs[id];
+  if(!pr||!pr[targetReps])return 0;
+  return pr[targetReps].weight;
+}
+
 function findATH(name){
   const staticAth=ATH_DATA[name]||0;
   const id=exId(name);
@@ -3390,6 +3407,35 @@ function findATH(name){
 }
 
 // ── PR DETECTION ──
+// Shared PR update logic — used by both finishWorkout and autoFinishWorkout
+function updatePRsFromLog(logEntry){
+  const newPRs=[];
+  logEntry.exercises.forEach(ex=>{
+    const id=exId(ex.name);
+    if(!data.prs[id])data.prs[id]={};
+    // Per-rep PRs (working sets only)
+    ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
+      const current=data.prs[id][s.reps];
+      if(!current||s.weight>current.weight){
+        data.prs[id][s.reps]={weight:s.weight,date:logEntry.date,program:logEntry.program};
+        newPRs.push({name:ex.name,weight:s.weight,reps:s.reps});
+      }
+    });
+    // Overall ATH — best weight from any done set (warmup included)
+    // Skip ONLY if user manually set ATH via edit screen (program==='ATH')
+    // Auto-seeded static data uses program==='STATIC' and CAN be beaten
+    const bestWeight=Math.max(0,...ex.sets.filter(s=>s.weight>0).map(s=>s.weight));
+    if(bestWeight>0){
+      const curAth=data.prs[id]['ath'];
+      if(curAth&&curAth.program==='ATH'&&bestWeight<=curAth.weight){}// manual override, don't lower
+      else if(!curAth||bestWeight>curAth.weight){
+        data.prs[id]['ath']={weight:bestWeight,date:logEntry.date,program:logEntry.program};
+      }
+    }
+  });
+  return newPRs;
+}
+
 function checkPR(ei,exName,weight,reps){
   const id=exId(exName);
   if(!data.prs[id])data.prs[id]={};
@@ -3462,7 +3508,9 @@ function autoFinishWorkout(){
       })).filter(ex=>ex.sets.length>0),
       duration:workoutStartTime?Math.round((Date.now()-workoutStartTime)/60000):0
     };
-    data.logs.push(logEntry);saveData();
+    data.logs.push(logEntry);
+    updatePRsFromLog(logEntry);
+    saveData();
     syncWorkoutToCloud(logEntry);syncConfigToCloud();syncExtraToCloud();
     toast('Workout auto-saved (3h cap) — '+logEntry.exercises.length+' exercises logged');
   }
@@ -3516,30 +3564,14 @@ function finishWorkout(){
   data.logs.push(logEntry);
 
   // Auto-detect PRs for all completed sets
-  logEntry.exercises.forEach(ex=>{
-    const id=exId(ex.name);
-    if(!data.prs[id])data.prs[id]={};
-    // Per-rep PRs (working sets only)
-    ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
-      const current=data.prs[id][s.reps];
-      if(!current||s.weight>current.weight){
-        data.prs[id][s.reps]={weight:s.weight,date:logEntry.date,program:logEntry.program};
-      }
-    });
-    // Overall ATH — best weight from any done set (warmup included)
-    // Skip ONLY if user manually set ATH via edit screen (program==='ATH')
-    // Auto-seeded static data uses program==='STATIC' and CAN be beaten
-    const bestWeight=Math.max(0,...ex.sets.filter(s=>s.weight>0).map(s=>s.weight));
-    if(bestWeight>0){
-      const curAth=data.prs[id]['ath'];
-      if(curAth&&curAth.program==='ATH'&&bestWeight<=curAth.weight){}// manual override, don't lower
-      else if(!curAth||bestWeight>curAth.weight){
-        data.prs[id]['ath']={weight:bestWeight,date:logEntry.date,program:logEntry.program};
-      }
-    }
-  });
+  const newPRs=updatePRsFromLog(logEntry);
 
   saveData();
+
+  // Show PR feedback for each new PR
+  if(newPRs.length>0){
+    newPRs.forEach(pr=>toast('NEW PR! '+pr.name+': '+pr.weight+'lbs x '+pr.reps));
+  }
   // Advance abs routine only when a new week starts (stay on same routine all week)
   if(currentDay==='ABS'){
     const lastAbsWeek=localStorage.getItem('abs_last_completed_week')||'';
@@ -5537,6 +5569,20 @@ initCustomABCD11();
 if(data.customExercises&&data.customExercises.length){
   PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
 }
+// One-time migration: convert old auto-seeded ATH records from program:'ATH' to 'STATIC'
+// Old code used program:'ATH' for both manual user edits AND auto-seeded ATH_DATA.
+// Now program:'ATH' = manual user override only, 'STATIC' = auto-seeded.
+if(!data._migATHtoSTATIC){
+  for(const name in ATH_DATA){
+    const id=exId(name);
+    const pr=data.prs[id];
+    if(pr&&pr['ath']&&pr['ath'].program==='ATH'&&pr['ath'].date===''&&pr['ath'].weight===ATH_DATA[name]){
+      // No date + weight matches ATH_DATA = was auto-seeded, not user-set
+      pr['ath'].program='STATIC';
+    }
+  }
+  data._migATHtoSTATIC=true;
+}
 // Auto-seed ATH data into PRs on every load
 // Uses program='STATIC' so finishWorkout can beat these (program='ATH' = manual user override only)
 for(const name in ATH_DATA){
@@ -5547,7 +5593,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v276 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v277 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
