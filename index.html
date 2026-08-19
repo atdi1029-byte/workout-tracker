@@ -1549,8 +1549,12 @@ function autoSyncUnsyncedLogs(){
       if(i>=unsynced.length)return;
       const item=unsynced[i++];
       const encoded=encodeURIComponent(JSON.stringify(item));
-      if(encoded.length<7000)jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(){sendNext()});
-      else sendNext();
+      if(encoded.length<7000){
+        jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(){sendNext()});
+      } else {
+        // Large workout — use chunked upload instead of skipping
+        pushChunked(JSON.stringify(item),'workout',function(){sendNext()});
+      }
     }
     sendNext();
   });
@@ -1642,11 +1646,17 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     const logMap={};
     data.logs.forEach(l=>{logMap[l.id]=l});
     cloudLogs.forEach(l=>{if(!logMap[l.id])logMap[l.id]=l});
-    data.logs=Object.values(logMap).sort((a,b)=>a.date.localeCompare(b.date));
+    data.logs=Object.values(logMap).sort((a,b)=>{
+      const dc=a.date.localeCompare(b.date);
+      if(dc!==0)return dc;
+      return(a.ts||0)-(b.ts||0); // same day → sort by timestamp
+    });
     // Sanitize weights from cloud (may have object weights)
     data.logs.forEach(log=>(log.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex)));
-    // Merge PRs: take higher weight
+    // Merge PRs: take higher weight, but skip tombstoned exercises
+    const _ts=new Set(data.deletedPRs||[]);
     for(const eid in cloudPrs){
+      if(_ts.has(eid))continue; // tombstoned — don't resurrect
       if(!data.prs[eid])data.prs[eid]={};
       for(const reps in cloudPrs[eid]){
         const cloud=cloudPrs[eid][reps];
@@ -1693,6 +1703,7 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
     if(cloudSchemaVersion>(data.schemaVersion||0))data.schemaVersion=cloudSchemaVersion;
     if(config.prs){
       for(const eid in config.prs){
+        if(_ts.has(eid))continue; // tombstoned
         if(!data.prs[eid])data.prs[eid]={};
         for(const reps in config.prs[eid]){
           const cloud=config.prs[eid][reps];
@@ -1952,7 +1963,7 @@ function renderPlatePopup(exName,weight){
   if(result.remainder>0)breakdownStr+=(breakdownStr?' + ':'')+result.remainder+'?';
   if(!breakdownStr)breakdownStr='No plates needed';
 
-  const esc=exName.replace(/'/g,"\\'");
+  const esc=escJs(exName);
   const loadWeight=single?weight:Math.round((weight/2)*10)/10;
   const sideLabel=single?'One end':'Each side';
   pop.innerHTML=`<button class="plate-popup-close" onclick="document.getElementById('platePopup').remove()">&times;</button>
@@ -2002,8 +2013,35 @@ function saveAlt(program,day,origName,altName,altNameEn,altMuscle){
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
 function dateStr(d){const dt=d||new Date();return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0')}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function escAttr(s){return escHtml(s)}
+// Safe escape for use inside onclick="fn('...')" — escapes both JS and HTML contexts
+function escJs(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'\\x3c').replace(/>/g,'\\x3e').replace(/&/g,'\\x26').replace(/"/g,'\\x22')}
 function weekStart(d){const dt=new Date(d||Date.now());const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));return dateStr(dt)}
-function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
+// Exercise ID: normalize for lookups but preserve enough to avoid collisions.
+// Parentheses become 'p' to distinguish "Rosca Scott Polia" from "Rosca Scott (Polia)"
+function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\(/g,'p_').replace(/\)/g,'_p').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
+// Migration map for old IDs that collided under the previous scheme
+const _exIdMigMap={};
+function _migrateExIds(){
+  // Build map of new→old for any exercise whose ID changed
+  // Then migrate PR data from old ID to new ID
+  const allNames=getAllExerciseNames();
+  const oldScheme=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  allNames.forEach(name=>{
+    const newId=exId(name);
+    const oldId=oldScheme(name);
+    if(newId!==oldId){
+      _exIdMigMap[name]={oldId,newId};
+      // Migrate PRs
+      if(data.prs[oldId]&&!data.prs[newId]){
+        data.prs[newId]=data.prs[oldId];
+        delete data.prs[oldId];
+      }
+    }
+  });
+  // Migrate log exercise names don't need changing — they store the display name, exId is computed
+}
 function getProgWeeks(pid){
   if(data.programWeeks&&data.programWeeks[pid])return data.programWeeks[pid];
   const prog=PROGRAMS[pid];return prog?prog.weeks:0;
@@ -2071,39 +2109,49 @@ function getProgramWeekInfo(pid){
   return{currentWeek:Math.min(currentWeek,totalWeeks+1),totalWeeks,expired:currentWeek>totalWeeks,daysLeft:Math.max(0,daysLeft),startDate:startStr};
 }
 function parseRepToken(tok){
-  // "8-12" → 12, "10" → 10, "30-40s" → 40
-  const rm=tok.match(/(\d+)-(\d+)/);
+  // "8-12" → 12, "10" → 10, "30-40s" → 40, "failure"/"fail" → 0 (to-failure)
+  const t=tok.trim().toLowerCase();
+  if(t==='failure'||t==='fail')return 0; // 0 = to-failure marker
+  const rm=t.match(/(\d+)-(\d+)/);
   if(rm)return+rm[2];
-  const nm=tok.match(/(\d+)/);
+  const nm=t.match(/(\d+)/);
   return nm?+nm[1]:10;
 }
 function parseSets(str){
   // Parse setsReps string into array of {reps, type}
   // For ranges like 8-12, always use HIGH end as the target
+  // reps=0 means "to failure" (user enters actual reps achieved)
   if(!str)return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
   const s=str.toLowerCase();
   // Strip suffixes: "bi-set", "rest-pause", "+RP ..." etc
   const clean=s.replace(/\+rp\s.*/i,'').replace(/\s*(bi-set|rest-pause|tri-set|superset|sequences?)\s*/gi,'').trim();
-  // Handle warmup+working: "2x10wu+4x8-12" or "2x10wu+12-15/10-12/8-10/5-8"
-  const wuMatch=clean.match(/(\d+)x(\d+)\s*wu\s*\+\s*(.*)/i);
-  if(wuMatch){
-    const sets=[];
-    for(let i=0;i<+wuMatch[1];i++)sets.push({reps:+wuMatch[2],type:'warmup'});
-    let workPart=wuMatch[3];
-    // Check for drop set suffix: "+1xDrop", "+Drop"
-    let dropCount=0;
-    const dropSuffix=workPart.match(/\+(\d*)x?drop$/i);
-    if(dropSuffix){dropCount=+(dropSuffix[1]||1);workPart=workPart.replace(/\+\d*x?drop$/i,'');}
-    // Working part could be "4x8-12" or "12-15/10-12/8-10"
-    const wxm=workPart.match(/^(\d+)x(.+)/);
-    if(wxm){for(let i=0;i<+wxm[1];i++)sets.push({reps:parseRepToken(wxm[2]),type:'working'})}
-    else{workPart.split('/').forEach(tok=>sets.push({reps:parseRepToken(tok),type:'working'}))}
-    for(let i=0;i<dropCount;i++)sets.push({reps:'',type:'drop'});
-    return sets;
+
+  // Helper: parse a single "+"-separated segment into sets
+  function parseSegment(seg){
+    seg=seg.trim();
+    // "NxRwu" — warmup sets
+    const wuSeg=seg.match(/^(\d+)x(\d+)\s*wu$/i);
+    if(wuSeg){const r=[];for(let i=0;i<+wuSeg[1];i++)r.push({reps:+wuSeg[2],type:'warmup'});return r;}
+    // "NxFailure" or "NxFail" — failure sets
+    const failSeg=seg.match(/^(\d+)x\s*(?:failure|fail)$/i);
+    if(failSeg){const r=[];for(let i=0;i<+failSeg[1];i++)r.push({reps:0,type:'working'});return r;}
+    // "NxDrop" — drop sets
+    const dropSeg=seg.match(/^(\d*)x?\s*drop$/i);
+    if(dropSeg){const dc=+(dropSeg[1]||1);const r=[];for(let i=0;i<dc;i++)r.push({reps:'',type:'drop'});return r;}
+    // "NxStrip" — strip sets
+    const stripSeg=seg.match(/^(\d*)x?\s*strip$/i);
+    if(stripSeg){const sc=+(stripSeg[1]||1);const r=[];for(let i=0;i<sc;i++)r.push({reps:'',type:'drop'});return r;}
+    // "NxR-R" or "NxR" — normal working sets
+    const nxr=seg.match(/^(\d+)x(.+)/);
+    if(nxr){const r=[];for(let i=0;i<+nxr[1];i++)r.push({reps:parseRepToken(nxr[2]),type:'working'});return r;}
+    // Pyramid segment: "12-15" or "10"
+    return[{reps:parseRepToken(seg),type:'working'}];
   }
-  // Handle pyramid with ranges: "12-15/10-12/8-10" or "20-30/15-20/10-15/5-10"
-  if(clean.includes('/')){
-    // Check if it has NxM segments like "1x12/2x10"
+
+  // Split on "+" to handle compound prescriptions like "1x10-12+3xFailure" or "2x10wu+4x8-12+1xDrop"
+  // But be careful with "/" pyramids — "/" has higher precedence than "+"
+  // First check if we have a pure pyramid (contains "/" but no "+")
+  if(clean.includes('/')&&!clean.includes('+')){
     const hasNx=clean.match(/\d+x\d+/);
     if(hasNx){
       const sets=[];
@@ -2116,18 +2164,31 @@ function parseSets(str){
     }
     return clean.split('/').map(tok=>({reps:parseRepToken(tok),type:'working'}));
   }
-  // Handle "NxR-R+drop" like "2x8-12+1xDrop" or "3x10-12+1xDrop"
-  const dropMatch=clean.match(/(\d+)x([\d-]+)\+(\d*)x?drop/i);
-  if(dropMatch){
+
+  // Handle "+" separated compound prescriptions
+  if(clean.includes('+')){
     const sets=[];
-    for(let i=0;i<+dropMatch[1];i++)sets.push({reps:parseRepToken(dropMatch[2]),type:'working'});
-    const dc=+(dropMatch[3]||1);
-    for(let i=0;i<dc;i++)sets.push({reps:'',type:'drop'});
-    return sets;
+    // Split on "+" but handle pyramid parts within segments
+    clean.split('+').forEach(seg=>{
+      seg=seg.trim();
+      if(seg.includes('/')){
+        // Pyramid within a segment: "12-15/10-12/8-10"
+        seg.split('/').forEach(tok=>sets.push(...parseSegment(tok)));
+      } else {
+        sets.push(...parseSegment(seg));
+      }
+    });
+    return sets.length?sets:[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
   }
-  // Handle "NxR" or "NxR-R" (simple sets)
+
+  // Simple: "NxFailure", "NxFail"
+  const failMatch=clean.match(/^(\d+)x\s*(?:failure|fail)$/i);
+  if(failMatch){const sets=[];for(let i=0;i<+failMatch[1];i++)sets.push({reps:0,type:'working'});return sets;}
+
+  // Simple: "NxR-R" or "NxR"
   const simpleMatch=clean.match(/^(\d+)x(.+)/);
   if(simpleMatch){const sets=[];for(let i=0;i<+simpleMatch[1];i++)sets.push({reps:parseRepToken(simpleMatch[2]),type:'working'});return sets}
+
   // Default 4 sets
   return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
 }
@@ -2150,7 +2211,7 @@ function loadData(){
 }
 function safeLocalSave(key,payload){try{localStorage.setItem(key,payload);return true;}catch(e){console.error('[Zercher] localStorage QUOTA ERROR:',e);toast('Storage full — data not saved locally');return false;}}
 function _splitSave(d){
-  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],hiddenExercises:d.hiddenExercises||[],subLinks:d.subLinks||{},lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0,_migATHtoSTATIC:d._migATHtoSTATIC||false};
+  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],hiddenExercises:d.hiddenExercises||[],subLinks:d.subLinks||{},lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0,_migATHtoSTATIC:d._migATHtoSTATIC||false,deletedPRs:d.deletedPRs||[]};
   var coreOk=safeLocalSave(SK_CORE,JSON.stringify(core));
   var logsOk=safeLocalSave(SK_LOGS,JSON.stringify(d.logs||[]));
   return coreOk&&logsOk;
@@ -2875,9 +2936,10 @@ function initWorkout(){
     exercises:dayData.ex.map((e,idx)=>{
       let sets=parseSets(e[4]);
       // Add separate RP sets for Rest-Pause exercises
+      // Default: 1 RP set per exercise (not per working set), unless explicitly specified
       if(e[3]==='RestP'){
         const rpMatch=e[4].match(/\+RP\s*(\d+)/i);
-        const rpCount=rpMatch?+rpMatch[1]:sets.filter(s=>s.type==='working').length;
+        const rpCount=rpMatch?+rpMatch[1]:1;
         for(let r=0;r<rpCount;r++)sets.push({reps:'',type:'rp'});
       }
       const lastLog=getLastLog(e[0]);
@@ -2986,7 +3048,8 @@ function getLastNLogs(exName,n){
 
 function getSuggestion(lastLog, targetReps, exName){
   if(!lastLog)return null;
-  const working=lastLog.sets.filter(s=>s.type!=='warmup');
+  // Only use working sets for progression — drop/rp sets have deliberately lower reps
+  const working=lastLog.sets.filter(s=>s.type==='working');
   if(working.length===0)return null;
   const target=targetReps||10;
   const maxWeight=Math.max(...working.map(s=>s.weight));
@@ -3001,13 +3064,14 @@ function getSuggestion(lastLog, targetReps, exName){
   // Count consecutive sessions hitting all target reps
   let streak=0;
   for(const h of history){
-    const w=h.sets.filter(s=>s.type!=='warmup');
-    if(w.every(s=>s.reps>=target))streak++;else break;
+    const w=h.sets.filter(s=>s.type==='working');
+    if(w.length&&w.every(s=>s.reps>=target))streak++;else break;
   }
   // Count consecutive sessions struggling (<70% avg reps)
   let failStreak=0;
   for(const h of history){
-    const w=h.sets.filter(s=>s.type!=='warmup');
+    const w=h.sets.filter(s=>s.type==='working');
+    if(!w.length)break;
     const avg=w.reduce((a,s)=>a+s.reps,0)/w.length;
     if(avg<target*0.7)failStreak++;else break;
   }
@@ -3130,13 +3194,13 @@ function renderExerciseCards(){
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
         <div style="text-align:right">
-          <div class="ex-note-corner" onclick="event.stopPropagation();promptExNote('${ex.name.replace(/'/g,"\\'")}')">
+          <div class="ex-note-corner" onclick="event.stopPropagation();promptExNote('${escJs(ex.name)}')">
             ${getExNote(ex.name)?`<span class="note-text">${getExNote(ex.name)}</span>`:'<span class="note-pencil">&#9998;</span>'}
           </div>${(()=>{
             if(isAbs)return'';
             if(!showPlateForEx(ex.name)){
               const np=getNoPlate();
-              if(np[ex.name]===true)return`<div class="plate-corner-show" onclick="event.stopPropagation();toggleNoPlate('${ex.name.replace(/'/g,"\\'")}')">&#8960; show</div>`;
+              if(np[ex.name]===true)return`<div class="plate-corner-show" onclick="event.stopPropagation();toggleNoPlate('${escJs(ex.name)}')">&#8960; show</div>`;
               return'';
             }
             const wuSets=ex.sets.filter(s=>s.type==='warmup');
@@ -3147,7 +3211,7 @@ function renderExerciseCards(){
             if(pw>0&&pl){
               const pr=calcPlates(pw,getExPlates(ex.name),isSingleEnd(ex.name));
               const ps=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
-              if(ps)return`<div class="plate-corner" onclick="event.stopPropagation();showPlatePopup('${ex.name.replace(/'/g,"\\'")}','${pw}',event)">${pl}: ${ps}</div>`;
+              if(ps)return`<div class="plate-corner" onclick="event.stopPropagation();showPlatePopup('${escJs(ex.name)}','${pw}',event)">${pl}: ${ps}</div>`;
             }
             return'';
           })()}
@@ -3158,7 +3222,7 @@ function renderExerciseCards(){
         <span class="ex-tag">${ex.targetSets.replace(/\+/g,' + ')}</span>
         <span class="ex-tag tech" onclick="showTechPopup('${ex.technique}',event)">${techLabel}</span>
         <span class="ex-tag">${ex.restSec}s rest</span>
-        ${isAbs?'':`<span class="hold-tag${isHeld(ex.name)?' active':''}" data-hold="${ex.name.replace(/'/g,"&#39;")}">${isHeld(ex.name)?'JUST':'J'}</span>`}
+        ${isAbs?'':`<span class="hold-tag${isHeld(ex.name)?' active':''}" data-hold="${escAttr(ex.name)}">${isHeld(ex.name)?'JUST':'J'}</span>`}
       </div>`;
 
     // Set rows
@@ -3228,7 +3292,7 @@ function renderExerciseCards(){
       else if(startW.wu)startLabel='ST: WU '+startW.wu;
     }
     html+=`<div class="ex-actions">
-      ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${ex.name.replace(/'/g,"\\'")}')">${startLabel}</button>`:''}
+      ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${escJs(ex.name)}')">${startLabel}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       ${!isAbs?`<button class="ex-action-btn" onclick="openAltModal(${ei})">Alt.</button>`:''}
@@ -3239,7 +3303,7 @@ function renderExerciseCards(){
   container.innerHTML=html;
 }
 
-function flipSign(inp){const v=inp.value;inp.value=v?(v.startsWith('-')?v.slice(1):'-'+v):'-';inp.dispatchEvent(new Event('change'));}
+function flipSign(inp){const v=inp.value;inp.value=v?(v.startsWith('-')?v.slice(1):'-'+v):'-';inp.dispatchEvent(new Event('input'));}
 function updateSet(ei,si,field,val){
   if(!currentWorkout)return;
   const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
@@ -3275,7 +3339,7 @@ function updatePlateCorner(ei){
     const pr=calcPlates(pw,getExPlates(ex.name),isSingleEnd(ex.name));
     const ps=pr.breakdown.map(b=>b.count>1?b.count+'×'+b.plate:b.plate).join(' + ')+(pr.remainder>0?' + '+pr.remainder+'?':'');
     if(ps){
-      const esc=ex.name.replace(/'/g,"\\'");
+      const esc=escJs(ex.name);
       const newHtml=`<div class="plate-corner" onclick="event.stopPropagation();showPlatePopup('${esc}','${pw}',event)">${pl}: ${ps}</div>`;
       if(old)old.outerHTML=newHtml;
       else{const noteCorner=card.querySelector('.ex-note-corner');if(noteCorner)noteCorner.insertAdjacentHTML('afterend',newHtml);}
@@ -3338,6 +3402,7 @@ function removeExercise(ei){
   if(!currentWorkout)return;
   if(confirm('Remove '+currentWorkout.exercises[ei].name+'?')){
     currentWorkout.exercises.splice(ei,1);
+    localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
     renderExerciseCards();
   }
 }
@@ -3372,6 +3437,8 @@ function renameExercise(ei){
     }
   }
   saveData();
+  // Persist updated in-progress workout
+  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
   syncToCloud();
   renderExerciseCards();
   toast('Renamed to '+trimmed);
@@ -3500,7 +3567,7 @@ function autoFinishWorkout(){
   if(hasSets){
     // Reuse finish logic but skip the DOM flush (cards may not exist)
     const logEntry={
-      id:'log_'+Date.now(),date:currentWorkout.date,
+      id:'log_'+Date.now(),date:currentWorkout.date,ts:Date.now(),
       program:currentWorkout.program,day:currentWorkout.day,
       exercises:currentWorkout.exercises.map(ex=>({
         name:ex.name,
@@ -3552,6 +3619,7 @@ function finishWorkout(){
   const logEntry={
     id:'log_'+Date.now(),
     date:currentWorkout.date,
+    ts:Date.now(),
     program:currentWorkout.program,
     day:currentWorkout.day,
     exercises:currentWorkout.exercises.map(ex=>({
@@ -3973,7 +4041,7 @@ function renderProgress(){
           const{name,idx,prs,athVal,repCounts,best1rm}=ex;
           const isExpanded=expandedExercise===name;
           const enName=getExerciseEnglish(name);
-          const esc=name.replace(/'/g,"\\'");
+          const esc=escJs(name);
 
           if(isExpanded){
             html+=`<div class="progress-card expanded" id="pc-${idx}" onclick="toggleProgressCard('${esc}',${idx})">
@@ -4267,9 +4335,9 @@ function renderLibCard(name){
   const athVal=getBestWeight(name);
   const isFav=favExercises.has(name);
   const muscle=getExerciseMuscle(name);
-  const esc=name.replace(/'/g,"\\'");
+  const esc=escJs(name);
   return `<div class="lib-card" onclick="openEditExercise('${esc}')" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')"  style="cursor:pointer">
-    <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${name}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="event.stopPropagation();toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
+    <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${escHtml(name)}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="event.stopPropagation();toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
     <div class="lib-name-en">${getExerciseEnglish(name)}</div>
     <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
   </div>`;
@@ -4355,8 +4423,15 @@ function deleteExercise(name){
   // Hide from library
   if(!data.hiddenExercises)data.hiddenExercises=[];
   if(!data.hiddenExercises.includes(name))data.hiddenExercises.push(name);
+  // Tombstone PRs so cloud merge and log bootstrap don't resurrect them
+  if(!data.deletedPRs)data.deletedPRs=[];
+  if(!data.deletedPRs.includes(id))data.deletedPRs.push(id);
   // Remove PRs
   if(data.prs[id])delete data.prs[id];
+  // Remove from historical logs to prevent bootstrap resurrection
+  (data.logs||[]).forEach(log=>{
+    log.exercises=(log.exercises||[]).filter(ex=>ex.name!==name);
+  });
   // Remove from customExercises
   data.customExercises=(data.customExercises||[]).filter(e=>e[0]!==name);
   // Remove from favorites
@@ -4405,7 +4480,7 @@ function openEditExercise(name){
     </div>
     ${usedIn.length?`<div style="font-size:0.65rem;color:var(--text-dim);margin-bottom:10px">Used in: ${usedIn.join(', ')}</div>`:''}
     <button class="edit-save-btn" onclick="saveEditExercise()">Save Changes</button>
-    <button style="width:100%;margin-top:8px;padding:10px;background:rgba(144,80,80,0.15);border:1px solid rgba(144,80,80,0.3);color:var(--red-bright);border-radius:var(--radius);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px" onclick="deleteExercise('${name.replace(/'/g,"\\'")}')">Delete Exercise</button>
+    <button style="width:100%;margin-top:8px;padding:10px;background:rgba(144,80,80,0.15);border:1px solid rgba(144,80,80,0.3);color:var(--red-bright);border-radius:var(--radius);font-family:'Oswald',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;text-transform:uppercase;letter-spacing:1px" onclick="deleteExercise('${escJs(name)}')">Delete Exercise</button>
   `);
 }
 function saveEditExercise(){
@@ -4714,7 +4789,7 @@ function renderSubs(){
               <span>${e}</span>
               <span style="display:flex;gap:4px;align-items:center">
                 ${link?`<a class="sub-link-btn" href="${link}" target="_blank" rel="noopener">Video</a>`:``}
-                <span class="sub-del" onclick="deleteSub('${e.replace(/'/g,"\\'")}')">X</span>
+                <span class="sub-del" onclick="deleteSub('${escJs(e)}')">X</span>
               </span>
             </div>`;
           }).join('')}
@@ -4850,7 +4925,7 @@ function openSwapModal(ei){
   [...options].sort().forEach(opt=>{
     const[name,nameEn]=opt.split('|');
     const ath=findATH(name);
-    html+=`<div class="swap-item" onclick="doSwap(${ei},'${name.replace(/'/g,"\\'")}','${nameEn.replace(/'/g,"\\'")}','${muscle}')">
+    html+=`<div class="swap-item" onclick="doSwap(${ei},'${escJs(name)}','${escJs(nameEn)}','${muscle}')">
       <div class="swap-name">${name} <span style="color:var(--text-dim);font-size:0.75rem">${nameEn}</span></div>
       ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
     </div>`;
@@ -4956,7 +5031,7 @@ function openAltModal(ei){
   // Saved alt from last time (top priority)
   if(savedAlt&&savedAlt.name!==ex.name&&!currentNames.has(savedAlt.name)){
     const ath=findATH(savedAlt.name);
-    html+=`<div class="alt-suggested" onclick="doAlt(${ei},'${savedAlt.name.replace(/'/g,"\\'")}','${savedAlt.nameEn.replace(/'/g,"\\'")}','${savedAlt.muscle}')">
+    html+=`<div class="alt-suggested" onclick="doAlt(${ei},'${escJs(savedAlt.name)}','${escJs(savedAlt.nameEn)}','${savedAlt.muscle}')">
       <div class="alt-suggested-label">&#8635; Last Alt Used</div>
       <div class="swap-name">${savedAlt.name} <span style="color:var(--text-dim);font-size:0.75rem">${savedAlt.nameEn}</span></div>
       ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
@@ -4966,7 +5041,7 @@ function openAltModal(ei){
   // Base exercise suggestion
   if(baseSuggestion&&(!savedAlt||savedAlt.name!==baseSuggestion.name)){
     const ath=findATH(baseSuggestion.name);
-    html+=`<div class="alt-suggested" onclick="doAlt(${ei},'${baseSuggestion.name.replace(/'/g,"\\'")}','${baseSuggestion.nameEn.replace(/'/g,"\\'")}','${baseSuggestion.muscle}')">
+    html+=`<div class="alt-suggested" onclick="doAlt(${ei},'${escJs(baseSuggestion.name)}','${escJs(baseSuggestion.nameEn)}','${baseSuggestion.muscle}')">
       <div class="alt-suggested-label">&#9733; Base Exercise</div>
       <div class="swap-name">${baseSuggestion.name} <span style="color:var(--text-dim);font-size:0.75rem">${baseSuggestion.nameEn}</span></div>
       ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
@@ -4979,7 +5054,7 @@ function openAltModal(ei){
     [...options].sort().forEach(opt=>{
       const[name,nameEn]=opt.split('|');
       const ath=findATH(name);
-      html+=`<div class="swap-item" onclick="doAlt(${ei},'${name.replace(/'/g,"\\'")}','${nameEn.replace(/'/g,"\\'")}','${muscle}')">
+      html+=`<div class="swap-item" onclick="doAlt(${ei},'${escJs(name)}','${escJs(nameEn)}','${muscle}')">
         <div class="swap-name">${name} <span style="color:var(--text-dim);font-size:0.75rem">${nameEn}</span></div>
         ${ath?`<div class="swap-ath">ATH: ${ath} lbs</div>`:''}
       </div>`;
@@ -5023,7 +5098,8 @@ function doAltCustom(ei){
 let editorPid='';
 let editorDay='';
 let editorExercises=[];
-let editorOrigNames=[];
+let editorOrigMap={}; // _editorId → original name, for tracking real renames vs reorders
+let _editorIdCounter=0;
 
 function openEditor(pid){
   editorPid=pid||data.activeProgram;
@@ -5069,9 +5145,14 @@ function switchEditorDay(day,btn){
 function loadEditorDay(){
   const prog=getProgram(editorPid);
   const dayData=prog.days[editorDay];if(!dayData)return;
-  // Deep copy exercises into editor state
-  editorExercises=dayData.ex.map(e=>[...e]);
-  editorOrigNames=editorExercises.map(e=>e[0]);
+  // Deep copy exercises into editor state, each gets a stable _editorId
+  editorOrigMap={};
+  editorExercises=dayData.ex.map(e=>{
+    const copy=[...e];
+    copy._editorId=++_editorIdCounter;
+    editorOrigMap[copy._editorId]=e[0]; // track original name
+    return copy;
+  });
   renderEditorExercises();
 }
 
@@ -5286,7 +5367,7 @@ function filterExPicker(){
       const m=getExerciseMuscle(name)||'other';
       const mLabel=MUSCLE_LABELS[m]||m;
       const recentIdx=recentNames.indexOf(name);
-      html+=`<div class="ex-picker-item" onclick="pickExercise('${name.replace(/'/g,"\\'")}')">
+      html+=`<div class="ex-picker-item" onclick="pickExercise('${escJs(name)}')">
         <div class="pi-name">${name}</div>
         <div class="pi-detail">${en!==name?en+' &middot; ':''}${mLabel}</div>
         ${recentIdx>=0?'<div class="pi-recent">Recently used</div>':''}
@@ -5299,6 +5380,11 @@ function filterExPicker(){
 function pickExercise(name){
   const idx=window._pickerIdx;
   const fullData=getFullExerciseData(name);
+  // Replacement = new exercise identity, not a rename of the old one
+  fullData._editorId=++_editorIdCounter;
+  // Remove old entry from origMap so the old exercise's history isn't migrated
+  const oldId=editorExercises[idx]._editorId;
+  if(oldId) delete editorOrigMap[oldId];
   editorExercises[idx]=fullData;
   closeExPicker();
   renderEditorExercises();
@@ -5325,7 +5411,10 @@ function toggleEditorPlate(i){
 }
 
 function addEditorEx(){
-  editorExercises.push(['New Exercise','New Exercise','chest','S','4x10',60]);
+  const newEx=['New Exercise','New Exercise','chest','S','4x10',60];
+  newEx._editorId=++_editorIdCounter;
+  // No editorOrigMap entry — new exercise, not a rename candidate
+  editorExercises.push(newEx);
   renderEditorExercises();
   // Scroll to bottom
   const modal=document.getElementById('modalContent');
@@ -5372,13 +5461,16 @@ function saveEditorDay(){
     if(inputs[5])editorExercises[i][2]=inputs[5].value;  // muscle (select)
   });
 
-  // Migrate data for any renamed exercises
-  editorExercises.forEach((e,i)=>{
-    if(editorOrigNames[i]&&e[0]!==editorOrigNames[i]){
-      migrateExRename(editorOrigNames[i],e[0]);
+  // Migrate data for exercises that were genuinely renamed (same _editorId, different name)
+  // Reordering/replacing do NOT trigger renames because they get new _editorId values
+  editorExercises.forEach(e=>{
+    const eid=e._editorId;
+    const origName=editorOrigMap[eid];
+    if(origName&&e[0]!==origName){
+      migrateExRename(origName,e[0]);
+      editorOrigMap[eid]=e[0]; // update for subsequent saves
     }
   });
-  editorOrigNames=editorExercises.map(e=>e[0]);
 
   // Save to customPrograms
   if(!data.customPrograms[editorPid])data.customPrograms[editorPid]={days:{}};
@@ -5494,15 +5586,49 @@ function openSettings(){
       <textarea id="import-json" placeholder="Paste exported JSON here..." style="width:100%;height:120px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-bright);font-size:0.8rem;padding:8px;resize:vertical;font-family:monospace"></textarea>
       <button class="ex-action-btn" onclick="importData()" style="margin-top:4px;color:var(--green)">Load Imported Data</button>
     </div>
-    <button class="ex-action-btn" onclick="if(confirm('Clear ALL data?')){localStorage.removeItem(SK_CORE);localStorage.removeItem(SK_LOGS);location.reload()}" style="margin-top:4px;color:var(--red)">Reset All Data</button>
+    <button class="ex-action-btn" onclick="clearAllData()" style="margin-top:4px;color:var(--red)">Reset All Data</button>
   </div>`;
   openModal(html);
 }
 
+function clearAllData(){
+  if(!confirm('Clear ALL data? This removes workouts, PRs, settings, and all personalized state.'))return;
+  if(!confirm('This cannot be undone. Cloud data may also repopulate. Are you sure?'))return;
+  // Remove all Zercher-related localStorage keys
+  const keysToRemove=[SK_CORE,SK_LOGS,STORAGE_KEY,'zercher_holds','zercher_notes','zercher_starts',
+    'fav_exercises','zercher_platepref','zercher_noplate','zercher_singleend','zercher_abs_reps',
+    'abs_routine','abs_routine_week','abs_last_completed_week','zercher_lastSyncedAt',
+    'zercher_alt_memory'];
+  keysToRemove.forEach(k=>localStorage.removeItem(k));
+  // Remove all workout_in_progress_* keys
+  const allKeys=Object.keys(localStorage);
+  allKeys.forEach(k=>{if(k.startsWith('workout_in_progress_'))localStorage.removeItem(k)});
+  location.reload();
+}
+
 function exportData(){
-  const json=JSON.stringify(data);
+  // Full backup: main data + all auxiliary localStorage state
+  const backup={
+    _zercher_backup:true,
+    _version:2,
+    data:data,
+    aux:{
+      holds:getHolds(),
+      notes:getExNotes(),
+      starts:getStartWeights(),
+      favs:[...favExercises],
+      platePref:getPlatePref(),
+      noPlate:getNoPlate(),
+      singleEnd:getSingleEnd(),
+      absReps:getAbsLastReps(),
+      absRoutine:localStorage.getItem('abs_routine')||'',
+      absRoutineWeek:localStorage.getItem('abs_routine_week')||'',
+      absLastWeek:localStorage.getItem('abs_last_completed_week')||''
+    }
+  };
+  const json=JSON.stringify(backup);
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(json).then(()=>toast('Data copied to clipboard')).catch(()=>{
+    navigator.clipboard.writeText(json).then(()=>toast('Full backup copied to clipboard')).catch(()=>{
       prompt('Copy this data:',json);
     });
   }else{
@@ -5518,11 +5644,38 @@ function importData(){
   if(!raw){toast('Paste data first');return}
   try{
     const imported=JSON.parse(raw);
-    if(!imported.logs||!Array.isArray(imported.logs)){toast('Invalid data format');return}
-    if(!confirm('Replace all data with imported data? ('+imported.logs.length+' sessions)')){return}
-    data=imported;
+    let importedData,importedAux;
+    // Handle v2 backup format (with aux state)
+    if(imported._zercher_backup){
+      importedData=imported.data;
+      importedAux=imported.aux;
+    } else {
+      importedData=imported;
+    }
+    // Validate essential fields
+    if(!importedData||!Array.isArray(importedData.logs)){toast('Invalid data format — missing logs array');return}
+    if(!importedData.prs||typeof importedData.prs!=='object')importedData.prs={};
+    if(!importedData.customPrograms||typeof importedData.customPrograms!=='object')importedData.customPrograms={};
+    if(!importedData.settings)importedData.settings={weightUnit:'lbs',language:'pt'};
+    if(!importedData.activeProgram)importedData.activeProgram='ABC_D1';
+    if(!confirm('Replace all data with imported data? ('+importedData.logs.length+' sessions)')){return}
+    data=importedData;
     saveData();
-    toast('Imported '+data.logs.length+' sessions');
+    // Restore auxiliary state if present
+    if(importedAux){
+      if(importedAux.holds)saveHolds(importedAux.holds);
+      if(importedAux.notes)saveExNotes(importedAux.notes);
+      if(importedAux.starts)saveStartWeights(importedAux.starts);
+      if(importedAux.favs){favExercises=new Set(importedAux.favs);localStorage.setItem('fav_exercises',JSON.stringify(importedAux.favs));}
+      if(importedAux.platePref)savePlatePref(importedAux.platePref);
+      if(importedAux.noPlate)saveNoPlate(importedAux.noPlate);
+      if(importedAux.singleEnd)saveSingleEnd(importedAux.singleEnd);
+      if(importedAux.absReps)saveAbsLastReps(importedAux.absReps);
+      if(importedAux.absRoutine)localStorage.setItem('abs_routine',importedAux.absRoutine);
+      if(importedAux.absRoutineWeek)localStorage.setItem('abs_routine_week',importedAux.absRoutineWeek);
+      if(importedAux.absLastWeek)localStorage.setItem('abs_last_completed_week',importedAux.absLastWeek);
+    }
+    toast('Imported '+data.logs.length+' sessions'+(importedAux?' + settings':''));
     closeModal();
     showView('workout',document.querySelector('.nav-btn'));
   }catch(e){toast('Invalid JSON')}
@@ -5551,11 +5704,15 @@ migrateData();
 initCustomABCD09();
 initCustomABCD10();
 initCustomABCD11();
+// Migrate exercise IDs that changed due to collision fix (parentheses preservation)
+_migrateExIds();
 // Bootstrap PRs from all logs (seed logs don't call finishWorkout so PRs are missing)
+const _tombstones=new Set(data.deletedPRs||[]);
 (data.logs||[]).forEach(log=>{
   (log.exercises||[]).forEach(ex=>{
+    const id=exId(ex.name);
+    if(_tombstones.has(id))return; // skip tombstoned exercises
     ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
-      const id=exId(ex.name);
       if(!data.prs[id])data.prs[id]={};
       const current=data.prs[id][s.reps];
       if(!current||s.weight>current.weight){
@@ -5593,7 +5750,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v277 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v278 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
