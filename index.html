@@ -2706,7 +2706,7 @@ function renderPrograms(){
   let html='';
   for(const pid in PROGRAMS){
     if(pid==='_custom')continue;
-    const p=PROGRAMS[pid];
+    const p=getProgram(pid);
     const isActive=pid===data.activeProgram;
     const phase=PHASES[p.phase]||p.phase;
     const days=Object.keys(p.days).filter(d=>d!=='_'&&d!=='ABS');
@@ -4577,7 +4577,7 @@ const SUBS_DATA=[
 ]},
 {muscle:'Quads',subs:[
 {cat:'Barbell',ex:['Deep Knee Squat','Hackenschmidt Style Squat','Squat Tom Platz Style','Vince Gironda Hack Slide','Smith Machine Deficit Split Squat','Smith Machine Sissy Squat','Smith Machine Bulgarian Split Squat','Heel Elevated Hack Deadlift','Behind The Back Romanian Deadlift','Somersault Squat']},
-{cat:'Dumbbell',ex:['Reverse Nordic','Dumbbell Sissy Squats','Sissy Squat Against The Wall','Alternative Sissy Squat','Kickstand Squat','Kettlebell Face The Wall Hack Squat']},
+{cat:'Dumbbell',ex:['Reverse Nordic','Dumbbell Sissy Squats','Sissy Squat Against The Wall','Alternative Sissy Squat','Crouched Sissy Squat','Kickstand Squat','Kettlebell Face The Wall Hack Squat']},
 {cat:'Machine',ex:['Leg Extension with Pad','V Squat (Feet Forward / Quads)','Glute Press (Reclined / Hack Squat)']},
 {cat:'Trap Bar / T-Bar',ex:['Heel Elevated Trap Bar Deadlift','Landmine Sissy Squat','Kickstand Squat Trap Bar']}
 ]},
