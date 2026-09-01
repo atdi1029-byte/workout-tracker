@@ -721,7 +721,7 @@ ABC_D3:{name:'ABC+D3',phase:'spe',type:'ABCD',weeks:10,days:{
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
     ['Abdominal Supra Braços Esticados (Com Peso)','Weighted Straight Arm Crunch','abs','S','4x10-15',60],
-    ['Supino Inclinado Smith','Incline Smith Bench Press','chest','S','2x10wu+4x8-10',80],
+    ['Supino Inclinado Smith','Incline Smith Bench Press','chest','S','2x8wu+4x8-10',80],
     ['Crucifixo Halter Flat','Flat DB Fly','chest','RestP','1x8wu+3x10-12+RP 3x6-8/15s',60],
     ['Incline Fly with Crossover (Squeeze)','Incline Fly with Crossover','chest','S','4x10-12',60],
     ['Desenvolvimento Arnold','Arnold Press','shoulders','S','1x8wu+4x10',60],
@@ -732,7 +732,7 @@ ABC_D3:{name:'ABC+D3',phase:'spe',type:'ABCD',weeks:10,days:{
     ['Abdominal na Polia Alta','Cable Crunch','abs','S','4x10-15',60],
     ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
     ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
-    ['Puxada Frente Triângulo','V-Bar Pulldown','back','S','2x10wu+4x8-10',80],
+    ['Puxada Frente Triângulo','V-Bar Pulldown','back','S','2x8wu+4x8-10',80],
     ['Remada Baixa Pegada Aberta Supinada','Seated Cable Row Wide Underhand','back','S','4x10-12',60],
     ['Smith Machine Row','Smith Machine Row','back','RestP','1x8wu+3x10-12+RP 3x6-8/15s',60],
     ['Crucifixo Inverso (Cable)','Cable Reverse Fly','shoulders','S','4x10-12',45],
@@ -741,8 +741,8 @@ ABC_D3:{name:'ABC+D3',phase:'spe',type:'ABCD',weeks:10,days:{
     ['T-Bar Forearm Curl','T-Bar Forearm Curl','forearms','S','4x12-15',40]
   ]},
   C:{label:'Pernas',labelEn:'Legs',ex:[
-    ['Deficit Behind The Back Deadlift','Deficit Behind The Back Deadlift','hamstrings','S','2x10wu+4x10',90],
-    ['Witches Squat','Witches Squat','quads','S','1x10wu+4x8-12',60],
+    ['Deficit Behind The Back Deadlift','Deficit Behind The Back Deadlift','hamstrings','S','2x8wu+4x10',90],
+    ['Witches Squat','Witches Squat','quads','S','1x8wu+4x8-12',60],
     ['Good Morning','Good Morning','hamstrings','TP','2x12-15/2x8-12/2x5-8',90],
     ['Agachamento Búlgaro com Halteres','Bulgarian Split Squat','quads','S','4x10-12 each',60],
     ['Hip Thruster (Glute Builder)','Glute Builder Hip Thrust','glutes','S','4x8-10',60],
@@ -5792,7 +5792,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v281 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v282 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
