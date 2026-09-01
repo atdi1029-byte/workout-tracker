@@ -1804,9 +1804,6 @@ function loadFromCloud(onComplete,isPrePush,isInitialLoad){
       if(data.customPrograms&&data.customPrograms.hasOwnProperty('ABC_D2')){
         delete data.customPrograms.ABC_D2;
       }
-      data.activeProgram='ABC_D2';
-      if(!data.programStartDates)data.programStartDates={};
-      if(!data.programStartDates['ABC_D2'])data.programStartDates['ABC_D2']=dateStr();
       data.schemaVersion=CURRENT_SCHEMA_VERSION;
       migrationNeedsCloudPush=true;
     } else if(cloudSchemaVersion>=CURRENT_SCHEMA_VERSION&&
@@ -2398,13 +2395,11 @@ function migrateData(){
     }
     localStorage.setItem('zr_migrate_v251','1');
   }
-  // v271: switch to ABC_D2 + purge corrupted custom overrides (idempotent)
-  if((data.schemaVersion||0)<CURRENT_SCHEMA_VERSION){
-    data.activeProgram='ABC_D2';
-    if(!data.programStartDates)data.programStartDates={};
-    if(!data.programStartDates['ABC_D2'])data.programStartDates['ABC_D2']=dateStr();
+  // v271: purge corrupted ABC_D2 custom overrides (one-shot)
+  if(!localStorage.getItem('zr_migrate_v271')){
     delete data.customPrograms.ABC_D2;
-    data.schemaVersion=CURRENT_SCHEMA_VERSION;
+    if(!data.schemaVersion||data.schemaVersion<271)data.schemaVersion=271;
+    localStorage.setItem('zr_migrate_v271','1');
   }
   saveData();
 }
@@ -5797,7 +5792,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v280 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v281 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
