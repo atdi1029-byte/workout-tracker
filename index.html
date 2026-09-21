@@ -87,6 +87,10 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .sug-trend{font-size:0.72rem;opacity:0.7;margin-top:3px}
 .sug-trend-up{color:var(--green)}
 .sug-trend-down{color:var(--red)}
+.sug-ladder{font-size:0.78rem;margin-top:5px;color:var(--text);opacity:0.9}
+.sug-ladder b{font-weight:700;letter-spacing:0.5px}
+.sug-apply{background:none;border:1px solid rgba(232,160,50,0.5);border-radius:var(--radius-sm);padding:2px 9px;font-size:0.68rem;color:#e8a032;cursor:pointer;margin-left:8px;vertical-align:middle}
+.sug-apply:active{background:rgba(232,160,50,0.2)}
 .ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .ex-name{font-size:0.9rem;font-weight:700;color:var(--text-bright);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
 .ex-name-en{font-size:0.7rem;color:var(--text-dim)}
@@ -541,8 +545,8 @@ const PHASES = {acc:'Accumulation',int:'Intensification',spe:'Specialization',re
 const TECH_LABELS = {S:'Straight Sets',P:'Pyramid',TP:'Truncated Pyramid',RP:'Reverse Pyramid',DS:'Drop Set',BS:'Bi-Set',TS:'Tri-Set',SS:'Superset',ASS:'Antagonist Superset',RestP:'Rest-Pause',PE:'Pre-Exhaust',Dead:'Dead Stop',BO:'Back-Off',Mob:'Mobility',Fail:'To Failure',Prog:'Progressive'};
 const TECH_DESC = {
   S:'Same weight and reps for every set. Complete all sets with the prescribed rest between each.',
-  P:'Start light and add weight each set while keeping reps high, then decrease reps as weight gets heavier.',
-  TP:'Like a pyramid but stop before going back down. Increase weight each set, reducing reps as you go.',
+  P:'Weight goes up every set as reps come down (12/10/8/5). The TOP set is the one that counts: pick it first, then ramp into it — roughly 75% / 82% / 90% of it for the 12 / 10 / 8. Lower rungs stay submaximal (2–3 reps in the tank). Progress when you hit the top set clean; then the whole ladder moves up together.',
+  TP:'Like a pyramid but stop before going back down: two sets per rung, weight up and reps down each rung. Anchor on the top rung and ramp into it; add weight when you hit the top of the last rung.',
   RP:'Start with your heaviest set first, then reduce weight each set while increasing reps. Maximizes intensity when fresh.',
   DS:'After your last set, immediately drop the weight 20-30% and keep going without rest. Repeat 2-3 drops.',
   BS:'Pair two exercises back-to-back with no rest between them. Rest only after completing both exercises.',
@@ -3369,6 +3373,7 @@ function initWorkout(){
         for(let r=0;r<rpCount;r++)sets.push({reps:'',type:'rp'});
       }
       const lastLog=getLastLog(e[0]);
+      const pyLadder=(!lastLog&&pyramidInfo(sets))?pyramidLadder(getBestWeight(e[0]),sets):null;
       return{
         name:e[0],nameEn:e[1],muscle:e[2],technique:e[3],
         targetSets:e[4],restSec:e[5],_baseIdx:idx,_origName:e[0],
@@ -3386,8 +3391,8 @@ function initWorkout(){
           if(s.type==='working'&&typeIdx===0&&startW.s1)prefillWeight=startW.s1;
           // Fallback: no log + no start weight → use PR/ATH for working sets
           if(!prefillWeight&&!lastLog&&s.type==='working'){
-            const best=getBestWeight(e[0]);
-            if(best)prefillWeight=best;
+            if(pyLadder&&pyLadder[i])prefillWeight=pyLadder[i];
+            else{const best=getBestWeight(e[0]);if(best)prefillWeight=best;}
           }
           // RP sets: inherit weight from last working set if no prior RP log
           if(!prefillWeight&&s.type==='rp'){
@@ -3554,6 +3559,117 @@ function getSuggestion(lastLog, targetReps, exName){
   return{type,text:'<div class="sug-main">'+icon+' '+weightTip+'</div>'+trendHtml};
 }
 
+// ── PYRAMID (12/10/8/5) PROGRESSION ──
+// A pyramid is anchored on its TOP set (fewest reps, heaviest weight). The lower
+// rungs are ramps: ~75/82/90% of the top for 12/10/8. Progress is decided by the
+// top set only; when it moves, the whole ladder moves with it.
+function pyramidInfo(sets){
+  const wIdx=[];sets.forEach((s,i)=>{if(s.type==='working')wIdx.push(i)});
+  if(wIdx.length<3)return null;
+  const reps=wIdx.map(i=>+sets[i].reps||0);
+  if(reps.some(r=>r<=0))return null;
+  let L=1;while(L<reps.length&&reps[L]<=reps[L-1])L++;
+  if(L<3||reps[L-1]>=reps[0])return null;
+  const topReps=reps[L-1];
+  const top=[],lower=[],backoff=[];
+  wIdx.forEach((si,k)=>{if(k>=L)backoff.push(si);else if(reps[k]===topReps)top.push(si);else lower.push(si)});
+  return{top,lower,backoff,topReps,L};
+}
+function pyramidStep(w,muscle){
+  const lowerBody=/quad|hamstring|glute|calves|legs/i.test(muscle||'');
+  return w>=100?(lowerBody?10:5):w>=50?2.5:1;
+}
+function pyRound(w){const inc=w>=100?5:2.5;return Math.round(w/inc)*inc}
+// Returns {setIndex: weight} for every working set, ramping into topW
+function pyramidLadder(topW,sets){
+  const pi=pyramidInfo(sets);if(!pi||!(topW>0))return null;
+  const out={};
+  const rTop=pi.topReps;
+  pi.lower.forEach(si=>{
+    const r=+sets[si].reps;
+    // Epley ratio between rep maxes, then discounted so lower rungs stay submaximal
+    const ratio=Math.pow((1+rTop/30)/(1+r/30),1.5);
+    out[si]=pyRound(topW*ratio);
+  });
+  pi.top.forEach(si=>out[si]=pyRound(topW));
+  pi.backoff.forEach(si=>out[si]=pyRound(topW*0.55));
+  return out;
+}
+function ladderStr(ladder){
+  return Object.keys(ladder).map(k=>+k).sort((a,b)=>a-b).map(si=>fmt(ladder[si])).join(' / ');
+}
+function ladderHtml(ei,ladder){
+  if(!ladder)return'';
+  const json=escAttr(JSON.stringify(ladder));
+  return`<div class="sug-ladder">Ladder: <b>${ladderStr(ladder)}</b><button class="sug-apply" onclick="event.stopPropagation();applyLadder(${ei},'${json}')">Apply</button></div>`;
+}
+function applyLadder(ei,json){
+  if(!currentWorkout)return;
+  let ladder;try{ladder=JSON.parse(json)}catch(e){return}
+  flushInputs();
+  const ex=currentWorkout.exercises[ei];if(!ex)return;
+  Object.keys(ladder).forEach(si=>{if(ex.sets[si]&&!ex.sets[si].done)ex.sets[si].weight=ladder[si]});
+  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  renderExerciseCards();
+  toast('Ladder applied');
+}
+function getPyramidSuggestion(lastLog,ex,ei,exName){
+  const pi=pyramidInfo(ex.sets);if(!pi||!lastLog)return null;
+  const lw=lastLog.sets.filter(s=>s.type==='working');
+  if(!lw.length)return null;
+  // Map current working-set indices → last log working sets by position
+  const wIdx=[];ex.sets.forEach((s,i)=>{if(s.type==='working')wIdx.push(i)});
+  const at=si=>lw[Math.min(wIdx.indexOf(si),lw.length-1)];
+  const topSets=pi.top.map(at).filter(Boolean);
+  if(!topSets.length)return null;
+  const topW=Math.max(...topSets.map(s=>+s.weight||0));
+  if(!(topW>0))return null;
+  const target=pi.topReps;
+  const topMin=Math.min(...topSets.map(s=>+s.reps||0));
+  const topHit=topMin>=target;
+  const lowerMissed=pi.lower.some(si=>{const l=at(si);return l&&(+l.reps||0)<(+ex.sets[si].reps||0)});
+  const usedW=lw.map(s=>+s.weight||0).filter(w=>w>0);
+  const flat=usedW.length>=3&&usedW.every(w=>w===usedW[0]);
+  const step=pyramidStep(topW,ex.muscle);
+  const topStr=topSets.map(s=>s.reps).join('/')+'×'+fmt(topW);
+
+  // Did the previous session also miss the top set by 2+?
+  const hist=getLastNLogs(exName,2);
+  let missStreak=0;
+  for(const h of hist){
+    const hw=h.sets.filter(s=>s.type==='working');
+    const ht=pi.top.map(si=>hw[Math.min(wIdx.indexOf(si),hw.length-1)]).filter(Boolean);
+    if(ht.length&&Math.min(...ht.map(s=>+s.reps||0))<=target-2)missStreak++;else break;
+  }
+
+  let text='',type='stay',ladder=null;
+  if(flat&&topHit){
+    type='up';ladder=pyramidLadder(topW+step,ex.sets);
+    text='Top set '+topStr+' clean, but every set was the same weight. Ramp into a new top of '+fmt(topW+step)+' lbs';
+  } else if(flat){
+    type='stay';ladder=pyramidLadder(topW,ex.sets);
+    text='Got '+topMin+'/'+target+' on the top set at one flat weight. Ramp into it instead — lower rungs lighter, top stays '+fmt(topW)+' lbs';
+  } else if(topHit&&!lowerMissed){
+    type='up';ladder=pyramidLadder(topW+step,ex.sets);
+    text='Top set earned it ('+topStr+') — go to '+fmt(topW+step)+' lbs and shift the ladder up';
+  } else if(topHit&&lowerMissed){
+    type='stay';ladder=pyramidLadder(topW,ex.sets);
+    text='Hit the top set but missed a lower rung — the ramp is too steep. Ease the lower sets, keep '+fmt(topW)+' lbs on top';
+  } else if(topMin>=target-1){
+    type='stay';ladder=pyramidLadder(topW,ex.sets);
+    text='Got '+topMin+'/'+target+' on the top set — hold at '+fmt(topW)+' lbs and get it clean';
+  } else if(missStreak>=2){
+    const nw=pyRound(topW*0.95);
+    type='down';ladder=pyramidLadder(nw,ex.sets);
+    text='Missed the top set two sessions running — pull the top back 5% to '+fmt(nw)+' lbs and rebuild';
+  } else {
+    type='down';ladder=pyramidLadder(topW,ex.sets);
+    text='Got '+topMin+'/'+target+' on the top set — hold at '+fmt(topW)+' lbs once more; pull back 5% if it repeats';
+  }
+  const icon=type==='up'?'&#9650;':type==='down'?'&#9660;':'&#9654;';
+  return{type,text:'<div class="sug-main">'+icon+' '+text+'</div>'+ladderHtml(ei,ladder)};
+}
+
 function flushInputs(){
   if(!currentWorkout)return;
   currentWorkout.exercises.forEach((ex,ei)=>{
@@ -3581,7 +3697,8 @@ function updateLastLine(ex,ei,card){
     if(isAbs){
       lastHtml=`<div class="ex-last">Last: ${reps} reps</div>`;
     } else {
-      const tgtR=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+      const pyL=pyramidInfo(ex.sets);
+      const tgtR=pyL?pyL.topReps:(ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10);
       const repPr=getRepPR(ex.name,tgtR);
       const athW=getBestWeight(ex.name);
       let prStr=`<span class="pr-badge">ATH: ${athW} lbs</span>`;
@@ -3593,14 +3710,15 @@ function updateLastLine(ex,ei,card){
       sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
     } else {
       const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
-      const sug=getSuggestion(lastLog,targetReps,ex.name);
+      const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
       if(sug)sugHtml=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
     }
   } else if(!isAbs){
     const bestW=getBestWeight(ex.name);
     if(bestW){
       lastHtml=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
-      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
+      const pyB=pyramidInfo(ex.sets)?pyramidLadder(bestW,ex.sets):null;
+      sugHtml=pyB?`<div class="ex-suggest stay"><div class="sug-main">&#9654; Top set ${bestW} lbs (based on ATH) — ramp into it</div>${ladderHtml(ei,pyB)}</div>`:`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
     }
   }
   const oldLast=card.querySelector('.ex-last');
@@ -3698,7 +3816,8 @@ function renderExerciseCards(){
       if(isAbs){
         html+=`<div class="ex-last">Last: ${reps} reps</div>`;
       } else {
-        const tgtR2=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+        const pyL2=pyramidInfo(ex.sets);
+        const tgtR2=pyL2?pyL2.topReps:(ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10);
         const repPr2=getRepPR(ex.name,tgtR2);
         const athW2=getBestWeight(ex.name);
         let prStr2=`<span class="pr-badge">ATH: ${athW2} lbs</span>`;
@@ -3712,7 +3831,7 @@ function renderExerciseCards(){
         html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
       } else {
         const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
-        const sug=getSuggestion(lastLog,targetReps,ex.name);
+        const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
         if(sug){
           html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
         }
@@ -3721,7 +3840,8 @@ function renderExerciseCards(){
       const bestW=getBestWeight(ex.name);
       if(bestW){
         html+=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
-        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
+        const pyB2=pyramidInfo(ex.sets)?pyramidLadder(bestW,ex.sets):null;
+        html+=pyB2?`<div class="ex-suggest stay"><div class="sug-main">&#9654; Top set ${bestW} lbs (based on ATH) — ramp into it</div>${ladderHtml(ei,pyB2)}</div>`:`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
       }
     }
     const startW=isAbs?null:getStartWeight(ex.name);
