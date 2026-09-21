@@ -424,6 +424,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .pb-tm .n{font-size:0.65rem;color:var(--gold)}
 .pb-status{font-size:0.8rem;color:var(--text);margin:6px 0;padding:8px 10px;border-left:3px solid var(--gold);background:rgba(160,148,106,0.08);border-radius:var(--radius-sm);line-height:1.5}
 .pb-status.warn{border-left-color:var(--red-bright);background:rgba(168,96,96,0.1)}
+.pb-status.due{border-left-color:var(--green-bright);background:rgba(106,136,112,0.12)}
 .pb-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(160,148,106,0.2);color:var(--gold-glow);border:1px solid rgba(160,148,106,0.4);margin-left:6px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:1px;vertical-align:middle}
 .pb-pct{font-size:0.6rem;color:var(--gold);margin-left:4px;font-weight:600}
 .pb-lock{font-size:0.7rem;color:var(--text-dim);padding:4px 10px;border:1px dashed var(--border-light);border-radius:var(--radius-sm);line-height:1.4}
@@ -2810,6 +2811,29 @@ function pbStatusText(){
   const nextInc='Week '+wi.week+' of '+wi.weeks+' · wave '+(wi.waveIdx+1)+', '+(pb.scheme==='331'?['','single 90% · 3x3 @ 80%','single 92.5% · 3x3 @ 82.5%','single 95% · 3x3 @ 85%'][wi.waveWeek]:PB_531[wi.waveWeek].label+' · '+PB_531[wi.waveWeek].pct.join(' / ')+'%');
   return nextInc+(wi.waveWeek===3?' · TM goes up next week (+5 upper / +10 lower)':'');
 }
+function pbWavePosition(){
+  // Program history from real logs, in the order they were first trained
+  const first={};const last={};
+  (data.logs||[]).forEach(l=>{if(!l.program||(l.id||'').startsWith('seed_'))return;
+    if(!first[l.program]||l.date<first[l.program])first[l.program]=l.date;
+    if(!last[l.program]||l.date>last[l.program])last[l.program]=l.date;});
+  const seq=Object.keys(first).filter(pid=>PROGRAMS[pid]).sort((a,b)=>first[a]<first[b]?-1:1);
+  if(!seq.length)return null;
+  const pb=getPB();const build=[];let heavy='';
+  for(let i=seq.length-1;i>=0;i--){
+    const pid=seq[i];const ph=PROGRAMS[pid].phase;
+    if(pb.lastEnd&&last[pid]<=pb.lastEnd){heavy='Powerbuilding ('+(pb.lastScheme==='331'?'single + 3x3':'5/3/1')+')';break}
+    if(ph==='rea'||ph==='peak'){heavy=pid+' ('+(PHASES[ph]||ph)+')';break}
+    build.unshift(pid);
+  }
+  const active=data.activeProgram;const wi=getProgramWeekInfo(active);
+  const activeOpen=build.includes(active)&&wi&&!wi.expired;
+  let text,cls='';
+  if(build.length===0)text='Your last block was heavy ('+heavy+'). Run a reset or build-up block before turning this on.';
+  else if(build.length===1)text='1 build-up ('+build[0]+') since '+(heavy||'the start')+'. The guide wants 2–3 before cashing in — one more build-up block, then turn this on.';
+  else{text=build.length+' build-ups in a row ('+build.join(' → ')+')'+(heavy?' since '+heavy:'')+' with no heavy block. You are due — turn it on'+(activeOpen?' when '+active+' ends ('+wi.daysLeft+'d), or now if the weights have stalled.':' now.');cls=' due'}
+  return{text,cls,build,heavy};
+}
 function renderPBCard(){
   const pb=getPB();const on=pb.on;const wi=pbWeekInfo();
   const prog=PROGRAMS[data.activeProgram];const phase=prog?prog.phase:'';
@@ -2822,6 +2846,8 @@ function renderPBCard(){
   if(!on){
     html+=`<div class="pb-sub">Slot 1 of every day becomes a barbell lift on 5/3/1 (or a top single + 3x3). The rest of the day stays your program's own hypertrophy work, cut to fit. Originals are never changed.</div>
       <div class="pb-sub" style="margin-top:6px">Lifts: ${PB_TYPES.slice(0,days).map(t=>pbLift(t).label).join(' · ')}</div>`;
+    const wp=pbWavePosition();
+    if(wp)html+=`<div class="pb-status${wp.cls}"><b style="color:var(--text-bright)">When to turn it on:</b> ${wp.text}</div>`;
     if(pb.lastEnd&&pb.lastScheme==='331'){
       const daysSince=Math.floor((Date.now()-new Date(pb.lastEnd+'T00:00:00'))/86400000);
       if(daysSince<42)html+=`<div class="pb-status warn">Last PB-B block ended ${daysSince} days ago. The guide says reset first: 7 weeks at 3x10 with new movements and no barbell singles.</div>`;
