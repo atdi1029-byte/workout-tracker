@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zercher-v286';
+const CACHE_NAME = 'zercher-v287';
 const ASSETS = [
   './',
   './index.html',

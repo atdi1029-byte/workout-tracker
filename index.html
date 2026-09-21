@@ -3575,6 +3575,7 @@ function pyramidInfo(sets){
   wIdx.forEach((si,k)=>{if(k>=L)backoff.push(si);else if(reps[k]===topReps)top.push(si);else lower.push(si)});
   return{top,lower,backoff,topReps,L};
 }
+function wsIdxTop(ex,pi){let k=0;for(let i=0;i<ex.sets.length;i++){if(i===pi.top[0])return k;if(ex.sets[i].type!=='warmup')k++}return 0}
 function pyramidStep(w,muscle){
   const lowerBody=/quad|hamstring|glute|calves|legs/i.test(muscle||'');
   return w>=100?(lowerBody?10:5):w>=50?2.5:1;
@@ -3601,7 +3602,20 @@ function ladderStr(ladder){
 function ladderHtml(ei,ladder){
   if(!ladder)return'';
   const json=escAttr(JSON.stringify(ladder));
-  return`<div class="sug-ladder">Ladder: <b>${ladderStr(ladder)}</b><button class="sug-apply" onclick="event.stopPropagation();applyLadder(${ei},'${json}')">Apply</button></div>`;
+  return`<div class="sug-ladder">Ladder: <b>${ladderStr(ladder)}</b><button class="sug-apply" onclick="event.stopPropagation();applyLadder(${ei},'${json}')">Apply</button><button class="sug-apply" onclick="event.stopPropagation();promptTopSet(${ei})">Top set&hellip;</button></div>`;
+}
+// Manual calculator: type the weight you want on the top set, get the ladder filled in
+function promptTopSet(ei){
+  if(!currentWorkout)return;
+  const ex=currentWorkout.exercises[ei];if(!ex)return;
+  const pi=pyramidInfo(ex.sets);if(!pi)return;
+  const cur=ex.sets[pi.top[0]]&&ex.sets[pi.top[0]].weight;
+  const val=prompt('Top set weight for '+ex.name+' ('+pi.topReps+' reps):',cur||'');
+  if(val===null)return;
+  const w=parseFloat(String(val).replace(/,/g,''));
+  if(!(w>0)){toast('Enter a weight');return}
+  const ladder=pyramidLadder(w,ex.sets);
+  if(ladder)applyLadder(ei,JSON.stringify(ladder));
 }
 function applyLadder(ei,json){
   if(!currentWorkout)return;
@@ -3707,7 +3721,8 @@ function updateLastLine(ex,ei,card){
     }
     if(isHeld(ex.name)){
       const s1w=ws[0]?ws[0].weight:'?';
-      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
+      const pyH=pyramidInfo(ex.sets);const topH=pyH&&ws[wsIdxTop(ex,pyH)]?ws[wsIdxTop(ex,pyH)].weight:0;
+      sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div>${pyH?ladderHtml(ei,pyramidLadder(topH,ex.sets)):''}</div>`;
     } else {
       const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
       const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
@@ -3828,7 +3843,8 @@ function renderExerciseCards(){
         // PB lifts: percentages drive the weights; no auto-suggestion
       } else if(isHeld(ex.name)){
         const s1w=workingSets[0]?workingSets[0].weight:'?';
-        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
+        const pyH2=pyramidInfo(ex.sets);const topH2=pyH2&&workingSets[wsIdxTop(ex,pyH2)]?workingSets[wsIdxTop(ex,pyH2)].weight:0;
+        html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div>${pyH2?ladderHtml(ei,pyramidLadder(topH2,ex.sets)):''}</div>`;
       } else {
         const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
         const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
