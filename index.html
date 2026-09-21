@@ -2741,7 +2741,7 @@ function pbTransform(prog){
     used[type]=true;
     const lift=pbLift(type);const liftId=exId(lift.name);
     const prep=[],rest=[];
-    day.ex.forEach(e=>{(pbIsPrep(e)?prep:rest).push(e)});
+    day.ex.forEach((e,i)=>{const c=e.slice(0,7);c[7]={orig:i};(pbIsPrep(c)?prep:rest).push(c)});
     const liftWords=liftId.split('_').length;
     const bwPull=lift.bw&&/pull|chin|barra/i.test(lift.name);
     const acc=rest.filter(e=>{const id=exId(e[0]);if(id===liftId)return false;
@@ -2764,7 +2764,7 @@ function pbTransform(prog){
         else{scheme=pbAccScheme(scheme,i,false);tech=isFail&&/fail/i.test(scheme)?'Fail':'S'}
         restS=i===0?90:(restS<45?60:Math.min(restS,90));
       }
-      out.push([e[0],e[1],e[2],tech,scheme,restS,e[6]||'',{pbAcc:true}]);
+      out.push([e[0],e[1],e[2],tech,scheme,restS,e[6]||'',{pbAcc:true,orig:e[7].orig}]);
     });
     if(isB&&out.length>3)out.pop();
     day.ex=prep.concat([pbLine],out);
@@ -2836,7 +2836,7 @@ function renderPBCard(){
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="ex-action-btn" onclick="event.stopPropagation();openPBSetup(true)">Edit TMs / lifts</button>
         ${wi&&wi.done&&pb.scheme==='531'?`<button class="ex-action-btn" onclick="event.stopPropagation();pbStartB()" style="color:var(--gold-glow);border-color:rgba(160,148,106,0.5)">Start PB-B on these lifts</button>`:''}
-        <span class="pb-lock">&#128274; Program, lifts and switching are locked until ${fmtDateShort(end)}</span>
+        <span class="pb-lock">&#128274; Lifts, schemes and program switching are locked until ${fmtDateShort(end)}. Accessories stay editable.</span>
       </div>`;
   }
   html+=`</div>`;
@@ -2944,7 +2944,7 @@ function savePBSetup(){
   toast('Powerbuilding mode on · '+(pb.scheme==='331'?'single + 3x3':'5/3/1'));
 }
 
-function getProgram(id){
+function getProgram(id,raw){
   const p=PROGRAMS[id];if(!p)return null;
   // Merge custom overrides if any
   const custom=data.customPrograms[id];
@@ -2955,7 +2955,7 @@ function getProgram(id){
   delete merged.days.ABS;
   const absR=ABS_ROUTINES['ABS'+currentAbsRoutine]||ABS_ROUTINES.ABS1;
   merged.days.ABS={label:absR.label,labelEn:'Abs '+currentAbsRoutine,ex:absR.ex};
-  if(id===data.activeProgram&&pbOn())pbTransform(merged);
+  if(!raw&&id===data.activeProgram&&pbOn())pbTransform(merged);
   return merged;
 }
 function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'&&k!=='_'):[]}
@@ -3150,7 +3150,7 @@ function renderPrograms(){
           </div>`;
         }).join('')}
         <div style="display:flex;gap:8px;margin-top:12px;padding-top:8px;border-top:1px solid var(--border)">
-          ${isActive&&p.pb?'<span class="pb-lock" style="flex:1;text-align:center">&#128274; Locked by Powerbuilding mode</span>':`<button class="ex-action-btn" onclick="event.stopPropagation();openEditor('${pid}')" style="flex:1">Edit Program</button>`}
+          <button class="ex-action-btn" onclick="event.stopPropagation();openEditor('${pid}')" style="flex:1">${isActive&&p.pb?'Edit Accessories':'Edit Program'}</button>
           ${!isActive?(pbOn()?'<span class="pb-lock" style="flex:1;text-align:center">&#128274; PB block active</span>':`<button class="ex-action-btn" onclick="event.stopPropagation();setActiveProgram('${pid}')" style="flex:1">Set Active</button>`):''}
         </div>
       </div>
@@ -3401,6 +3401,7 @@ function initWorkout(){
   currentWorkout.exercises.forEach((ex,idx)=>{
     const src=dayData.ex[idx];
     if(src&&src[7]&&src[7].pb){ex._pb=src[7].pb;ex.sets=pbLiftSets(src[7].pb)}
+    else if(src&&src[7]&&src[7].orig!=null){ex._pbOrig=src[7].orig}
   });
   // Restore saved alt exercises
   currentWorkout.exercises.forEach(ex=>{
@@ -5369,12 +5370,13 @@ function doSwap(ei,name,nameEn,muscle){
       if(lastLog.sets[i])s.weight=lastLog.sets[i].weight;
     });
   }
-  // Save swap permanently to customPrograms
-  const prog=getProgram(pid);
+  // Save swap permanently to customPrograms (always against the original, never the PB overlay)
+  const prog=getProgram(pid,true);
   if(prog&&prog.days[day]){
     const dayEx=prog.days[day].ex.map(e=>[...e]);
-    if(dayEx[ei]){
-      dayEx[ei][0]=name;dayEx[ei][1]=nameEn;dayEx[ei][2]=muscle;
+    const ti=ex._pbOrig!=null?ex._pbOrig:ei;
+    if(dayEx[ti]){
+      dayEx[ti][0]=name;dayEx[ti][1]=nameEn;dayEx[ti][2]=muscle;
     }
     if(!data.customPrograms[pid])data.customPrograms[pid]={days:{}};
     if(!data.customPrograms[pid].days)data.customPrograms[pid].days={};
@@ -5525,15 +5527,15 @@ let editorOrigMap={}; // _editorId → original name, for tracking real renames 
 let _editorIdCounter=0;
 
 function openEditor(pid){
-  if(pbOn()&&(pid||data.activeProgram)===data.activeProgram){toast('Locked — turn off Powerbuilding mode to edit '+data.activeProgram);return}
   editorPid=pid||data.activeProgram;
-  const prog=getProgram(editorPid);if(!prog)return;
+  const prog=getProgram(editorPid,true);if(!prog)return;
   const isCustom=!!data.customPrograms[editorPid];
 
   let html=`<div class="modal-header">
     <div class="modal-title">Edit: ${editorPid} ${isCustom?'<span class="custom-badge">CUSTOM</span>':'<span class="base-badge">BASE</span>'}</div>
     <button class="modal-close" onclick="closeModal()">&times;</button>
   </div>
+  ${pbOn()&&editorPid===data.activeProgram?'<div class="pb-status" style="margin-bottom:10px">Powerbuilding is on. You are editing the original accessories — the barbell lift is added at slot 1 automatically and the set counts are trimmed when you train. Swap, add or remove whatever you like here.</div>':''}
   <div class="day-tabs" id="editorDayTabs" style="margin-bottom:12px"></div>
   <div id="editorDayContent"></div>`;
 
@@ -5546,7 +5548,7 @@ function openEditor(pid){
 }
 
 function renderEditorTabs(){
-  const prog=getProgram(editorPid);if(!prog)return;
+  const prog=getProgram(editorPid,true);if(!prog)return;
   const days=Object.keys(prog.days).filter(d=>d!=='ABS');
   let html='';
   days.forEach(d=>{
@@ -5567,7 +5569,7 @@ function switchEditorDay(day,btn){
 }
 
 function loadEditorDay(){
-  const prog=getProgram(editorPid);
+  const prog=getProgram(editorPid,true);
   const dayData=prog.days[editorDay];if(!dayData)return;
   // Deep copy exercises into editor state, each gets a stable _editorId
   editorOrigMap={};
