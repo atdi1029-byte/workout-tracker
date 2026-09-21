@@ -406,6 +406,37 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 ::-webkit-scrollbar-track{background:var(--bg-deep)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
+
+/* ── POWERBUILDING MODE ── */
+.pb-card{background:linear-gradient(135deg,rgba(160,148,106,0.12),rgba(14,16,20,0.6));border:1px solid rgba(160,148,106,0.35);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.pb-card.on{border-color:var(--gold);box-shadow:0 0 14px rgba(160,148,106,0.2)}
+.pb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pb-title{font-family:'Oswald',sans-serif;font-size:1.05rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-glow)}
+.pb-switch{width:46px;height:26px;border-radius:13px;background:#2a3040;position:relative;cursor:pointer;border:1px solid var(--border-light);transition:background .2s;flex-shrink:0}
+.pb-switch.on{background:var(--gold)}
+.pb-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#c8ccd8;transition:left .2s}
+.pb-switch.on::after{left:22px;background:#1a1a1a}
+.pb-sub{font-size:0.75rem;color:var(--text-dim);line-height:1.5}
+.pb-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.pb-tm{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px}
+.pb-tm .l{font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+.pb-tm .v{font-family:'Oswald',sans-serif;font-size:1.05rem;color:var(--text-bright)}
+.pb-tm .n{font-size:0.65rem;color:var(--gold)}
+.pb-status{font-size:0.8rem;color:var(--text);margin:6px 0;padding:8px 10px;border-left:3px solid var(--gold);background:rgba(160,148,106,0.08);border-radius:var(--radius-sm);line-height:1.5}
+.pb-status.warn{border-left-color:var(--red-bright);background:rgba(168,96,96,0.1)}
+.pb-badge{display:inline-block;font-size:0.55rem;padding:2px 6px;border-radius:8px;background:rgba(160,148,106,0.2);color:var(--gold-glow);border:1px solid rgba(160,148,106,0.4);margin-left:6px;font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:1px;vertical-align:middle}
+.pb-pct{font-size:0.6rem;color:var(--gold);margin-left:4px;font-weight:600}
+.pb-lock{font-size:0.7rem;color:var(--text-dim);padding:4px 10px;border:1px dashed var(--border-light);border-radius:var(--radius-sm);line-height:1.4}
+.ex-card.pb-lift{border-color:rgba(160,148,106,0.5);box-shadow:0 0 10px rgba(160,148,106,0.12)}
+.workout-week-banner.pb{border-color:rgba(160,148,106,0.4);margin-top:6px}
+.pb-form label{display:block;font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin:10px 0 4px}
+.pb-form input,.pb-form select{width:100%;padding:8px;background:var(--bg-input);color:var(--text-bright);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;font-family:inherit}
+.pb-form .row{display:flex;gap:8px}
+.pb-form .row>*{flex:1;min-width:0}
+.pb-hint{font-size:0.68rem;color:var(--text-dim);margin-top:3px;line-height:1.4}
+.pb-seg{display:flex;gap:6px}
+.pb-seg button{flex:1;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;cursor:pointer;font-size:0.8rem;letter-spacing:.5px}
+.pb-seg button.sel{background:rgba(160,148,106,0.2);color:var(--gold-glow);border-color:var(--gold)}
 </style>
 </head>
 <body>
@@ -2594,6 +2625,325 @@ if(!data.customPrograms.ABCD11){
 }}
 
 // ── PROGRAM HELPERS ──
+// ── POWERBUILDING MODE ──
+// Overlay on the active program: slot 1 of each day becomes a barbell lift on a
+// strength scheme (5/3/1 or top single + 3x3), the rest of the day stays hypertrophy
+// work built from the program's own lines. Originals in PROGRAMS/customPrograms are
+// never modified — the transform runs inside getProgram() for the active program only.
+const PB_DEFAULT_LIFTS={
+  push:{name:'Supino Reto',en:'Barbell Bench Press',muscle:'chest',label:'Bench',short:'Bench'},
+  pull:{name:'Weighted Chin Ups',en:'Weighted Chin Ups',muscle:'back',label:'Weighted Pull-ups',short:'Pull-up',bw:true},
+  legs:{name:'Behind The Back Deadlift',en:'Behind The Back Deadlift',muscle:'hamstrings',label:'Behind-the-Back Deadlift',short:'BTB DL',lower:true},
+  upper:{name:'Overhead Press Barbell (Standing)',en:'Standing Barbell Overhead Press',muscle:'shoulders',label:'Overhead Press',short:'OHP'}
+};
+const PB_TYPES=['push','pull','legs','upper'];
+const PB_531={1:{pct:[65,75,85],reps:[5,5,5],label:'5s week'},2:{pct:[70,80,90],reps:[3,3,3],label:'3s week'},3:{pct:[75,85,95],reps:[5,3,1],label:'5/3/1 week'}};
+const PB_331={1:{single:90,triple:80},2:{single:92.5,triple:82.5},3:{single:95,triple:85}};
+const PB_SAME_JOINT={push:['triceps'],pull:['biceps','forearms'],legs:[],upper:['triceps','shoulders']};
+const PB_PREP_RE=/rota[çc][aã]o|rotation|alongamento|stretch|circles|prancha|plank/i;
+const PB_AMRAP_CAP=8;
+
+function getPB(){
+  if(!data.settings)data.settings={};
+  if(!data.settings.pb)data.settings.pb={on:false,scheme:'531',start:'',weeks:7,bw:0,tm:{},lifts:{},lastEnd:'',lastScheme:''};
+  return data.settings.pb;
+}
+function pbOn(){return!!(data&&data.settings&&data.settings.pb&&data.settings.pb.on)}
+function pbLift(type){const pb=getPB();return Object.assign({},PB_DEFAULT_LIFTS[type],(pb.lifts&&pb.lifts[type])||{})}
+function pbRound(w){return Math.round(w/5)*5}
+function pbIsPrep(e){return e[2]==='abs'||e[3]==='Mob'||PB_PREP_RE.test(e[0]+' '+(e[1]||''))}
+function pbDayType(ex){
+  const c={};ex.forEach(e=>{if(pbIsPrep(e))return;c[e[2]]=(c[e[2]]||0)+1});
+  const chest=c.chest||0,back=c.back||0,arms=(c.biceps||0)+(c.triceps||0);
+  const legs=(c.quads||0)+(c.hamstrings||0)+(c.glutes||0);
+  if(legs>0&&legs>=chest&&legs>=back)return'legs';
+  if(chest>0&&back===0)return'push';
+  if(back>0&&chest===0)return'pull';
+  return'upper';
+}
+function pbWeekInfo(){
+  const pb=getPB();if(!pb.on||!pb.start)return null;
+  const start=new Date(pb.start+'T00:00:00');
+  const days=Math.floor((Date.now()-start)/86400000);
+  const weeks=+pb.weeks||7;
+  const raw=Math.max(1,Math.floor(days/7)+1);
+  const done=raw>weeks;
+  const week=Math.min(raw,weeks);
+  const test=week===weeks;
+  const waveIdx=test?Math.floor((weeks-2)/3):Math.floor((week-1)/3);
+  const waveWeek=test?0:((week-1)%3)+1;
+  return{week,weeks,done,test,waveIdx,waveWeek,daysLeft:Math.max(0,weeks*7-days)};
+}
+function pbTM(type){
+  const pb=getPB();const base=+(pb.tm&&pb.tm[type])||0;if(!base)return 0;
+  const wi=pbWeekInfo();const inc=pbLift(type).lower?10:5;
+  return base+(wi?wi.waveIdx:0)*inc;
+}
+function pbLiftSets(type){
+  const pb=getPB();const wi=pbWeekInfo();const tm=pbTM(type);const lift=pbLift(type);
+  const bw=lift.bw?(+pb.bw||0):0;const sets=[];
+  const mk=(pct,reps,t,amrap,base)=>{const total=pbRound(base*pct/100);return{weight:tm?(lift.bw?Math.max(0,total-bw):total):'',reps:reps,type:t,done:false,pct:pct,amrap:!!amrap,total:total}};
+  if(pb.scheme==='331'){
+    const m=tm/0.85;
+    [[40,5],[55,3],[70,2],[80,1]].forEach(a=>sets.push(mk(a[0],a[1],'warmup',false,m)));
+    if(wi&&wi.test){[90,95,100].forEach(p=>sets.push(mk(p,1,'working',false,m)))}
+    else{const r=PB_331[(wi?wi.waveWeek:1)||1];sets.push(mk(r.single,1,'working',false,m));for(let i=0;i<3;i++)sets.push(mk(r.triple,3,'working',false,m))}
+  }else{
+    [[40,5],[50,5],[60,3]].forEach(a=>sets.push(mk(a[0],a[1],'warmup',false,tm)));
+    if(wi&&wi.test){[[70,5],[80,5],[90,5]].forEach((a,i)=>sets.push(mk(a[0],a[1],'working',i===2,tm)))}
+    else{const r=PB_531[(wi?wi.waveWeek:1)||1];r.pct.forEach((p,i)=>sets.push(mk(p,r.reps[i],'working',i===2,tm)))}
+  }
+  return sets;
+}
+function pbSchemeStr(){
+  const pb=getPB();const wi=pbWeekInfo();
+  if(pb.scheme==='331')return wi&&wi.test?'4x1wu+1/1/1':'4x1wu+1/3/3/3';
+  if(wi&&wi.test)return'3x5wu+5/5/5';
+  const r=PB_531[(wi?wi.waveWeek:1)||1];return'3x5wu+'+r.reps.join('/');
+}
+function pbHead(){
+  const pb=getPB();const wi=pbWeekInfo();
+  if(pb.scheme==='331')return wi&&wi.test?'Test week · singles 90 / 95 / 100%':'Top single + 3x3';
+  if(wi&&wi.test)return'Heavy-5 week';
+  return'5/3/1 · '+PB_531[(wi?wi.waveWeek:1)||1].label;
+}
+function pbNote(type){
+  const pb=getPB();const tm=pbTM(type);const lift=pbLift(type);
+  if(!tm)return pbHead()+' · set your training max';
+  const work=pbLiftSets(type).filter(s=>s.type==='working');
+  const tmStr=lift.bw?'TM '+tm+' (BW '+(+pb.bw||0)+' + '+(tm-(+pb.bw||0))+')':'TM '+tm;
+  return pbHead()+' · '+tmStr+' · '+work.map(s=>s.pct+'% = '+(lift.bw?'+'+Math.max(0,s.total-(+pb.bw||0)):s.total)).join(' / ');
+}
+function pbAccScheme(s,i,keepTech){
+  s=String(s||'4x10');
+  if(/^\d+x\s*fail/i.test(s))return s.replace(/^(\d+)/,m=>Math.min(+m,i===0?4:3));
+  let wu='';const wm=s.match(/^(\d+x\d+(?:-\d+)?\s*wu)\s*\+\s*/i);
+  if(wm){wu=wm[1];s=s.slice(wm[0].length)}
+  if(i!==0)wu='';
+  let suffix='';
+  const techRe=/\+\s*(\d*x?\s*(?:drop|strip)|rp\b.*|rest-pause.*)$/i;
+  if(keepTech){const sm=s.match(techRe);if(sm){suffix='+'+sm[1];s=s.slice(0,sm.index)}}
+  else{s=s.replace(techRe,'').replace(/\s*(bi-set|tri-set|superset)\s*/gi,'').trim()}
+  if(s.includes('/')){s=(i===0?'4':'3')+'x8-12'}
+  else{
+    const m=s.match(/^(\d+)x(.+)$/);
+    if(m){const n=Math.min(+m[1],i===0?4:3);let reps=m[2].trim();const rm=reps.match(/^(\d+)(?:-(\d+))?/);
+      if(rm){const lo=+rm[1];if(lo<8)reps='8-10'}s=n+'x'+reps}
+  }
+  return(wu?wu+'+':'')+s+suffix;
+}
+function pbTransform(prog){
+  const pb=getPB();const isB=pb.scheme==='331';const used={};
+  for(const dk in prog.days){
+    if(dk==='ABS'||dk==='_')continue;const day=prog.days[dk];if(!day||!day.ex)continue;
+    let type=pbDayType(day.ex);
+    if(used[type])type=PB_TYPES.find(t=>!used[t])||type;
+    used[type]=true;
+    const lift=pbLift(type);const liftId=exId(lift.name);
+    const prep=[],rest=[];
+    day.ex.forEach(e=>{(pbIsPrep(e)?prep:rest).push(e)});
+    const liftWords=liftId.split('_').length;
+    const bwPull=lift.bw&&/pull|chin|barra/i.test(lift.name);
+    const acc=rest.filter(e=>{const id=exId(e[0]);if(id===liftId)return false;
+      if(bwPull&&/(weighted|com peso).*(pull|chin)|(pull|chin).*(weighted|com peso)/i.test(e[0]+' '+(e[1]||'')))return false;
+      return!(liftWords>=3&&e[2]===lift.muscle&&id.includes(liftId))});
+    const pbLine=[lift.name,lift.en,lift.muscle,'PB',pbSchemeStr(),type==='upper'?180:240,pbNote(type),{pb:type}];
+    const out=[];let techUsed=false;const joint=PB_SAME_JOINT[type]||[];
+    acc.forEach((e,i)=>{
+      let tech=e[3]||'S';let scheme=e[4]||'4x10';let restS=+e[5]||60;
+      const isFail=/fail/i.test(scheme)||tech==='Fail';
+      if(isB){
+        if(!(e[2]==='hamstrings'&&tech==='RestP'))tech=isFail?'Fail':'S';
+        scheme=isFail?'3xFailure':(tech==='RestP'?'1x8wu+3x8-10+RP 1':'1x8wu+3x8-10');
+        restS=i<3?90:60;
+      }else{
+        const fatigue=['DS','RestP','PE','BO'].includes(tech);
+        const keep=i>0&&!techUsed&&fatigue&&!joint.includes(e[2]);
+        if(isFail&&i===0){tech='S';scheme='3x8-12'}
+        else if(keep){techUsed=true;scheme=pbAccScheme(scheme,i,true)}
+        else{scheme=pbAccScheme(scheme,i,false);tech=isFail&&/fail/i.test(scheme)?'Fail':'S'}
+        restS=i===0?90:(restS<45?60:Math.min(restS,90));
+      }
+      out.push([e[0],e[1],e[2],tech,scheme,restS,e[6]||'',{pbAcc:true}]);
+    });
+    if(isB&&out.length>3)out.pop();
+    day.ex=prep.concat([pbLine],out);
+    day.labelEn=(day.labelEn||day.label)+' · PB';
+  }
+  prog.pb=true;
+  return prog;
+}
+function pbSuggestTM(type,bwOverride){
+  const lift=pbLift(type);const id=exId(lift.name);const bw=lift.bw?(bwOverride!=null?+bwOverride:(+getPB().bw||0)):0;
+  const cutoff=dateStr(new Date(Date.now()-120*86400000));let best=0,bestD='';
+  (data.logs||[]).forEach(l=>{
+    if((l.date||'')<cutoff)return;
+    (l.exercises||[]).forEach(ex=>{
+      if(exId(ex.name)!==id)return;
+      (ex.sets||[]).forEach(s=>{
+        if(s.type==='warmup')return;const r=+s.reps,w=(+s.weight||0)+bw;
+        if(!r||r>10||w<=0)return;const e=calcE1RM(w,r);if(e>best){best=e;bestD=l.date}
+      });
+    });
+  });
+  if(!best){const ath=getBestWeight(lift.name);if(ath)best=ath+bw}
+  return best?{tm:pbRound(best*0.85),e1rm:Math.round(best),date:bestD}:null;
+}
+function pbLocked(ei){
+  const ex=currentWorkout&&currentWorkout.exercises&&currentWorkout.exercises[ei];
+  if(ex&&ex._pb){toast('Locked — Powerbuilding lift');return true}
+  return false;
+}
+function pbClearInProgress(){
+  Object.keys(localStorage).filter(k=>k.startsWith('workout_in_progress_')).forEach(k=>localStorage.removeItem(k));
+  currentWorkout=null;workoutStartTime=null;
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+}
+function pbEndDate(){const pb=getPB();if(!pb.start)return'';const d=new Date(pb.start+'T00:00:00');d.setDate(d.getDate()+(+pb.weeks||7)*7);return dateStr(d)}
+function pbStatusText(){
+  const pb=getPB();const wi=pbWeekInfo();if(!wi)return'';
+  if(wi.done){
+    if(pb.scheme==='331')return'Block complete. Next: turn Powerbuilding off and run a reset block (3x10, mostly new movements, no barbell lifts) for 7 weeks before turning it back on.';
+    return'Block complete. Next: Powerbuilding B on the same lifts (top single + 3x3), then a test week and a reset.';
+  }
+  if(wi.test)return pb.scheme==='331'?'Test week: warm up, then singles at 90 / 95 / 100%. One more at +5 (upper) / +10 (lower) if 100% is clean. Stop at the first miss.':'Heavy-5 week: work up to 90% of TM for a clean 5+ (cap '+PB_AMRAP_CAP+'). Then tap Edit TMs — the suggestion will use it.';
+  const nextInc='Week '+wi.week+' of '+wi.weeks+' · wave '+(wi.waveIdx+1)+', '+(pb.scheme==='331'?['','single 90% · 3x3 @ 80%','single 92.5% · 3x3 @ 82.5%','single 95% · 3x3 @ 85%'][wi.waveWeek]:PB_531[wi.waveWeek].label+' · '+PB_531[wi.waveWeek].pct.join(' / ')+'%');
+  return nextInc+(wi.waveWeek===3?' · TM goes up next week (+5 upper / +10 lower)':'');
+}
+function renderPBCard(){
+  const pb=getPB();const on=pb.on;const wi=pbWeekInfo();
+  const prog=PROGRAMS[data.activeProgram];const phase=prog?prog.phase:'';
+  const days=prog?Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_').length:4;
+  let html=`<div class="pb-card${on?' on':''}">
+    <div class="pb-head">
+      <span class="pb-title">Powerbuilding Mode</span>
+      <div class="pb-switch${on?' on':''}" onclick="pbToggle()"></div>
+    </div>`;
+  if(!on){
+    html+=`<div class="pb-sub">Slot 1 of every day becomes a barbell lift on 5/3/1 (or a top single + 3x3). The rest of the day stays your program's own hypertrophy work, cut to fit. Originals are never changed.</div>
+      <div class="pb-sub" style="margin-top:6px">Lifts: ${PB_TYPES.slice(0,days).map(t=>pbLift(t).label).join(' · ')}</div>`;
+    if(pb.lastEnd&&pb.lastScheme==='331'){
+      const daysSince=Math.floor((Date.now()-new Date(pb.lastEnd+'T00:00:00'))/86400000);
+      if(daysSince<42)html+=`<div class="pb-status warn">Last PB-B block ended ${daysSince} days ago. The guide says reset first: 7 weeks at 3x10 with new movements and no barbell singles.</div>`;
+    }
+    if(phase&&phase!=='rea'&&phase!=='peak')html+=`<div class="pb-status warn">${data.activeProgram} is a ${PHASES[phase]||phase} block. Powerbuilding belongs in a realization slot — it will still work here, but the accessories get cut to pay for the heavy sets.</div>`;
+  }else{
+    const end=pbEndDate();
+    html+=`<div class="pb-sub"><b style="color:var(--text-bright)">${pb.scheme==='331'?'PB-B · top single + 3x3':'PB-A · 5/3/1'}</b> on <b style="color:var(--text-bright)">${data.activeProgram}</b> · ${fmtDateShort(pb.start)} — ${fmtDateShort(end)} · ${wi?(wi.done?'complete':wi.daysLeft+'d left'):''}</div>
+      <div class="pb-status${wi&&wi.done?' warn':''}">${pbStatusText()}</div>
+      <div class="pb-grid">${PB_TYPES.slice(0,days).map(t=>{const l=pbLift(t);const tm=pbTM(t);const base=+(pb.tm&&pb.tm[t])||0;
+        return`<div class="pb-tm"><div class="l">${l.label}</div><div class="v">${tm?tm+' lbs':'—'}</div><div class="n">${l.bw?'BW '+(+pb.bw||0)+' + '+(tm-(+pb.bw||0))+' added':(tm!==base?'base '+base+' · this wave +'+(tm-base):'this wave')}</div></div>`}).join('')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="ex-action-btn" onclick="event.stopPropagation();openPBSetup(true)">Edit TMs / lifts</button>
+        ${wi&&wi.done&&pb.scheme==='531'?`<button class="ex-action-btn" onclick="event.stopPropagation();pbStartB()" style="color:var(--gold-glow);border-color:rgba(160,148,106,0.5)">Start PB-B on these lifts</button>`:''}
+        <span class="pb-lock">&#128274; Program, lifts and switching are locked until ${fmtDateShort(end)}</span>
+      </div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+function pbToggle(){
+  const pb=getPB();
+  if(pb.on){pbTurnOff();return}
+  openPBSetup(false);
+}
+function pbTurnOff(){
+  const pb=getPB();const wi=pbWeekInfo();
+  if(wi&&!wi.done){
+    const ans=prompt('Powerbuilding block has '+wi.daysLeft+' days left. Ending a heavy block early because it feels boring is the thing this lock exists to stop.\n\nType OFF to end it anyway.');
+    if(ans!=='OFF'){toast('Still locked');return}
+  }
+  pb.on=false;pb.lastEnd=dateStr();pb.lastScheme=pb.scheme;
+  saveData();syncConfigToCloud();pbClearInProgress();renderPrograms();
+  toast('Powerbuilding mode off');
+}
+function pbStartB(){
+  const pb=getPB();pb.scheme='331';pb.start=dateStr();pb.on=true;
+  saveData();openPBSetup(true,true);
+}
+function openPBSetup(isEdit,fresh){
+  const pb=getPB();const prog=PROGRAMS[data.activeProgram];
+  const days=prog?Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_').length:4;
+  const scheme=isEdit?pb.scheme:(pb.scheme||'531');
+  const start=isEdit&&pb.start?pb.start:dateStr();
+  const weeks=isEdit&&pb.weeks?pb.weeks:(prog&&prog.type==='ABC'?10:7);
+  const names=getAllExerciseNames();
+  let html=`<div class="modal-header"><div class="modal-title">Powerbuilding ${isEdit?'Settings':'Setup'}</div><button class="modal-close" onclick="closeModal()">&times;</button></div>
+  <div class="pb-form">
+    <label>Scheme</label>
+    <div class="pb-seg" id="pbSchemeSeg">
+      <button class="${scheme==='531'?'sel':''}" data-v="531" onclick="pbPickScheme('531')">PB-A · 5/3/1</button>
+      <button class="${scheme==='331'?'sel':''}" data-v="331" onclick="pbPickScheme('331')">PB-B · single + 3x3</button>
+    </div>
+    <div class="pb-hint" id="pbSchemeHint"></div>
+    <div class="row">
+      <div><label>Start date</label><input type="date" id="pbStart" value="${start}"></div>
+      <div><label>Weeks</label><input type="number" id="pbWeeks" value="${weeks}" min="4" max="12"></div>
+      <div><label>Bodyweight</label><input type="number" id="pbBW" value="${pb.bw||''}" placeholder="lbs" inputmode="decimal" oninput="pbRefreshHints()"></div>
+    </div>
+    <div class="pb-hint">Last week of the block is the test / heavy-5 week. 3-day programs run 10 weeks, 4-day run 7.</div>
+    <datalist id="pbExList">${names.map(n=>`<option value="${escAttr(n)}">`).join('')}</datalist>`;
+  PB_TYPES.slice(0,days).forEach(t=>{
+    const l=pbLift(t);const sug=pbSuggestTM(t);let cur=+(pb.tm&&pb.tm[t])||'';
+    if(fresh&&sug&&sug.tm>cur)cur=sug.tm;
+    html+=`<label>${t} day — ${l.label}</label>
+      <div class="row">
+        <input type="text" id="pbLift_${t}" value="${escAttr(l.name)}" list="pbExList" placeholder="exercise" style="flex:2">
+        <input type="number" id="pbTM_${t}" value="${cur||(sug?sug.tm:'')}" data-sug="${sug?sug.tm:''}" placeholder="TM lbs" inputmode="decimal" style="flex:1">
+      </div>
+      <div class="pb-hint" id="pbHint_${t}">${pbHintText(t,sug)}</div>`;
+  });
+  html+=`<div style="display:flex;gap:8px;margin-top:16px">
+      <button class="ex-action-btn" onclick="closeModal()" style="flex:1">Cancel</button>
+      <button class="ex-action-btn" onclick="savePBSetup()" style="flex:1;color:var(--gold-glow);border-color:rgba(160,148,106,0.5)">${isEdit?'Save':'Turn on'}</button>
+    </div></div>`;
+  openModal(html);
+  window._pbScheme=scheme;pbPickScheme(scheme);
+}
+function pbHintText(t,sug){
+  const l=pbLift(t);
+  return(sug?'Suggested TM '+sug.tm+' = 85% of e1RM '+sug.e1rm+(sug.date?' ('+fmtDateShort(sug.date)+')':' (ATH)'):'No recent log. Do a hard clean 5 in week 1: TM = weight × 1.167 × 0.85.')+(l.bw?' · TM is bodyweight + added weight':'');
+}
+function pbRefreshHints(){
+  const bw=parseFloat((document.getElementById('pbBW')||{}).value)||0;
+  PB_TYPES.forEach(t=>{
+    const l=pbLift(t);if(!l.bw)return;
+    const inp=document.getElementById('pbTM_'+t);const hint=document.getElementById('pbHint_'+t);if(!inp||!hint)return;
+    const sug=pbSuggestTM(t,bw);
+    if(!inp.value||String(inp.value)===String(inp.dataset.sug||''))inp.value=sug?sug.tm:'';
+    inp.dataset.sug=sug?sug.tm:'';hint.textContent=pbHintText(t,sug);
+  });
+}
+function pbPickScheme(s){
+  window._pbScheme=s;
+  document.querySelectorAll('#pbSchemeSeg button').forEach(b=>b.classList.toggle('sel',b.dataset.v===s));
+  const h=document.getElementById('pbSchemeHint');
+  if(h)h.textContent=s==='331'?'Single first (90 / 92.5 / 95% of max), then 3x3 (80 / 82.5 / 85%). Accessories 1 warm-up + 3x8-10, one technique in the whole block. Only after a PB-A block on the same lifts.':'Three warm-ups, then 65/75/85 · 70/80/90 · 75/85/95% of TM. Last set AMRAP, capped at '+PB_AMRAP_CAP+'. Accessories 3–4 sets of 8–12, one technique per day.';
+}
+function savePBSetup(){
+  const pb=getPB();const prog=PROGRAMS[data.activeProgram];
+  const days=prog?Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_').length:4;
+  const start=document.getElementById('pbStart').value;const weeks=parseInt(document.getElementById('pbWeeks').value);
+  const bw=parseFloat(document.getElementById('pbBW').value)||0;
+  if(!start)return toast('Pick a start date');
+  if(!weeks||weeks<4||weeks>12)return toast('Enter 4–12 weeks');
+  const lifts={},tm={};
+  for(const t of PB_TYPES.slice(0,days)){
+    const name=(document.getElementById('pbLift_'+t).value||'').trim();
+    const v=parseFloat(document.getElementById('pbTM_'+t).value)||0;
+    if(!name)return toast('Pick an exercise for the '+t+' day');
+    if(!v)return toast('Enter a training max for '+name);
+    const def=PB_DEFAULT_LIFTS[t];
+    lifts[t]={name:name,en:name===def.name?def.en:getExerciseEnglish(name)||name,muscle:name===def.name?def.muscle:getExerciseMuscle(name)||def.muscle,label:name===def.name?def.label:name,short:name===def.name?def.short:name.split(' ')[0],bw:name===def.name?!!def.bw:/weighted|com peso/i.test(name),lower:name===def.name?!!def.lower:/deadlift|squat|terra|agachamento/i.test(name)};
+    tm[t]=v;
+  }
+  const bwLift=Object.values(lifts).some(l=>l.bw);
+  if(bwLift&&!bw)return toast('Enter your bodyweight for the weighted pull-up TM');
+  pb.scheme=window._pbScheme||'531';pb.start=start;pb.weeks=weeks;pb.bw=bw;pb.lifts=lifts;pb.tm=tm;pb.on=true;
+  saveData();syncConfigToCloud();pbClearInProgress();closeModal();renderPrograms();
+  toast('Powerbuilding mode on · '+(pb.scheme==='331'?'single + 3x3':'5/3/1'));
+}
+
 function getProgram(id){
   const p=PROGRAMS[id];if(!p)return null;
   // Merge custom overrides if any
@@ -2605,6 +2955,7 @@ function getProgram(id){
   delete merged.days.ABS;
   const absR=ABS_ROUTINES['ABS'+currentAbsRoutine]||ABS_ROUTINES.ABS1;
   merged.days.ABS={label:absR.label,labelEn:'Abs '+currentAbsRoutine,ex:absR.ex};
+  if(id===data.activeProgram&&pbOn())pbTransform(merged);
   return merged;
 }
 function getProgramDays(id){const p=getProgram(id);return p?Object.keys(p.days).filter(k=>k!=='ABS'&&k!=='_'):[]}
@@ -2731,6 +3082,7 @@ function getNextDay(){
 }
 
 function selectProgram(pid){
+  if(pbOn()&&pid!==data.activeProgram){toast('Locked — Powerbuilding block runs until '+fmtDateShort(pbEndDate()));return}
   data.activeProgram=pid;
   if(!data.programStartDates)data.programStartDates={};
   data.programStartDates[pid]=dateStr();
@@ -2744,7 +3096,7 @@ function selectProgram(pid){
 // ── PROGRAMS VIEW ──
 function toggleProgram(el){el.classList.toggle('expanded')}
 function renderPrograms(){
-  let html='';
+  let html=renderPBCard();
   for(const pid in PROGRAMS){
     if(pid==='_custom')continue;
     const p=getProgram(pid);
@@ -2754,7 +3106,7 @@ function renderPrograms(){
     html+=`<div class="prog-overview${isActive?' current':''}" onclick="toggleProgram(this)">
       <div class="prog-head">
         <span class="prog-title">${pid}</span>
-        <span>${isActive?'<span class="prog-badge active-badge">Active</span> ':''}
+        <span>${isActive?'<span class="prog-badge active-badge">Active</span> ':''}${isActive&&p.pb?'<span class="pb-badge">PB</span> ':''}
         <span class="prog-badge phase">${phase}</span></span>
       </div>
       <div class="prog-split">${p.type==='ABC'?'3-Day PPL':'4-Day Split'} &middot; ${getProgWeeks(pid)} weeks${p.dates?' &middot; '+p.dates:''} &middot; tap to expand</div>
@@ -2779,6 +3131,7 @@ function renderPrograms(){
         }).join('')}
       </div>
       <div class="prog-detail">
+        ${isActive&&p.pb?'<div class="pb-status" style="margin-bottom:8px">Showing the Powerbuilding version. The original program is untouched and comes back when the mode is turned off.</div>':''}
         ${days.map(d=>{
           const day=p.days[d];
           return `<div class="prog-detail-day">
@@ -2797,8 +3150,8 @@ function renderPrograms(){
           </div>`;
         }).join('')}
         <div style="display:flex;gap:8px;margin-top:12px;padding-top:8px;border-top:1px solid var(--border)">
-          <button class="ex-action-btn" onclick="event.stopPropagation();openEditor('${pid}')" style="flex:1">Edit Program</button>
-          ${!isActive?`<button class="ex-action-btn" onclick="event.stopPropagation();setActiveProgram('${pid}')" style="flex:1">Set Active</button>`:''}
+          ${isActive&&p.pb?'<span class="pb-lock" style="flex:1;text-align:center">&#128274; Locked by Powerbuilding mode</span>':`<button class="ex-action-btn" onclick="event.stopPropagation();openEditor('${pid}')" style="flex:1">Edit Program</button>`}
+          ${!isActive?(pbOn()?'<span class="pb-lock" style="flex:1;text-align:center">&#128274; PB block active</span>':`<button class="ex-action-btn" onclick="event.stopPropagation();setActiveProgram('${pid}')" style="flex:1">Set Active</button>`):''}
         </div>
       </div>
     </div>`;
@@ -2806,6 +3159,7 @@ function renderPrograms(){
   document.getElementById('programsList').innerHTML=html;
 }
 function setActiveProgram(pid){
+  if(pbOn()&&pid!==data.activeProgram){toast('Locked — Powerbuilding block runs until '+fmtDateShort(pbEndDate()));return}
   data.activeProgram=pid;
   if(!data.programStartDates)data.programStartDates={};
   data.programStartDates[pid]=dateStr();
@@ -2834,6 +3188,11 @@ function renderWorkout(){
       bannerEl.innerHTML=`<div class="workout-week-banner" onclick="editProgramDates('${data.activeProgram}')" style="cursor:pointer"><div><div class="workout-week-text"><strong>${data.activeProgram}</strong> &middot; Week <strong>${wInfo.currentWeek}/${wInfo.totalWeeks}</strong></div><div class="workout-week-days">${dateRange} &middot; ${wInfo.daysLeft}d left</div></div><div class="workout-week-text" style="font-size:1.2rem;color:var(--iron);font-weight:700">${wInfo.currentWeek}/${wInfo.totalWeeks}</div></div>`;
     }
   }else{bannerEl.innerHTML=''}
+  if(pbOn()){
+    const pwi=pbWeekInfo();const pbc=getPB();
+    const pdays=Object.keys(prog.days).filter(d=>d!=='ABS'&&d!=='_').length;
+    bannerEl.innerHTML+=`<div class="workout-week-banner pb" onclick="showView('programs',document.querySelectorAll('.nav-btn')[3])" style="cursor:pointer"><div><div class="workout-week-text"><strong>POWERBUILDING</strong> &middot; ${pbc.scheme==='331'?'single + 3x3':'5/3/1'}${pwi?' &middot; Week <strong>'+pwi.week+'/'+pwi.weeks+'</strong>':''}</div><div class="workout-week-days">${pwi?(pwi.done?'Block complete — see Programs':pwi.test?(pbc.scheme==='331'?'Test week':'Heavy-5 week'):PB_531[pwi.waveWeek]?(pbc.scheme==='331'?'Wave '+(pwi.waveIdx+1)+' · week '+pwi.waveWeek:PB_531[pwi.waveWeek].label+' · wave '+(pwi.waveIdx+1)):''):''} &middot; ${PB_TYPES.slice(0,pdays).map(t=>(pbLift(t).short||pbLift(t).label.split(' ')[0])+' '+pbTM(t)).join(' · ')}</div></div></div>`;
+  }
 
   // Day tabs
   let tabsHtml='';
@@ -3038,8 +3397,14 @@ function initWorkout(){
       };
     })
   };
+  // Powerbuilding lifts: computed sets from the training max, locked
+  currentWorkout.exercises.forEach((ex,idx)=>{
+    const src=dayData.ex[idx];
+    if(src&&src[7]&&src[7].pb){ex._pb=src[7].pb;ex.sets=pbLiftSets(src[7].pb)}
+  });
   // Restore saved alt exercises
   currentWorkout.exercises.forEach(ex=>{
+    if(ex._pb)return;
     const saved=getSavedAlt(currentWorkout.program,currentWorkout.day,ex._origName);
     if(saved){
       ex.name=saved.name;ex.nameEn=saved.nameEn;ex.muscle=saved.muscle;ex._isAlt=true;
@@ -3228,10 +3593,10 @@ function renderExerciseCards(){
     const techLabel=TECH_LABELS[ex.technique]||ex.technique;
     const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
 
-    html+=`<div class="ex-card${allDone?' all-done':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
+    html+=`<div class="ex-card${allDone?' all-done':''}${ex._pb?' pb-lift':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
         <div>
-          <div class="ex-name">${ex.name}${ex._isAlt?'<span class="alt-badge">ALT</span>':''}<span class="ex-done-label">&#10003; DONE</span></div>
+          <div class="ex-name">${ex.name}${ex._isAlt?'<span class="alt-badge">ALT</span>':''}${ex._pb?'<span class="pb-badge">PB</span>':''}<span class="ex-done-label">&#10003; DONE</span></div>
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
         <div style="text-align:right">
@@ -3260,8 +3625,8 @@ function renderExerciseCards(){
       </div>
       <div class="ex-meta">
         ${getPattern(ex.name)?`<span class="ex-tag pattern">${getPattern(ex.name)}</span>`:''}
-        <span class="ex-tag">${ex.targetSets.replace(/\+/g,' + ')}</span>
-        <span class="ex-tag tech" onclick="showTechPopup('${ex.technique}',event)">${techLabel}</span>
+        ${ex._pb?`<span class="ex-tag" style="color:var(--gold-glow)">${pbHead()}</span><span class="ex-tag">TM ${pbTM(ex._pb)}</span>`:`<span class="ex-tag">${ex.targetSets.replace(/\+/g,' + ')}</span>
+        <span class="ex-tag tech" onclick="showTechPopup('${ex.technique}',event)">${techLabel}</span>`}
         <span class="ex-tag">${ex.restSec}s rest</span>
         ${isAbs?'':`<span class="hold-tag${isHeld(ex.name)?' active':''}" data-hold="${escAttr(ex.name)}">${isHeld(ex.name)?'JUST':'J'}</span>`}
       </div>`;
@@ -3273,9 +3638,10 @@ function renderExerciseCards(){
       if(set.type==='drop'){dsNum++;}
       if(set.type==='rp'){rpNum++;}
       if(set.type!=='warmup'&&set.type!=='drop'&&set.type!=='rp')wNum++;
-      const label=set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:set.type==='rp'?'RP'+rpNum:'S'+wNum;
+      const label=(set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:set.type==='rp'?'RP'+rpNum:'S'+wNum)+(set.amrap?'+':'');
+      const pbPct=ex._pb&&set.pct?`<span class="pb-pct">${set.pct}%</span>`:'';
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
-        <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':set.type==='rp'?' rp':''}">${label}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
+        <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':set.type==='rp'?' rp':''}">${label}${pbPct}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
         ${isAbs?'':`<div class="set-input-group">
           <input class="set-input" type="number" inputmode="decimal" placeholder="lbs" value="${set.weight}" oninput="updateSet(${ei},${si},'weight',this.value)">
           <span class="set-unit">lbs</span>
@@ -3291,6 +3657,11 @@ function renderExerciseCards(){
 
     // PR flash
     html+=`<div class="pr-flash" id="pr-flash-${ei}">NEW PR!</div>`;
+    if(ex._pb){
+      const pbL=pbLift(ex._pb);const pbC=getPB();
+      const amr=ex.sets.some(s=>s.amrap);
+      html+=`<div class="ex-suggest stay"><div class="sug-main">${pbNote(ex._pb)}</div>${amr?`<div style="font-size:0.72rem;margin-top:2px">Last set is AMRAP — stop at ${PB_AMRAP_CAP} even if you have more.</div>`:''}${pbL.bw?`<div style="font-size:0.72rem;margin-top:2px">Weights are added load on top of BW ${+pbC.bw||0}. 0 = bodyweight only.</div>`:''}</div>`;
+    }
 
     // Last time + suggestion
     if(lastLog){
@@ -3307,7 +3678,9 @@ function renderExerciseCards(){
         if(repPr2&&repPr2<athW2) prStr2+=` &middot; <span class="pr-badge">${tgtR2}-rep PR: ${repPr2} lbs</span>`;
         html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; ${prStr2}</div>`;
       }
-      if(isHeld(ex.name)){
+      if(ex._pb){
+        // PB lifts: percentages drive the weights; no auto-suggestion
+      } else if(isHeld(ex.name)){
         const s1w=workingSets[0]?workingSets[0].weight:'?';
         html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div></div>`;
       } else {
@@ -3317,7 +3690,7 @@ function renderExerciseCards(){
           html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
         }
       }
-    } else if(!isAbs){
+    } else if(!isAbs&&!ex._pb){
       const bestW=getBestWeight(ex.name);
       if(bestW){
         html+=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
@@ -3332,12 +3705,16 @@ function renderExerciseCards(){
       else if(startW.s1)startLabel='ST: '+startW.s1+'lbs';
       else if(startW.wu)startLabel='ST: WU '+startW.wu;
     }
+    if(ex._pb){
+      html+=`<div class="ex-actions"><span class="pb-lock">&#128274; Locked by Powerbuilding mode — the lift, scheme and TM are set in Programs</span></div>`;
+    } else {
     html+=`<div class="ex-actions">
       ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${escJs(ex.name)}')">${startLabel}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       ${!isAbs?`<button class="ex-action-btn" onclick="openAltModal(${ei})">Alt.</button>`:''}
     </div>`;
+    }
 
     html+=`</div>`;
   });
@@ -3440,6 +3817,7 @@ function toggleSet(ei,si){
 }
 
 function removeExercise(ei){
+  if(pbLocked(ei))return;
   if(!currentWorkout)return;
   if(confirm('Remove '+currentWorkout.exercises[ei].name+'?')){
     currentWorkout.exercises.splice(ei,1);
@@ -3449,6 +3827,7 @@ function removeExercise(ei){
 }
 
 function renameExercise(ei){
+  if(pbLocked(ei))return;
   if(!currentWorkout)return;
   const oldName=currentWorkout.exercises[ei].name;
   const newName=prompt('Rename exercise:',oldName);
@@ -4928,6 +5307,7 @@ function saveSub(){
 
 // ── SWAP MODAL ──
 function openSwapModal(ei){
+  if(pbLocked(ei))return;
   if(!currentWorkout)return;
   const ex=currentWorkout.exercises[ei];
   const muscle=ex.muscle;
@@ -5008,6 +5388,7 @@ function doSwap(ei,name,nameEn,muscle){
 
 // ── ALT EXERCISE (session-only swap) ──
 function openAltModal(ei){
+  if(pbLocked(ei))return;
   if(!currentWorkout)return;
   const ex=currentWorkout.exercises[ei];
   const muscle=ex.muscle;
@@ -5144,6 +5525,7 @@ let editorOrigMap={}; // _editorId → original name, for tracking real renames 
 let _editorIdCounter=0;
 
 function openEditor(pid){
+  if(pbOn()&&(pid||data.activeProgram)===data.activeProgram){toast('Locked — turn off Powerbuilding mode to edit '+data.activeProgram);return}
   editorPid=pid||data.activeProgram;
   const prog=getProgram(editorPid);if(!prog)return;
   const isCustom=!!data.customPrograms[editorPid];
