@@ -1972,7 +1972,7 @@ function promptStartWeight(exName){
 // ── PLATE CALCULATOR ──
 const ALL_PLATES=[45,35,25,10,5,2.5];
 const NO_PLATE_KEYWORDS=/halter|dumbbell|halteres|polia|cable|cabo|pulley|maquina|machine|cadeira|mesa flexora|voador|flexao|apoio|prancha|plank|paralela|abdominal|elevacao|crucifixo|concentrado|coice|kettlebell|elastico|band|bodyweight|dragon|crunch|canivete|remador|carrinho/i;
-const PLATE_MACHINE_OVERRIDE=/supino.*maquina|supino.*machine/i;
+const PLATE_MACHINE_OVERRIDE=/smith|supino.*maquina|supino.*machine/i;
 function autoNeedsPlates(exName){
   const n=exName.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   if(PLATE_MACHINE_OVERRIDE.test(n))return true;
@@ -3765,9 +3765,7 @@ function renderExerciseCards(){
           </div>${(()=>{
             if(isAbs)return'';
             if(!showPlateForEx(ex.name)){
-              const np=getNoPlate();
-              if(np[ex.name]===true)return`<div class="plate-corner-show" onclick="event.stopPropagation();toggleNoPlate('${escJs(ex.name)}')">&#8960; show</div>`;
-              return'';
+              return`<div class="plate-corner-show" onclick="event.stopPropagation();toggleNoPlate('${escJs(ex.name)}')">&#8960; show</div>`;
             }
             const wuSets=ex.sets.filter(s=>s.type==='warmup');
             const allWuDone=wuSets.length>0&&wuSets.every(s=>s.done);
