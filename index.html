@@ -1944,28 +1944,44 @@ function getStartWeights(){try{return JSON.parse(localStorage.getItem('zercher_s
 function saveStartWeights(s){localStorage.setItem('zercher_starts',JSON.stringify(s))}
 function getStartWeight(exName){
   const val=getStartWeights()[exName];
-  if(!val)return{wu:'',s1:''};
-  if(typeof val==='string')return{wu:'',s1:val};
-  return{wu:val.wu||'',s1:val.s1||''};
+  if(!val)return{wu:'',s1:'',ts:''};
+  if(typeof val==='string')return{wu:'',s1:val,ts:''};
+  return{wu:val.wu||'',s1:val.s1||'',ts:val.ts||''};
 }
-function promptStartWeight(exName){
+// Pyramids get a top set (TS) instead of S1: the whole ladder is built from it
+function startLadder(exName,sets){
+  const ts=parseFloat(getStartWeight(exName).ts);
+  return ts>0&&pyramidInfo(sets)?pyramidLadder(ts,sets):null;
+}
+function promptStartWeight(exName,ei){
+  const ex=currentWorkout&&currentWorkout.exercises[ei];
+  const pi=ex&&pyramidInfo(ex.sets);
+  const key=pi?'ts':'s1';
   const current=getStartWeight(exName);
-  const currentStr=current.wu&&current.s1?current.wu+' / '+current.s1:current.s1?current.s1:current.wu?current.wu+' / ':'';
-  const val=prompt('Start weights (WU / S1):',currentStr);
+  const main=current[key];
+  const currentStr=current.wu&&main?current.wu+' / '+main:main?main:current.wu?current.wu+' / ':'';
+  const val=prompt(pi?'Top set weight ('+pi.topReps+' reps), other sets fill in by % (WU / TS):':'Start weights (WU / S1):',currentStr);
   if(val===null)return;
   const s=getStartWeights();
   const trimmed=val.trim();
-  if(!trimmed){delete s[exName];}
-  else if(trimmed.includes('/')){
+  // Keep the other mode's value (same lift can be a pyramid in one program, straight sets in another)
+  const obj={};const other=pi?'s1':'ts';if(current[other])obj[other]=current[other];
+  if(trimmed.includes('/')){
     const parts=trimmed.split('/').map(p=>p.trim());
-    const obj={};
     if(parts[0])obj.wu=parts[0];
-    if(parts[1])obj.s1=parts[1];
-    if(Object.keys(obj).length)s[exName]=obj;else delete s[exName];
-  }else{s[exName]={s1:trimmed};}
+    if(parts[1])obj[key]=parts[1];
+  }else if(trimmed){obj[key]=trimmed;}
+  if(Object.keys(obj).length)s[exName]=obj;else delete s[exName];
   saveStartWeights(s);
   syncExtraToCloud();
   flushInputs();
+  // TS fills today's ladder right away
+  if(pi){
+    const ladder=startLadder(exName,ex.sets);
+    if(ladder)Object.keys(ladder).forEach(si=>{if(ex.sets[si]&&!ex.sets[si].done)ex.sets[si].weight=ladder[si]});
+    if(obj.wu)ex.sets.forEach(st=>{if(st.type==='warmup'&&!st.done)st.weight=obj.wu});
+    localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  }
   renderExerciseCards();
 }
 
@@ -3374,6 +3390,7 @@ function initWorkout(){
       }
       const lastLog=getLastLog(e[0]);
       const pyLadder=(!lastLog&&pyramidInfo(sets))?pyramidLadder(getBestWeight(e[0]),sets):null;
+      const tsLadder=startLadder(e[0],sets);
       return{
         name:e[0],nameEn:e[1],muscle:e[2],technique:e[3],
         targetSets:e[4],restSec:e[5],_baseIdx:idx,_origName:e[0],
@@ -3388,7 +3405,8 @@ function initWorkout(){
           // If start weight is set for this exercise, use it for WU and S1
           const startW=getStartWeight(e[0]);
           if(s.type==='warmup'&&startW.wu)prefillWeight=startW.wu;
-          if(s.type==='working'&&typeIdx===0&&startW.s1)prefillWeight=startW.s1;
+          if(tsLadder){if(tsLadder[i])prefillWeight=tsLadder[i];}
+          else if(s.type==='working'&&typeIdx===0&&startW.s1)prefillWeight=startW.s1;
           // Fallback: no log + no start weight → use PR/ATH for working sets
           if(!prefillWeight&&!lastLog&&s.type==='working'){
             if(pyLadder&&pyLadder[i])prefillWeight=pyLadder[i];
@@ -3452,10 +3470,12 @@ function initWorkout(){
       }
       // Apply start weights for the alt exercise (overrides last log for WU/S1)
       const altStartW=getStartWeight(saved.name);
+      const altTs=startLadder(saved.name,ex.sets);
       ex.sets.forEach((s,i)=>{
         const typeIdx=ex.sets.slice(0,i).filter(ps=>ps.type===s.type).length;
         if(s.type==='warmup'&&altStartW.wu)s.weight=altStartW.wu;
-        if(s.type==='working'&&typeIdx===0&&altStartW.s1)s.weight=altStartW.s1;
+        if(altTs){if(altTs[i])s.weight=altTs[i];}
+        else if(s.type==='working'&&typeIdx===0&&altStartW.s1)s.weight=altStartW.s1;
       });
     }
   });
@@ -3592,7 +3612,7 @@ function pyramidLadder(topW,sets){
     const ratio=Math.pow((1+rTop/30)/(1+r/30),1.5);
     out[si]=pyRound(topW*ratio);
   });
-  pi.top.forEach(si=>out[si]=pyRound(topW));
+  pi.top.forEach(si=>out[si]=topW);
   pi.backoff.forEach(si=>out[si]=pyRound(topW*0.55));
   return out;
 }
@@ -3859,18 +3879,20 @@ function renderExerciseCards(){
       }
     }
     const startW=isAbs?null:getStartWeight(ex.name);
-    const hasStart=startW&&(startW.wu||startW.s1);
-    let startLabel='ST Start';
+    const isPyr=!isAbs&&!!pyramidInfo(ex.sets);
+    const tag=isPyr?'TS':'ST',mainW=startW?(isPyr?startW.ts:startW.s1):'';
+    const hasStart=startW&&(startW.wu||mainW);
+    let startLabel=isPyr?'TS Top Set':'ST Start';
     if(hasStart){
-      if(startW.wu&&startW.s1)startLabel='ST: '+startW.wu+'/'+startW.s1;
-      else if(startW.s1)startLabel='ST: '+startW.s1+'lbs';
-      else if(startW.wu)startLabel='ST: WU '+startW.wu;
+      if(startW.wu&&mainW)startLabel=tag+': '+startW.wu+'/'+mainW;
+      else if(mainW)startLabel=tag+': '+mainW+'lbs';
+      else if(startW.wu)startLabel=tag+': WU '+startW.wu;
     }
     if(ex._pb){
       html+=`<div class="ex-actions"><span class="pb-lock">&#128274; Locked by Powerbuilding mode — the lift, scheme and TM are set in Programs</span></div>`;
     } else {
     html+=`<div class="ex-actions">
-      ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${escJs(ex.name)}')">${startLabel}</button>`:''}
+      ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${escJs(ex.name)}',${ei})">${startLabel}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       ${!isAbs?`<button class="ex-action-btn" onclick="openAltModal(${ei})">Alt.</button>`:''}
