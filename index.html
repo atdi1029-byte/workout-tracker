@@ -23,6 +23,7 @@
 --gold:#a0946a;--gold-glow:#b8a878;
 --yellow:#a0946a;
 --radius:6px;--radius-sm:4px;
+--card:var(--bg-card);--bg:var(--bg-input);--accent:var(--gold);
 }
 html{height:100%}
 body{min-height:100%;color:var(--text);font-family:'Oswald',-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent;overflow-x:hidden;padding-bottom:70px;
@@ -36,7 +37,8 @@ background:#000 url('bg-sandow.jpg') no-repeat center top fixed;background-size:
 .header-btn{background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:6px}
 .header-btn:hover{color:var(--text-bright)}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
-.sync-dot.offline{background:var(--red)}
+.sync-dot.offline{background:var(--red-bright);box-shadow:0 0 6px rgba(168,96,96,0.7)}
+.sync-dot.busy{background:var(--gold)}
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,12,16,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid rgba(128,144,168,0.15);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,8px)}
@@ -442,6 +444,47 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 .pb-seg{display:flex;gap:6px}
 .pb-seg button{flex:1;padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Oswald',sans-serif;cursor:pointer;font-size:0.8rem;letter-spacing:.5px}
 .pb-seg button.sel{background:rgba(160,148,106,0.2);color:var(--gold-glow);border-color:var(--gold)}
+
+/* START PREVIEW */
+.start-preview{margin:26px auto 0;max-width:440px;text-align:left;background:rgba(14,16,20,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(128,144,168,0.15);border-radius:var(--radius);padding:8px 12px}
+.sp-row{display:flex;gap:8px;align-items:baseline;padding:4px 2px;font-size:0.78rem}
+.sp-num{color:var(--text-dim);min-width:16px}
+.sp-name{flex:1;color:var(--text-bright);text-transform:uppercase;letter-spacing:0.5px}
+.sp-sets{color:var(--iron);font-size:0.7rem;white-space:nowrap}
+.set-input.missing{border-color:var(--red-bright)}
+
+/* WORKOUT SUMMARY */
+.ws-day{font-size:0.8rem;color:var(--iron);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.ws-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.ws-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 6px;text-align:center}
+.ws-stat .v{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:900;color:var(--gold-glow)}
+.ws-stat .l{font-size:0.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px}
+.ws-vs{font-size:0.78rem;color:var(--yellow);text-align:center;margin-bottom:6px}
+.ws-vs.up{color:var(--green-bright)}
+.ws-vs.down{color:var(--red-bright)}
+.ws-section{font-size:0.72rem;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin:14px 0 6px;font-weight:700}
+.ws-pr{background:linear-gradient(135deg,rgba(232,184,74,0.12),rgba(232,184,74,0.03));border:1px solid rgba(232,184,74,0.35);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;animation:prPulse 0.6s ease}
+.ws-pr .n{font-size:0.82rem;color:var(--text-bright);font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.ws-pr .t{font-size:0.75rem;color:var(--gold-glow);margin-top:2px}
+.ws-row{display:flex;gap:8px;align-items:baseline;padding:4px 0;font-size:0.78rem;border-bottom:1px solid rgba(128,144,168,0.08)}
+.ws-row .a{width:14px;color:var(--yellow)}
+.ws-row.up .a{color:var(--green-bright)}
+.ws-row.down .a{color:var(--red-bright)}
+.ws-row .n{flex:1;color:var(--text)}
+.ws-row .s{color:var(--text-bright);white-space:nowrap}
+.ws-row .s em{font-style:normal;color:var(--text-dim);font-size:0.68rem;margin-left:4px}
+
+/* WORKOUT HISTORY */
+.hx-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-bottom:6px;cursor:pointer;background:var(--bg-card)}
+.hx-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hx-when{font-size:0.82rem;color:var(--text-bright)}
+.hx-what{font-size:0.7rem;color:var(--text-dim);margin-top:2px}
+.hx-dup{font-size:0.6rem;color:var(--gold);border:1px solid rgba(160,148,106,0.4);border-radius:8px;padding:1px 6px;margin-left:4px;text-transform:uppercase;letter-spacing:0.5px}
+.hx-del{background:none;border:1px solid rgba(144,80,80,0.4);color:var(--red-bright);border-radius:var(--radius-sm);padding:4px 10px;font-size:0.7rem;cursor:pointer;font-family:'Oswald',sans-serif}
+.hx-detail{display:none;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)}
+.hx-item.open .hx-detail{display:block}
+.hx-ex{font-size:0.72rem;color:var(--text);padding:2px 0}
+.hx-ex b{color:var(--iron);font-weight:600}
 </style>
 </head>
 <body>
@@ -450,7 +493,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <header class="app-header">
   <h1><span>ZER</span>CHER</h1>
   <div class="header-actions">
-    <span class="sync-dot" id="syncDot" title="Sync status"></span>
+    <button class="header-btn" onclick="fullSync()" title="Sync status"><span class="sync-dot" id="syncDot"></span></button>
     <button class="header-btn" onclick="openSettings()" title="Settings">&#9881;</button>
   </div>
 </header>
@@ -472,7 +515,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
 <!-- VIEW: PROGRESS -->
 <div id="view-progress" class="view">
   <div style="display:flex;gap:8px;margin-bottom:10px">
-    <input type="text" class="search-bar" id="progressSearch" placeholder="Search exercises..." oninput="renderProgress()" style="margin-bottom:0;flex:1">
+    <input type="text" class="search-bar" id="progressSearch" placeholder="Search exercises..." oninput="renderProgressSoon()" style="margin-bottom:0;flex:1">
     <button class="add-pr-btn" onclick="openAddPR()">+ PR</button>
   </div>
   <div id="strengthScore"></div>
@@ -488,7 +531,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
   </div>
   <div id="libExercisesPanel">
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrary()" style="margin-bottom:0;flex:1">
+      <input class="search-bar" id="libSearch" placeholder="Search exercises..." oninput="renderLibrarySoon()" style="margin-bottom:0;flex:1">
       <button class="add-pr-btn" onclick="openAddExercise()">+ Add</button>
     </div>
     <div class="muscle-tabs" id="libMuscleTabs"></div>
@@ -496,7 +539,7 @@ select.view-select{width:100%;background:var(--bg-input);border:1px solid var(--
   </div>
   <div id="libSubsPanel" style="display:none">
     <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input class="search-bar" id="subSearch" placeholder="Search substitutions..." oninput="renderSubs()" style="margin-bottom:0;flex:1">
+      <input class="search-bar" id="subSearch" placeholder="Search substitutions..." oninput="renderSubsSoon()" style="margin-bottom:0;flex:1">
       <button class="add-pr-btn" onclick="openAddSub()">+ Add</button>
     </div>
     <div id="subsList"></div>
@@ -542,7 +585,7 @@ const SK_LOGS = 'zercher_logs_v1';
 const MUSCLE_GROUPS = ['chest','back','shoulders','biceps','triceps','forearms','quads','hamstrings','glutes','calves','abs'];
 const MUSCLE_LABELS = {chest:'Chest',back:'Back',shoulders:'Shoulders',biceps:'Biceps',triceps:'Triceps',forearms:'Forearms',quads:'Quads',hamstrings:'Hamstrings',glutes:'Glutes',calves:'Calves',abs:'Abs',traps:'Traps',neck:'Neck','legs (full)':'Legs (Full)','olympic weightlifting':'Olympic Lifting','old time lifts':'Old Time Lifts',rings:'Rings'};
 const PHASES = {acc:'Accumulation',int:'Intensification',spe:'Specialization',rea:'Realization',peak:'Peak Strength',freq:'Frequency'};
-const TECH_LABELS = {S:'Straight Sets',P:'Pyramid',TP:'Truncated Pyramid',RP:'Reverse Pyramid',DS:'Drop Set',BS:'Bi-Set',TS:'Tri-Set',SS:'Superset',ASS:'Antagonist Superset',RestP:'Rest-Pause',PE:'Pre-Exhaust',Dead:'Dead Stop',BO:'Back-Off',Mob:'Mobility',Fail:'To Failure',Prog:'Progressive'};
+const TECH_LABELS = {S:'Straight Sets',P:'Pyramid',TP:'Truncated Pyramid',RP:'Reverse Pyramid',DS:'Drop Set',BS:'Bi-Set',TS:'Tri-Set',SS:'Superset',ASS:'Antagonist Superset',RestP:'Rest-Pause',PE:'Pre-Exhaust',Dead:'Dead Stop',BO:'Back-Off',Mob:'Mobility',Fail:'To Failure',Prog:'Progressive',AP:'Ascending Pyramid',PC:'Pirâmide Crescente',PB:'Powerbuilding'};
 const TECH_DESC = {
   S:'Same weight and reps for every set. Complete all sets with the prescribed rest between each.',
   P:'Weight goes up every set as reps come down (12/10/8/5). The TOP set is the one that counts: pick it first, then ramp into it — roughly 75% / 82% / 90% of it for the 12 / 10 / 8. Lower rungs stay submaximal (2–3 reps in the tank). Progress when you hit the top set clean; then the whole ladder moves up together.',
@@ -559,7 +602,10 @@ const TECH_DESC = {
   BO:'After your heavy working sets, reduce weight 40-50% and do a higher-rep set to pump more blood into the muscle.',
   Mob:'Mobility and flexibility work. Move through full range of motion slowly and controlled.',
   Fail:'Push each set until you physically cannot complete another rep with good form.',
-  Prog:'Increase weight or reps systematically each session or week following a progression scheme.'
+  Prog:'Increase weight or reps systematically each session or week following a progression scheme.',
+  AP:'Ascending pyramid: reps come down and the weight goes up every set (e.g. 12-15 / 10-12 / 8-10 / 5-8). Same idea as Pyramid: pick the top set first and ramp into it.',
+  PC:'Pirâmide crescente (ascending pyramid): add weight each set while the reps hold or drop. Ramp into the last set, which is the one that counts.',
+  PB:'Powerbuilding lift: warm-ups, then working sets at fixed percentages of your training max. Weights are set for you; the last 5/3/1 set is AMRAP, capped at 8.'
 };
 
 // ── MOVEMENT PATTERNS ──
@@ -1523,15 +1569,22 @@ let currentAbsRoutine = (function(){
 let favExercises = new Set((function(){try{return JSON.parse(localStorage.getItem('fav_exercises')||'[]')}catch(e){return[]}})());
 // ── HELPERS ──
 // ── SYNC ──
+// Cloud = the shared Apps Script in .clasp/books/Code.js (sheet "Zercher"):
+//   config = program edits, settings, manual PRs, tombstones (one JSON blob)
+//   extra  = holds, notes, start weights, plate prefs, alts, favourites, abs routine
+//   logs   = one row per workout, upserted by id
+// PRs that come from logs are never uploaded: they are rebuilt from the logs on load.
+// config and extra use a three-way merge against "base" (the last version this device
+// and the cloud agreed on), so edits AND deletions travel both ways: whichever side
+// changed a key wins. Every write is checked; a failed one turns the header dot red.
 const SYNC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt438APIycBc534W6T66O3IgtxLUU9cczw-PZAN6Mc9p2xfU2ySsND_wEMJDHUvrXyUg/exec';
-const CURRENT_SCHEMA_VERSION=271;
+const SYNC_CLIENT_VERSION=2;
+const SK_BASE_CFG='zercher_sync_base_config',SK_BASE_EXTRA='zercher_sync_base_extra';
+const RETIRED_LOG_RE=/^abcd0[12]_/; // old ABCD01/02 seed logs, removed locally in migrateData
 let syncReady=false;
-let _saveInFlight=false;
-let _savePending=false;
-let _syncDebounce=null;
 let _cloudInitialLoadDone=false;
-
-function fireGet(url){var img=new Image();img.src=url;}
+let _syncDebounce=null,_syncRunning=false,_syncAgain=null,_syncWaiters=[];
+let _syncStatus={state:'idle',msg:''};
 
 function jsonpFetch(url,cb){
   const cbName='_zrCb_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
@@ -1546,359 +1599,318 @@ function jsonpFetch(url,cb){
     if(script.parentNode)script.remove();
     cb(err,resp);
   }
+  function netErr(msg){const e=new Error(msg);e.network=true;return e}
   window[cbName]=function(resp){finish(null,resp)};
-  script.onerror=function(){finish(new Error('JSONP request failed'))};
+  script.onerror=function(){finish(netErr('No connection to the cloud'))};
   script.src=url+(url.includes('?')?'&':'?')+'callback='+encodeURIComponent(cbName);
-  timer=setTimeout(function(){finish(new Error('JSONP request timed out'))},15000);
+  timer=setTimeout(function(){finish(netErr('Cloud request timed out'))},20000);
   document.head.appendChild(script);
 }
-
-// JSONP chunked GET — works even with AdBlock Plus
-var CHUNK_SIZE=3000;
+// A write only counts when the server answers {status:'ok'}
+function zWrite(url,cb){
+  jsonpFetch(url,function(err,resp){
+    if(!err&&(!resp||resp.status!=='ok'))err=new Error((resp&&resp.message)||'The cloud rejected the save');
+    cb(err,resp);
+  });
+}
+// JSONP chunked GET (POST is blocked by AdBlock Plus). Chunks carry an upload id so
+// two uploads can never mix on the server.
+var CHUNK_SIZE=2500;
 function pushChunked(jsonStr,target,onDone){
-  if(!jsonStr||jsonStr==='{}'){ if(onDone)onDone(); return; }
-  var chunks=[];
-  for(var i=0;i<jsonStr.length;i+=CHUNK_SIZE)chunks.push(jsonStr.substring(i,i+CHUNK_SIZE));
-  var idx=0;
-  function sendNext(){
+  const u='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  const chunks=[];
+  for(let i=0;i<jsonStr.length;i+=CHUNK_SIZE)chunks.push(jsonStr.substring(i,i+CHUNK_SIZE));
+  let idx=0;
+  (function next(){
     if(idx>=chunks.length){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_done&target='+target+'&n='+chunks.length,function(err2,resp2){if(resp2&&resp2.ts)localStorage.setItem('zercher_lastSyncedAt',resp2.ts);if(onDone)onDone(err2)});
+      zWrite(SYNC_ENDPOINT+'?action=zercher_save_done&target='+target+'&n='+chunks.length+'&u='+u+'&v='+SYNC_CLIENT_VERSION,onDone);
       return;
     }
-    var url=SYNC_ENDPOINT+'?action=zercher_save_chunk&i='+idx+'&cd='+encodeURIComponent(chunks[idx]);
+    const url=SYNC_ENDPOINT+'?action=zercher_save_chunk&u='+u+'&i='+idx+'&cd='+encodeURIComponent(chunks[idx]);
     idx++;
-    jsonpFetch(url,function(err){if(err){if(onDone)onDone(err);return;}sendNext()});
-  }
-  sendNext();
+    zWrite(url,function(err){if(err)onDone(err);else next()});
+  })();
+}
+// One request when it fits in a URL, chunked otherwise
+function pushJson(target,obj,onDone){
+  const str=JSON.stringify(obj);
+  const enc=encodeURIComponent(str);
+  const action=target==='workout'?'zercher_log_workout':'zercher_save_'+target;
+  if(enc.length<6000)zWrite(SYNC_ENDPOINT+'?action='+action+'&v='+SYNC_CLIENT_VERSION+'&data='+enc,onDone);
+  else pushChunked(str,target,onDone);
 }
 
-function _pushConfig(onDone){
-  try{
-    const syncPrograms={};
-    for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
-    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{},schemaVersion:data.schemaVersion||0,subLinks:data.subLinks||{}};
-    const jsonStr=JSON.stringify(config);
-    const encoded=encodeURIComponent(jsonStr);
-    if(encoded.length<7000){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_config&data='+encoded,function(err){if(onDone)onDone(err||null)});
-    }else{
-      pushChunked(jsonStr,'config',function(err){if(onDone)onDone(err||null)});
-    }
-  }catch(e){console.warn('Config sync failed',e);if(onDone)onDone(e)}
+// ── sync: config / extra blobs ──
+const CFG_DEFAULTS={activeProgram:'',customPrograms:{},customSubs:[],customExercises:[],settings:{},prs:{},deletedSubs:[],deletedPRs:[],deletedLogIds:[],hiddenExercises:[],programStartDates:{},programWeeks:{},subLinks:{}};
+const EXTRA_DEFAULTS={holds:{},notes:{},starts:{},favs:[],platePref:{},noPlate:{},singleEnd:{},alts:{},absRoutine:1,absRoutineWeek:'',absLastWeek:''};
+function _clone(v){return v===undefined?undefined:JSON.parse(JSON.stringify(v))}
+function _isMap(v){return!!v&&typeof v==='object'&&!Array.isArray(v)}
+// JSON with sorted keys, so two equal objects always compare equal
+function stableStr(v){
+  if(Array.isArray(v))return'['+v.map(stableStr).join(',')+']';
+  if(_isMap(v))return'{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+stableStr(v[k])).join(',')+'}';
+  return JSON.stringify(v===undefined?null:v);
 }
-function _pushExtra(onDone){
-  try{
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||'',absLastWeek:localStorage.getItem('abs_last_completed_week')||'',alts:getAltMemory()};
-    const jsonStr=JSON.stringify(extra);
-    const encoded=encodeURIComponent(jsonStr);
-    if(encoded.length<7000){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+encoded,function(err){if(onDone)onDone(err||null)});
-    }else{
-      pushChunked(jsonStr,'extra',function(err){if(onDone)onDone(err||null)});
-    }
-  }catch(e){console.warn('Extra sync failed',e);if(onDone)onDone(e)}
+function _isManualPR(p){return!!p&&(p.program==='ATH'||p.program==='Manual')}
+function _manualPRs(prs){
+  const out={};
+  for(const id in prs||{})for(const r in prs[id]){if(_isManualPR(prs[id][r]))(out[id]=out[id]||{})[r]=prs[id][r]}
+  return out;
 }
-// Legacy aliases for direct calls elsewhere
-function syncConfigToCloud(){if(!syncReady)return;_pushConfig()}
-function syncExtraToCloud(){if(!syncReady)return;_pushExtra()}
-function syncWorkoutToCloud(logEntry){
-  if(!syncReady)return;
-  try{
-    const encoded=encodeURIComponent(JSON.stringify(logEntry));
-    if(encoded.length<7000){
-      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(err){
-        if(err)console.warn('Workout sync failed, will retry on fullSync');
-      });
-    } else {
-      pushChunked(JSON.stringify(logEntry),'workout',function(err){
-        if(err)console.warn('Chunked workout sync failed');
-      });
-    }
-  }catch(e){console.warn('Workout sync failed',e)}
+function _normBlob(raw,defs){const out={};for(const k in defs){const v=raw?raw[k]:undefined;out[k]=(v===undefined||v===null)?_clone(defs[k]):_clone(v)}return out}
+function normConfig(raw){const c=_normBlob(raw,CFG_DEFAULTS);c.prs=_manualPRs(c.prs);return c}
+function normExtra(raw){const x=_normBlob(raw,EXTRA_DEFAULTS);x.favs=[...new Set(x.favs)].sort();x.absRoutine=+x.absRoutine||1;return x}
+function localConfig(){
+  return normConfig({activeProgram:data.activeProgram,customPrograms:data.customPrograms,customSubs:data.customSubs,customExercises:data.customExercises,settings:data.settings,prs:data.prs,deletedSubs:data.deletedSubs,deletedPRs:data.deletedPRs,deletedLogIds:data.deletedLogIds,hiddenExercises:data.hiddenExercises,programStartDates:data.programStartDates,programWeeks:data.programWeeks,subLinks:data.subLinks});
 }
-// Auto-push unsynced logs on startup after cloud pull completes
-function autoSyncUnsyncedLogs(){
-  jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
-    if(err||!resp)return;
-    const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
-    const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
-    if(unsynced.length===0)return;
-    let i=0;
-    function sendNext(){
-      if(i>=unsynced.length)return;
-      const item=unsynced[i++];
-      const encoded=encodeURIComponent(JSON.stringify(item));
-      if(encoded.length<7000){
-        jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(){sendNext()});
-      } else {
-        // Large workout — use chunked upload instead of skipping
-        pushChunked(JSON.stringify(item),'workout',function(){sendNext()});
+function localExtra(){
+  return normExtra({holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),alts:getAltMemory(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||'',absLastWeek:localStorage.getItem('abs_last_completed_week')||''});
+}
+function _readBase(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch(e){return null}}
+function _writeBase(key,obj){try{localStorage.setItem(key,JSON.stringify(obj))}catch(e){}}
+function _unionBy(l,c,key){const seen=new Set(l.map(key));return l.concat(c.filter(x=>!seen.has(key(x))))}
+function _mergePrs(l,c){
+  const out=_clone(l)||{};
+  for(const id in c||{}){if(!out[id])out[id]={};for(const r in c[id]){const cur=out[id][r];if(!cur||(+c[id][r].weight||0)>(+cur.weight||0))out[id][r]=c[id][r]}}
+  return out;
+}
+function _mergeKey(k,l,c,b,hasBase){
+  const ls=stableStr(l),cs=stableStr(c);
+  if(ls===cs)return l;
+  if(hasBase){const bs=stableStr(b);if(ls===bs)return c;if(cs===bs)return l;}
+  // Both sides changed this key (or this device has never synced): keep what either side
+  // added, drop what one side deleted. A straight conflict goes to this device, except on
+  // its first sync, when the cloud copy (written by an up-to-date device) wins.
+  const win=(lv,cv)=>hasBase?lv:cv;
+  if(k==='prs')return _mergePrs(l,c);
+  if(k==='customExercises')return win(_unionBy(l,c,e=>e[0]),_unionBy(c,l,e=>e[0]));
+  if(k==='customSubs')return win(_unionBy(l,c,s=>s.name),_unionBy(c,l,s=>s.name));
+  if(_isMap(l)&&_isMap(c)){
+    const bm=hasBase&&_isMap(b)?b:{};const out={};
+    new Set([...Object.keys(c),...Object.keys(l)]).forEach(sk=>{
+      const inL=sk in l,inC=sk in c,inB=sk in bm;
+      if(inL&&inC){
+        const l2=stableStr(l[sk]),c2=stableStr(c[sk]);
+        out[sk]=l2===c2?l[sk]:(inB&&l2===stableStr(bm[sk]))?c[sk]:(inB&&c2===stableStr(bm[sk]))?l[sk]:win(l[sk],c[sk]);
       }
-    }
-    sendNext();
+      else if(inL){if(!(inB&&stableStr(bm[sk])===stableStr(l[sk])))out[sk]=l[sk]}   // else the cloud deleted it
+      else{if(!(inB&&stableStr(bm[sk])===stableStr(c[sk])))out[sk]=c[sk]}            // else this device deleted it
+    });
+    return out;
+  }
+  if(Array.isArray(l)&&Array.isArray(c)&&l.concat(c).every(x=>typeof x!=='object')){
+    const bs=new Set(hasBase&&Array.isArray(b)?b:[]),L=new Set(l),C=new Set(c);
+    return[...new Set([...l,...c])].filter(x=>(L.has(x)&&C.has(x))||!bs.has(x));
+  }
+  return win(l,c);
+}
+function merge3(L,C,B,defs){const out={};for(const k in defs)out[k]=_mergeKey(k,L[k],C[k],B?B[k]:undefined,!!B);return out}
+function _mergeBlob(rawCloud,L,B,defs,norm,fresh){
+  const cloudEmpty=!rawCloud||typeof rawCloud!=='object'||Object.keys(rawCloud).length===0;
+  const C=cloudEmpty?null:norm(rawCloud);
+  let M;
+  if(cloudEmpty)M=L;            // nothing in the cloud yet (or it was lost): upload ours
+  else if(fresh)M=C;            // new install / cleared browser: the cloud copy wins
+  else M=merge3(L,C,B,defs);
+  const ms=stableStr(M);
+  return{merged:M,applyLocal:ms!==stableStr(L),push:!(fresh&&cloudEmpty)&&(cloudEmpty||ms!==stableStr(C))};
+}
+function applyConfig(M){
+  if(M.activeProgram&&PROGRAMS[M.activeProgram])data.activeProgram=M.activeProgram;
+  data.customPrograms=_clone(M.customPrograms);
+  data.customSubs=_clone(M.customSubs);
+  data.customExercises=_clone(M.customExercises);
+  data.settings=_clone(M.settings);
+  data.deletedSubs=_clone(M.deletedSubs);
+  data.deletedPRs=_clone(M.deletedPRs);
+  data.deletedLogIds=_clone(M.deletedLogIds);
+  data.hiddenExercises=_clone(M.hiddenExercises);
+  data.programStartDates=_clone(M.programStartDates);
+  data.programWeeks=_clone(M.programWeeks);
+  data.subLinks=_clone(M.subLinks);
+  // Manual PRs follow the merged copy; PRs that come from logs stay as they are
+  const rebuild=new Set();
+  for(const id in data.prs)for(const r in data.prs[id]){
+    if(_isManualPR(data.prs[id][r])&&!(M.prs[id]&&M.prs[id][r])){delete data.prs[id][r];rebuild.add(id)}
+  }
+  for(const id in M.prs)for(const r in M.prs[id]){
+    if(!data.prs[id])data.prs[id]={};
+    const cur=data.prs[id][r],p=M.prs[id][r];
+    if(!cur||_isManualPR(cur)||(+p.weight||0)>(+cur.weight||0))data.prs[id][r]=_clone(p);
+  }
+  (data.deletedPRs||[]).forEach(id=>{delete data.prs[id];rebuild.delete(id)});
+  if(rebuild.size)rebuildPRsFor(rebuild);
+  const tomb=new Set(data.deletedLogIds||[]);
+  if(tomb.size)data.logs=data.logs.filter(l=>!tomb.has(l.id));
+  refreshCustomLists();
+}
+function applyExtra(M){
+  saveHolds(M.holds);saveExNotes(M.notes);saveStartWeights(M.starts);
+  savePlatePref(M.platePref);saveNoPlate(M.noPlate);saveSingleEnd(M.singleEnd);saveAltMemory(M.alts);
+  favExercises=new Set(M.favs);
+  currentAbsRoutine=+M.absRoutine||1;
+  try{
+    localStorage.setItem('fav_exercises',JSON.stringify(M.favs));
+    localStorage.setItem('abs_routine',currentAbsRoutine);
+    localStorage.setItem('abs_routine_week',M.absRoutineWeek||'');
+    if(M.absLastWeek)localStorage.setItem('abs_last_completed_week',M.absLastWeek);
+    else localStorage.removeItem('abs_last_completed_week');
+  }catch(e){}
+}
+// Custom exercises live in a hidden program; custom subs are folded into SUBS_DATA
+function refreshCustomLists(){
+  if(data.customExercises&&data.customExercises.length)PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
+  else delete PROGRAMS._custom;
+  (data.customSubs||[]).forEach(s=>{
+    let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
+    if(!group){group={muscle:s.muscle,subs:[]};SUBS_DATA.push(group);}
+    let subcat=group.subs.find(c=>c.cat.toLowerCase()===s.cat.toLowerCase());
+    if(!subcat){subcat={cat:s.cat,ex:[]};group.subs.push(subcat);}
+    if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
+  });
+  bumpDataVersion();
+}
+
+// ── sync: logs ──
+function mergeCloudLogs(cloudLogs){
+  const tomb=new Set(data.deletedLogIds||[]);
+  const have=new Set(data.logs.map(l=>l.id));
+  const added=[];
+  (cloudLogs||[]).forEach(l=>{
+    if(!l||!l.id||have.has(l.id)||tomb.has(l.id)||RETIRED_LOG_RE.test(l.id))return;
+    (l.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex));
+    data.logs.push(l);have.add(l.id);added.push(l);
+  });
+  if(added.length){
+    data.logs.sort((a,b)=>a.date.localeCompare(b.date)||(a.ts||0)-(b.ts||0));
+    added.forEach(l=>updatePRsFromLog(l));
+  }
+  return added.length;
+}
+function markLogDirty(log){
+  if(!log||!log.id)return;
+  if(!data.dirtyLogIds)data.dirtyLogIds=[];
+  if(!data.dirtyLogIds.includes(log.id))data.dirtyLogIds.push(log.id);
+}
+
+// ── sync: one cycle = pull, merge, push ──
+function syncCycle(opts,done){
+  opts=opts||{};
+  if(done)_syncWaiters.push(done);
+  if(_syncRunning){_syncAgain=Object.assign(_syncAgain||{},opts);return}
+  _syncRunning=true;
+  setSyncDot('busy');
+  _runSync(opts,function(err,changed){
+    _syncRunning=false;
+    if(err){_syncStatus={state:'error',msg:err.message||String(err)};console.warn('[SYNC]',_syncStatus.msg)}
+    else{_syncStatus={state:'ok',msg:''};try{localStorage.setItem('zercher_lastSyncedAt',new Date().toISOString())}catch(e){}}
+    setSyncDot(_syncStatus.state);
+    if(changed)afterCloudChange();
+    const again=_syncAgain;_syncAgain=null;
+    if(again){syncCycle(again);return}
+    const ws=_syncWaiters;_syncWaiters=[];
+    ws.forEach(f=>{try{f(err,changed)}catch(e){console.warn(e)}});
   });
 }
-function _doCloudSave(onDone){
-  if(_saveInFlight){_savePending=true;if(onDone)onDone();return;}
-  if(!data||!data.activeProgram){if(onDone)onDone();return;}
-  // Block saves until initial cloud load completes (prevents pushing stale/empty data)
-  if(!_cloudInitialLoadDone){console.warn('[SYNC] BLOCKED — initial cloud load not complete');if(onDone)onDone();return;}
-  _saveInFlight=true;
-  _pushConfig(function(configErr){
-    if(configErr){
-      console.warn('[SYNC] Config push failed',configErr);
-      _saveInFlight=false;
-      if(onDone)onDone(configErr);
-      return;
-    }
-    _pushExtra(function(extraErr){
-      _saveInFlight=false;
-      if(_savePending){_savePending=false;_doCloudSave();}
-      if(onDone)onDone(extraErr||null);
-    });
+function _runSync(opts,cb){
+  const fresh=_isFreshInstall&&!_readBase(SK_BASE_CFG);
+  jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load'+(opts.full||opts.initial?'':'&lite=1'),function(err,resp){
+    if(err||!resp||resp.status!=='ok')return cb(err||new Error((resp&&resp.message)||'Cloud load failed'),false);
+    const tomb=new Set(data.deletedLogIds||[]);
+    const have=new Set(data.logs.map(l=>l.id));
+    const missing=resp.logs?[]:(resp.logIds||[]).filter(id=>!have.has(id)&&!tomb.has(id)&&!RETIRED_LOG_RE.test(id));
+    if(missing.length){
+      jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err2,full){
+        if(err2||!full||full.status!=='ok')return cb(err2||new Error('Cloud load failed'),false);
+        _mergeAndPush(opts,fresh,full,cb);
+      });
+    }else _mergeAndPush(opts,fresh,resp,cb);
   });
+}
+function _mergeAndPush(opts,fresh,resp,cb){
+  let changed=false;
+  if(resp.logs&&mergeCloudLogs(resp.logs))changed=true;
+  const cloudIds=new Set(resp.logIds||(resp.logs||[]).map(l=>l.id));
+  const L=localConfig(),Lx=localExtra();
+  if(!fresh&&!_readBase(SK_BASE_CFG)&&!localStorage.getItem('zercher_presync_backup')){
+    try{localStorage.setItem('zercher_presync_backup',JSON.stringify({at:new Date().toISOString(),config:L,extra:Lx}))}catch(e){}
+  }
+  const rc=_mergeBlob(resp.config,L,_readBase(SK_BASE_CFG),CFG_DEFAULTS,normConfig,fresh);
+  const rx=_mergeBlob(resp.extra,Lx,_readBase(SK_BASE_EXTRA),EXTRA_DEFAULTS,normExtra,fresh);
+  if(rc.applyLocal){applyConfig(rc.merged);changed=true}
+  if(rx.applyLocal){applyExtra(rx.merged);changed=true}
+  if(changed)_splitSave(data);
+  if(!rc.push)_writeBase(SK_BASE_CFG,rc.merged);
+  if(!rx.push)_writeBase(SK_BASE_EXTRA,rx.merged);
+  if(opts.onPulled)opts.onPulled();
+  // Pushes run one at a time; a lost connection stops the rest (the next cycle retries)
+  const steps=[];
+  if(rc.push)steps.push(next=>pushJson('config',Object.assign({},rc.merged,{schemaVersion:271,_v:SYNC_CLIENT_VERSION,_at:Date.now()}),e=>{if(!e)_writeBase(SK_BASE_CFG,rc.merged);next(e)}));
+  if(rx.push)steps.push(next=>pushJson('extra',Object.assign({},rx.merged,{_v:SYNC_CLIENT_VERSION,_at:Date.now()}),e=>{if(!e)_writeBase(SK_BASE_EXTRA,rx.merged);next(e)}));
+  if(!fresh){
+    const dirty=new Set(data.dirtyLogIds||[]);
+    data.logs.forEach(l=>{
+      if(cloudIds.has(l.id)&&!dirty.has(l.id))return;
+      steps.push(next=>pushJson('workout',l,e=>{
+        if(!e&&dirty.has(l.id)){data.dirtyLogIds=(data.dirtyLogIds||[]).filter(x=>x!==l.id);_splitSave(data)}
+        next(e);
+      }));
+    });
+    (data.deletedLogIds||[]).forEach(id=>{
+      if(cloudIds.has(id))steps.push(next=>zWrite(SYNC_ENDPOINT+'?action=zercher_delete_log&id='+encodeURIComponent(id),e=>next(e)));
+    });
+  }
+  let firstErr=null;
+  (function run(i){
+    if(i>=steps.length)return cb(firstErr,changed);
+    steps[i](function(e){
+      if(e&&!firstErr)firstErr=e;
+      if(e&&e.network)return cb(e,changed);
+      run(i+1);
+    });
+  })(0);
+}
+function afterCloudChange(){
+  bumpDataVersion();
+  try{
+    // Never rebuild the cards mid-workout: it would close the keyboard and move things
+    if(currentView==='workout'){if(!workoutStartTime){currentWorkout=null;renderWorkout()}}
+    else if(currentView==='programs')renderPrograms();
+    else if(currentView==='library'){if(currentLibMode==='subs')renderSubs();else renderLibrary()}
+    else if(currentView==='progress')renderProgress();
+  }catch(e){console.warn('Render after sync failed',e)}
+}
+function setSyncDot(state){
+  const dot=document.getElementById('syncDot');if(!dot)return;
+  dot.className='sync-dot'+(state==='error'?' offline':state==='busy'?' busy':'');
+  const last=localStorage.getItem('zercher_lastSyncedAt');
+  dot.parentElement.title=state==='error'?'Cloud backup failing: '+_syncStatus.msg:(last?'Backed up '+new Date(last).toLocaleString():'Sync status');
 }
 function syncToCloud(){
   if(!syncReady)return;
   clearTimeout(_syncDebounce);
-  _syncDebounce=setTimeout(function(){
-    mergeFromCloud(false,function(ok){
-      if(!ok){console.warn('[SYNC] Pre-push pull failed — cloud save postponed');return;}
-      _doCloudSave();
-    },true);
-  },1500);
+  _syncDebounce=setTimeout(function(){syncCycle({})},1500);
 }
-function mergeFromCloud(showFeedback,onComplete,isPrePush){
-  loadFromCloud(function(ok){
-    if(onComplete)onComplete(ok);
-  },isPrePush,false);
-}
-function beaconSave(){
-  if(!syncReady||!data||!data.activeProgram)return;
-  try{
-    const syncPrograms={};
-    for(const k in data.customPrograms){syncPrograms[k]=data.customPrograms[k];}
-    const config={activeProgram:data.activeProgram,customPrograms:syncPrograms,customSubs:data.customSubs||[],customExercises:data.customExercises||[],settings:data.settings,prs:data.prs||{},deletedSubs:data.deletedSubs||[],programStartDates:data.programStartDates||{},programWeeks:data.programWeeks||{},schemaVersion:data.schemaVersion||0,subLinks:data.subLinks||{}};
-    const configEnc=encodeURIComponent(JSON.stringify(config));
-    if(configEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_config&data='+configEnc);
-    const extra={holds:getHolds(),notes:getExNotes(),starts:getStartWeights(),favs:[...favExercises],platePref:getPlatePref(),noPlate:getNoPlate(),singleEnd:getSingleEnd(),absReps:getAbsLastReps(),absRoutine:currentAbsRoutine,absRoutineWeek:localStorage.getItem('abs_routine_week')||'',absLastWeek:localStorage.getItem('abs_last_completed_week')||'',alts:getAltMemory()};
-    const extraEnc=encodeURIComponent(JSON.stringify(extra));
-    if(extraEnc.length<7000)fireGet(SYNC_ENDPOINT+'?action=zercher_save_extra&data='+extraEnc);
-  }catch(e){}
-}
+// Older call sites: everything goes through the same pull-merge-push cycle now
+function syncConfigToCloud(){syncToCloud()}
+function syncExtraToCloud(){syncToCloud()}
+function syncWorkoutToCloud(){syncToCloud()}
 function fullSync(){
   toast('Syncing...');
-  // Pull from cloud first, merge PRs/config, then push merged result + unsynced logs
-  loadFromCloud(function(ok){
-    if(!ok){toast('Sync failed');return;}
-    syncConfigToCloud();
-    syncExtraToCloud();
-    jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
-      if(err||!resp){toast('Sync failed');return}
-      const cloudIds=new Set((resp.logs||[]).map(l=>l.id));
-      const unsynced=data.logs.filter(l=>!cloudIds.has(l.id));
-      const total=unsynced.length;
-      if(total===0){toast('All synced!');return}
-      let i=0;
-      function sendNext(){
-        if(i>=unsynced.length){toast('Synced '+total+' entries!');return}
-        const item=unsynced[i];
-        const encoded=encodeURIComponent(JSON.stringify(item));
-        jsonpFetch(SYNC_ENDPOINT+'?action=zercher_log_workout&data='+encoded,function(){});
-        i++;
-        setTimeout(sendNext,600);
-      }
-      sendNext();
-    });
-  },false,false);
+  const report=function(err){toast(err?'Sync failed: '+err.message:'Backed up to the cloud')};
+  if(!syncReady)startSync(report);else syncCycle({full:true},report);
 }
-function loadFromCloud(onComplete,isPrePush,isInitialLoad){
-  jsonpFetch(SYNC_ENDPOINT+'?action=zercher_load',function(err,resp){
-    if(err||!resp||resp.status!=='ok'){if(onComplete)onComplete(false);return}
-    if(resp.ts){localStorage.setItem('zercher_lastSyncedAt',resp.ts);}
-    const cloudLogs=resp.logs||[];
-    const cloudPrs=resp.prs||{};
-    const config=resp.config||{};
-    const cloudSchemaVersion=Number(config.schemaVersion||0);
-    let migrationNeedsCloudPush=false;
-    // Merge logs by ID
-    const logMap={};
-    data.logs.forEach(l=>{logMap[l.id]=l});
-    cloudLogs.forEach(l=>{if(!logMap[l.id])logMap[l.id]=l});
-    data.logs=Object.values(logMap).sort((a,b)=>{
-      const dc=a.date.localeCompare(b.date);
-      if(dc!==0)return dc;
-      return(a.ts||0)-(b.ts||0); // same day → sort by timestamp
-    });
-    // Sanitize weights from cloud (may have object weights)
-    data.logs.forEach(log=>(log.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex)));
-    // Merge PRs: take higher weight, but skip tombstoned exercises
-    const _ts=new Set(data.deletedPRs||[]);
-    for(const eid in cloudPrs){
-      if(_ts.has(eid))continue; // tombstoned — don't resurrect
-      if(!data.prs[eid])data.prs[eid]={};
-      for(const reps in cloudPrs[eid]){
-        const cloud=cloudPrs[eid][reps];
-        const local=data.prs[eid][reps];
-        if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
-      }
+function startSync(after){
+  if(syncReady)return syncCycle({full:true},after);
+  syncCycle({initial:true,full:true,onPulled:function(){
+    _cloudInitialLoadDone=true;syncReady=true;
+    if(currentView==='workout'&&!workoutStartTime)renderWorkout();   // re-enable Start
+  }},function(err){
+    if(err&&!syncReady){
+      if(_isFreshInstall){console.warn('[SYNC] First pull failed on a fresh install, retrying in 20s');setTimeout(startSync,20000);}
+      else{_cloudInitialLoadDone=true;syncReady=true;if(currentView==='workout'&&!workoutStartTime)renderWorkout();}
     }
-    // Merge config — cloud wins for activeProgram on fresh install only
-    if(config.activeProgram&&PROGRAMS[config.activeProgram]&&isInitialLoad&&_isFreshInstall){
-      data.activeProgram=config.activeProgram;
-    }
-    if(config.customPrograms){
-      if(!data.customPrograms)data.customPrograms={};
-      for(const k in config.customPrograms){
-        if(!PROGRAMS[k])continue;
-        if(isInitialLoad||!data.customPrograms[k])data.customPrograms[k]=config.customPrograms[k];
-      }
-    }
-    if(config.customSubs){
-      if(!data.customSubs)data.customSubs=[];
-      const localNames=new Set(data.customSubs.map(s=>s.name));
-      config.customSubs.forEach(s=>{if(!localNames.has(s.name))data.customSubs.push(s)});
-    }
-    if(config.deletedSubs){
-      if(!data.deletedSubs)data.deletedSubs=[];
-      config.deletedSubs.forEach(d=>{if(!data.deletedSubs.includes(d))data.deletedSubs.push(d)});
-    }
-    if(config.customExercises){
-      const localMap={};
-      (data.customExercises||[]).forEach(e=>{localMap[e[0]]=e});
-      config.customExercises.forEach(e=>{if(!localMap[e[0]])localMap[e[0]]=e});
-      data.customExercises=Object.values(localMap);
-    }
-    if(config.subLinks){if(!data.subLinks)data.subLinks={};for(const k in config.subLinks){if(!(k in data.subLinks))data.subLinks[k]=config.subLinks[k];}}
-    if(config.settings){if(!data.settings)data.settings={};for(const k in config.settings){if(!(k in data.settings))data.settings[k]=config.settings[k];}}
-    if(config.programStartDates){
-      if(!data.programStartDates)data.programStartDates={};
-      for(const k in config.programStartDates){if(!data.programStartDates[k]||config.programStartDates[k]<data.programStartDates[k])data.programStartDates[k]=config.programStartDates[k]}
-    }
-    if(config.programWeeks){
-      if(!data.programWeeks)data.programWeeks={};
-      for(const k in config.programWeeks){data.programWeeks[k]=config.programWeeks[k]}
-    }
-    // Merge schemaVersion — higher wins
-    if(cloudSchemaVersion>(data.schemaVersion||0))data.schemaVersion=cloudSchemaVersion;
-    if(config.prs){
-      for(const eid in config.prs){
-        if(_ts.has(eid))continue; // tombstoned
-        if(!data.prs[eid])data.prs[eid]={};
-        for(const reps in config.prs[eid]){
-          const cloud=config.prs[eid][reps];
-          const local=data.prs[eid][reps];
-          if(!local||cloud.weight>local.weight)data.prs[eid][reps]=cloud;
-        }
-      }
-    }
-    // Merge extra (holds, notes, starts)
-    const extra=resp.extra||{};
-    try{
-      if(extra.holds){const h=getHolds();for(const k in extra.holds){if(!(k in h))h[k]=extra.holds[k];}saveHolds(h);}
-      if(extra.notes){const n=getExNotes();for(const k in extra.notes){if(!(k in n))n[k]=extra.notes[k];}saveExNotes(n);}
-      if(extra.starts){const s=getStartWeights();for(const k in extra.starts){if(!(k in s))s[k]=extra.starts[k];}saveStartWeights(s);}
-      if(extra.favs&&isInitialLoad){extra.favs.forEach(f=>favExercises.add(f));localStorage.setItem('fav_exercises',JSON.stringify([...favExercises]));}
-      if(extra.platePref){const p=getPlatePref();for(const k in extra.platePref){if(!(k in p))p[k]=extra.platePref[k];}savePlatePref(p);}
-      if(extra.noPlate){const np=getNoPlate();for(const k in extra.noPlate){if(!(k in np))np[k]=extra.noPlate[k];}saveNoPlate(np);}
-      if(extra.singleEnd){const se=getSingleEnd();for(const k in extra.singleEnd){if(!(k in se))se[k]=extra.singleEnd[k];}saveSingleEnd(se);}
-      if(extra.absRoutine&&extra.absRoutineWeek){
-        const cw=weekStart();
-        if(extra.absRoutineWeek===cw){
-          if(isInitialLoad){
-            currentAbsRoutine=extra.absRoutine;
-            localStorage.setItem('abs_routine',extra.absRoutine);
-          }
-          localStorage.setItem('abs_routine_week',cw);
-          if(extra.absReps){const ar=getAbsLastReps();for(const k in extra.absReps){ar[k]=extra.absReps[k];}saveAbsLastReps(ar);}
-        } else {
-          currentAbsRoutine=extra.absRoutine;
-          localStorage.setItem('abs_routine',extra.absRoutine);
-          localStorage.setItem('abs_routine_week',cw);
-          localStorage.removeItem('zercher_abs_reps');
-        }
-        if(extra.absLastWeek)localStorage.setItem('abs_last_completed_week',extra.absLastWeek);
-      }
-      if(extra.alts){const localAlts=getAltMemory();for(const k in extra.alts){if(!(k in localAlts))localAlts[k]=extra.alts[k];}saveAltMemory(localAlts);}
-    }catch(e){console.warn('Extra merge error',e)}
-    // Restore any new custom subs into SUBS_DATA
-    (data.customSubs||[]).forEach(s=>{
-      let group=SUBS_DATA.find(g=>g.muscle.toLowerCase()===s.muscle.toLowerCase());
-      if(!group){group={muscle:s.muscle,subs:[]};SUBS_DATA.push(group);}
-      let subcat=group.subs.find(c=>c.cat.toLowerCase()===s.cat.toLowerCase());
-      if(!subcat){subcat={cat:s.cat,ex:[]};group.subs.push(subcat);}
-      if(!subcat.ex.includes(s.name))subcat.ex.push(s.name);
-    });
-    // Rebuild _custom program cache from merged customExercises
-    if(data.customExercises&&data.customExercises.length){
-      PROGRAMS._custom={name:'_custom',phase:'acc',type:'ABC',days:{A:{label:'Custom',labelEn:'Custom Exercises',ex:data.customExercises}}};
-    }
-    // v271: migrate AFTER full merge. Checks cloud version, not merged version.
-    // If cloud < 271: corrupted ABC_D2 may have just been merged in — delete it and push.
-    // If cloud >= 271 but cloud has no ABC_D2: local copy is stale — delete it.
-    if(cloudSchemaVersion<CURRENT_SCHEMA_VERSION){
-      if(data.customPrograms&&data.customPrograms.hasOwnProperty('ABC_D2')){
-        delete data.customPrograms.ABC_D2;
-      }
-      data.schemaVersion=CURRENT_SCHEMA_VERSION;
-      migrationNeedsCloudPush=true;
-    } else if(cloudSchemaVersion>=CURRENT_SCHEMA_VERSION&&
-              !Object.prototype.hasOwnProperty.call(config.customPrograms||{},'ABC_D2')){
-      // Cloud v271+ confirms ABC_D2 override should be absent
-      if(data.customPrograms)delete data.customPrograms.ABC_D2;
-      data.schemaVersion=Math.max(data.schemaVersion||0,CURRENT_SCHEMA_VERSION);
-    }
-    _splitSave(data);
-    // Finish: render updates then optionally push migration
-    function finishCloudLoad(){
-      try{
-        flushInputs();
-        if(currentView==='workout'){
-          if(!workoutStartTime){currentWorkout=null;renderWorkout();}
-          else if(currentWorkout){
-            const anyDone=currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done));
-            if(!anyDone){
-              currentWorkout=null;
-              initWorkout();
-              renderExerciseCards();
-            } else {
-              currentWorkout.exercises.forEach((ex,ei)=>{
-                const lastLog=getLastLog(ex.name);
-                const card=document.getElementById('ex-'+ei);
-                ex.sets.forEach((s,i)=>{
-                  if(!s.done&&(s.weight===''||s.weight===0||s.weight==='0')){
-                    if(lastLog){
-                      const typeIdx=ex.sets.slice(0,i).filter(ps=>ps.type===s.type).length;
-                      const sameType=lastLog.sets.filter(ls=>ls.type===s.type);
-                      if(sameType[typeIdx])s.weight=sameType[typeIdx].weight;
-                    }
-                    if(card&&s.weight){
-                      const rows=card.querySelectorAll('.set-row');
-                      if(rows[i]){
-                        const wInput=rows[i].querySelectorAll('.set-input')[0];
-                        if(wInput&&!wInput.value)wInput.value=s.weight;
-                      }
-                    }
-                  }
-                });
-                if(card)updateLastLine(ex,ei,card);
-              });
-            }
-          }
-        }
-        if(currentView==='subs')renderSubs();if(currentView==='library')renderLibrary();
-      }catch(e){console.warn('Render error after sync',e)}
-      if(onComplete)onComplete(true);
-    }
-    if(migrationNeedsCloudPush){
-      console.log('[Zercher] v271 migration: pushing cleaned config to cloud');
-      _pushConfig(function(pushErr){
-        if(pushErr)console.warn('[MIGRATION] Failed to save v271 config',pushErr);
-        finishCloudLoad();
-      });
-      return;
-    }
-    finishCloudLoad();
+    if(after)after(err);
   });
 }
 
@@ -2105,6 +2117,26 @@ function saveAlt(program,day,origName,altName,altNameEn,altMuscle){
   syncExtraToCloud();
 }
 
+// Lookups that scan every program / every log are memoised until the data changes
+let _dataVer=0;
+function bumpDataVersion(){_dataVer++}
+const _memo={ver:-1,muscle:new Map(),english:new Map(),logMax:null};
+function _memoFresh(){if(_memo.ver!==_dataVer){_memo.ver=_dataVer;_memo.muscle.clear();_memo.english.clear();_memo.logMax=null}return _memo}
+// Heaviest weight ever logged per exercise id, any set type
+function logMaxWeights(){
+  const m=_memoFresh();
+  if(!m.logMax){
+    m.logMax=new Map();
+    (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>{
+      const id=exId(ex.name);let best=m.logMax.get(id)||0;
+      (ex.sets||[]).forEach(s=>{if(s.weight>best)best=s.weight});
+      m.logMax.set(id,best);
+    }));
+  }
+  return m.logMax;
+}
+function debounce(fn,ms){let t;return function(){const a=arguments;clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms)}}
+
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function fmt(n){return typeof n==='number'?n%1===0?n.toString():n.toFixed(1):n||''}
 function dateStr(d){const dt=d||new Date();return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0')}
@@ -2204,14 +2236,18 @@ function getProgramWeekInfo(pid){
   return{currentWeek:Math.min(currentWeek,totalWeeks+1),totalWeeks,expired:currentWeek>totalWeeks,daysLeft:Math.max(0,daysLeft),startDate:startStr};
 }
 function parseRepToken(tok){
-  // "8-12" → 12, "10" → 10, "30-40s" → 40, "failure"/"fail" → 0 (to-failure)
+  // "8-12" → 12, "10" → 10, "30-40s" → 40 (seconds), "2min" → 120, "failure"/"fail" → 0 (to-failure)
   const t=tok.trim().toLowerCase();
   if(t==='failure'||t==='fail')return 0; // 0 = to-failure marker
+  const mult=/\d\s*min\b/.test(t)?60:1;
   const rm=t.match(/(\d+)-(\d+)/);
-  if(rm)return+rm[2];
+  if(rm)return+rm[2]*mult;
   const nm=t.match(/(\d+)/);
-  return nm?+nm[1]:10;
+  return nm?+nm[1]*mult:10;
 }
+// Timed holds ("30-40s", "60s", "2min") log seconds in the reps field
+function isTimedToken(tok){return/\d\s*(s|sec|secs|seg|min)\b/i.test(tok)}
+function workSet(tok){const s={reps:parseRepToken(tok),type:'working'};if(isTimedToken(tok))s.timed=true;return s}
 function parseSets(str){
   // Parse setsReps string into array of {reps, type}
   // For ranges like 8-12, always use HIGH end as the target
@@ -2225,8 +2261,8 @@ function parseSets(str){
   function parseSegment(seg){
     seg=seg.trim();
     // "NxRwu" — warmup sets
-    const wuSeg=seg.match(/^(\d+)x(\d+)\s*wu$/i);
-    if(wuSeg){const r=[];for(let i=0;i<+wuSeg[1];i++)r.push({reps:+wuSeg[2],type:'warmup'});return r;}
+    const wuSeg=seg.match(/^(\d+)x(\d+)(?:-(\d+))?\s*wu$/i);
+    if(wuSeg){const r=[];for(let i=0;i<+wuSeg[1];i++)r.push({reps:+(wuSeg[3]||wuSeg[2]),type:'warmup'});return r;}
     // "NxFailure" or "NxFail" — failure sets
     const failSeg=seg.match(/^(\d+)x\s*(?:failure|fail)$/i);
     if(failSeg){const r=[];for(let i=0;i<+failSeg[1];i++)r.push({reps:0,type:'working'});return r;}
@@ -2238,9 +2274,9 @@ function parseSets(str){
     if(stripSeg){const sc=+(stripSeg[1]||1);const r=[];for(let i=0;i<sc;i++)r.push({reps:'',type:'drop'});return r;}
     // "NxR-R" or "NxR" — normal working sets
     const nxr=seg.match(/^(\d+)x(.+)/);
-    if(nxr){const r=[];for(let i=0;i<+nxr[1];i++)r.push({reps:parseRepToken(nxr[2]),type:'working'});return r;}
+    if(nxr){const r=[];for(let i=0;i<+nxr[1];i++)r.push(workSet(nxr[2]));return r;}
     // Pyramid segment: "12-15" or "10"
-    return[{reps:parseRepToken(seg),type:'working'}];
+    return[workSet(seg)];
   }
 
   // Split on "+" to handle compound prescriptions like "1x10-12+3xFailure" or "2x10wu+4x8-12+1xDrop"
@@ -2252,12 +2288,12 @@ function parseSets(str){
       const sets=[];
       clean.split('/').forEach(seg=>{
         const nxm=seg.match(/(\d+)x(.+)/);
-        if(nxm){for(let i=0;i<+nxm[1];i++)sets.push({reps:parseRepToken(nxm[2]),type:'working'})}
-        else sets.push({reps:parseRepToken(seg),type:'working'});
+        if(nxm){for(let i=0;i<+nxm[1];i++)sets.push(workSet(nxm[2]))}
+        else sets.push(workSet(seg));
       });
       return sets;
     }
-    return clean.split('/').map(tok=>({reps:parseRepToken(tok),type:'working'}));
+    return clean.split('/').map(workSet);
   }
 
   // Handle "+" separated compound prescriptions
@@ -2282,7 +2318,7 @@ function parseSets(str){
 
   // Simple: "NxR-R" or "NxR"
   const simpleMatch=clean.match(/^(\d+)x(.+)/);
-  if(simpleMatch){const sets=[];for(let i=0;i<+simpleMatch[1];i++)sets.push({reps:parseRepToken(simpleMatch[2]),type:'working'});return sets}
+  if(simpleMatch){const sets=[];for(let i=0;i<+simpleMatch[1];i++)sets.push(workSet(simpleMatch[2]));return sets}
 
   // Default 4 sets
   return[{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'},{reps:10,type:'working'}];
@@ -2306,7 +2342,8 @@ function loadData(){
 }
 function safeLocalSave(key,payload){try{localStorage.setItem(key,payload);return true;}catch(e){console.error('[Zercher] localStorage QUOTA ERROR:',e);toast('Storage full — data not saved locally');return false;}}
 function _splitSave(d){
-  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],hiddenExercises:d.hiddenExercises||[],subLinks:d.subLinks||{},lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0,_migATHtoSTATIC:d._migATHtoSTATIC||false,deletedPRs:d.deletedPRs||[]};
+  var core={activeProgram:d.activeProgram,customPrograms:d.customPrograms||{},prs:d.prs||{},settings:d.settings,programStartDates:d.programStartDates||{},programWeeks:d.programWeeks||{},customSubs:d.customSubs||[],customExercises:d.customExercises||[],deletedSubs:d.deletedSubs||[],hiddenExercises:d.hiddenExercises||[],subLinks:d.subLinks||{},lastModified:d.lastModified,lastSyncedAt:d.lastSyncedAt,schemaVersion:d.schemaVersion||0,_migATHtoSTATIC:d._migATHtoSTATIC||false,deletedPRs:d.deletedPRs||[],deletedLogIds:d.deletedLogIds||[],dirtyLogIds:d.dirtyLogIds||[]};
+  bumpDataVersion();
   var coreOk=safeLocalSave(SK_CORE,JSON.stringify(core));
   var logsOk=safeLocalSave(SK_LOGS,JSON.stringify(d.logs||[]));
   return coreOk&&logsOk;
@@ -3029,6 +3066,11 @@ function getAllExerciseNames(){
   return[...names].sort();
 }
 function getExerciseMuscle(name){
+  const m=_memoFresh();
+  if(!m.muscle.has(name))m.muscle.set(name,_exerciseMuscleUncached(name));
+  return m.muscle.get(name);
+}
+function _exerciseMuscleUncached(name){
   // Check user overrides first (customExercises) so edits stick
   const ce=(data.customExercises||[]).find(e=>e[0]===name);
   if(ce)return ce[2];
@@ -3066,6 +3108,11 @@ function getExerciseMuscle(name){
   return'other';
 }
 function getExerciseEnglish(name){
+  const m=_memoFresh();
+  if(!m.english.has(name))m.english.set(name,_exerciseEnglishUncached(name));
+  return m.english.get(name);
+}
+function _exerciseEnglishUncached(name){
   const ce=(data.customExercises||[]).find(e=>e[0]===name);
   if(ce)return ce[1];
   for(const pid in PROGRAMS){
@@ -3186,7 +3233,7 @@ function renderPrograms(){
               const tech=e[3]&&e[3]!=='S'?TECH_LABELS[e[3]]||e[3]:'';
               let reps=e[4]||'4x10';
               // Strip warmup sets (e.g. "2x8wu+3x10" → "3x10")
-              const wuMatch=reps.match(/\d+x\d+\s*wu\s*\+\s*(.*)/i);
+              const wuMatch=reps.match(/\d+x\d+(?:-\d+)?\s*wu\s*\+\s*(.*)/i);
               if(wuMatch)reps=wuMatch[1];
               return `<div class="prog-detail-ex">
               <span class="prog-detail-num">${i+1}.</span>
@@ -3283,6 +3330,7 @@ function renderWorkout(){
       <div class="ex-count">${exCount} exercises</div>
       ${syncReady?'':'<div style="font-size:0.75rem;color:var(--gold);margin-bottom:6px">Syncing data...</div>'}
       <button class="start-workout-btn" onclick="beginWorkout()" ${syncReady?'':'disabled style="opacity:0.4;cursor:wait"'}>Start Workout</button>
+      ${currentWorkout&&currentWorkout.exercises.length?`<div class="start-preview">${currentWorkout.exercises.map((ex,i)=>`<div class="sp-row"><span class="sp-num">${i+1}</span><span class="sp-name">${escHtml(ex.name)}</span><span class="sp-sets">${ex._pb?'PB':escHtml(String(ex.targetSets||'').replace(/\+/g,' + '))}</span></div>`).join('')}</div>`:''}
     </div>`;
     overlay.style.display='block';
     exContainer.innerHTML='';
@@ -3296,8 +3344,26 @@ function renderWorkout(){
   }
 }
 
+const WORKOUT_IDLE_CAP=3*60*60*1000;
+function workoutIdleMs(){return Date.now()-((currentWorkout&&currentWorkout.lastActivity)||workoutStartTime||Date.now())}
+// Real duration: from the start (moved to the first set if Start was tapped early) to now,
+// or to just after the last set when Finish was forgotten
+function workoutDurationMin(){
+  if(!workoutStartTime)return 0;
+  let end=Date.now();
+  const lastSet=currentWorkout&&currentWorkout.lastSetAt;
+  if(lastSet&&end-lastSet>30*60000)end=lastSet+2*60000;
+  if(!lastSet&&end-workoutStartTime>WORKOUT_IDLE_CAP)end=workoutStartTime;
+  return Math.max(0,Math.round((end-workoutStartTime)/60000));
+}
+function saveInProgress(){
+  if(!currentWorkout)return;
+  try{localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}))}
+  catch(e){toast('Storage full — workout not saved')}
+}
 function beginWorkout(){
   workoutStartTime=Date.now();
+  if(currentWorkout)currentWorkout.lastActivity=workoutStartTime;
   renderWorkout();
   // Update timer every second
   if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
@@ -3307,8 +3373,8 @@ function beginWorkout(){
 function updateWorkoutTimer(){
   if(!workoutStartTime)return;
   const elapsed=Math.floor((Date.now()-workoutStartTime)/1000);
-  // 3-hour cap
-  if(elapsed>=3*60*60){autoFinishWorkout();renderWorkout();return;}
+  // 3 hours with nothing ticked or typed: close it out (saves whatever was done)
+  if(workoutIdleMs()>=WORKOUT_IDLE_CAP){autoFinishWorkout();renderWorkout();return;}
   const m=Math.floor(elapsed/60);const s=elapsed%60;
   document.getElementById('workoutTimer').textContent=m+':'+(s<10?'0':'')+s+' elapsed';
 }
@@ -3352,9 +3418,9 @@ function initWorkout(){
         // Program changed — discard stale workout, rebuild fresh
         localStorage.removeItem('workout_in_progress_'+currentDay);
       } else {
-        // 3-hour cap: auto-finish stale workouts
-        const elapsed=Date.now()-saved.startTime;
-        if(elapsed>3*60*60*1000){
+        // Untouched for 3 hours: auto-finish the stale workout
+        const lastTouch=(saved.workout&&saved.workout.lastActivity)||saved.startTime;
+        if(Date.now()-lastTouch>WORKOUT_IDLE_CAP){
           currentWorkout=saved.workout;workoutStartTime=saved.startTime;
           (currentWorkout.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex));
           autoFinishWorkout();
@@ -3437,12 +3503,10 @@ function initWorkout(){
               if(lastLog.sets[i]&&lastLog.sets[i].reps>0)prefillReps=lastLog.sets[i].reps;
             }
           }
-          return{
-          weight:prefillWeight,
-          reps:isAbsEx?prefillReps:s.reps,
-          type:s.type,
-          done:false
-        };})
+          const live={weight:prefillWeight,reps:isAbsEx?prefillReps:s.reps,type:s.type,done:false};
+          if(s.timed)live.timed=true;
+          return live;
+        })
       };
     })
   };
@@ -3720,6 +3784,7 @@ function flushInputs(){
   });
   localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
 }
+function repsUnit(ex,lastLog){return(ex.sets.some(s=>s.timed)||(lastLog&&lastLog.sets.some(s=>s.timed)))?'sec':'reps'}
 function updateLastLine(ex,ei,card){
   const isAbs=currentDay==='ABS'&&ex.muscle==='abs';
   const lastLog=getLastLog(ex.name);
@@ -3729,7 +3794,7 @@ function updateLastLine(ex,ei,card){
     const weights=ws.map(s=>s.weight).join('/');
     const reps=ws.map(s=>s.reps).join('/');
     if(isAbs){
-      lastHtml=`<div class="ex-last">Last: ${reps} reps</div>`;
+      lastHtml=`<div class="ex-last">Last: ${reps} ${repsUnit(ex,lastLog)}</div>`;
     } else {
       const pyL=pyramidInfo(ex.sets);
       const tgtR=pyL?pyL.topReps:(ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10);
@@ -3737,7 +3802,7 @@ function updateLastLine(ex,ei,card){
       const athW=getBestWeight(ex.name);
       let prStr=`<span class="pr-badge">ATH: ${athW} lbs</span>`;
       if(repPr&&repPr<athW) prStr+=` &middot; <span class="pr-badge">${tgtR}-rep PR: ${repPr} lbs</span>`;
-      lastHtml=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; ${prStr}</div>`;
+      lastHtml=`<div class="ex-last">Last: ${weights} lbs (${reps} ${repsUnit(ex,lastLog)}) &middot; ${prStr}</div>`;
     }
     if(isHeld(ex.name)){
       const s1w=ws[0]?ws[0].weight:'?';
@@ -3825,8 +3890,8 @@ function renderExerciseCards(){
           <span class="set-unit">lbs</span>
         </div>`}
         <div class="set-input-group">
-          <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${set.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)">
-          <span class="set-unit">reps</span>
+          <input class="set-input${set.done&&!(set.reps>0)?' missing':''}" type="number" inputmode="numeric" placeholder="${set.timed?'sec':'reps'}" value="${set.reps||''}" oninput="updateSet(${ei},${si},'reps',this.value)">
+          <span class="set-unit">${set.timed?'sec':'reps'}</span>
         </div>
         <button class="set-done-btn${set.done?' done':''}" onclick="toggleSet(${ei},${si})">&#10003;</button>
       </div>`;
@@ -3847,7 +3912,7 @@ function renderExerciseCards(){
       const weights=workingSets.map(s=>s.weight).join('/');
       const reps=workingSets.map(s=>s.reps).join('/');
       if(isAbs){
-        html+=`<div class="ex-last">Last: ${reps} reps</div>`;
+        html+=`<div class="ex-last">Last: ${reps} ${repsUnit(ex,lastLog)}</div>`;
       } else {
         const pyL2=pyramidInfo(ex.sets);
         const tgtR2=pyL2?pyL2.topReps:(ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10);
@@ -3855,7 +3920,7 @@ function renderExerciseCards(){
         const athW2=getBestWeight(ex.name);
         let prStr2=`<span class="pr-badge">ATH: ${athW2} lbs</span>`;
         if(repPr2&&repPr2<athW2) prStr2+=` &middot; <span class="pr-badge">${tgtR2}-rep PR: ${repPr2} lbs</span>`;
-        html+=`<div class="ex-last">Last: ${weights} lbs (${reps} reps) &middot; ${prStr2}</div>`;
+        html+=`<div class="ex-last">Last: ${weights} lbs (${reps} ${repsUnit(ex,lastLog)}) &middot; ${prStr2}</div>`;
       }
       if(ex._pb){
         // PB lifts: percentages drive the weights; no auto-suggestion
@@ -3909,8 +3974,9 @@ function updateSet(ei,si,field,val){
   if(!currentWorkout)return;
   const v=field==='weight'?parseFloat(val.replace(/,/g,''))||'':parseInt(val)||0;
   currentWorkout.exercises[ei].sets[si][field]=v;
+  currentWorkout.lastActivity=Date.now();
   if(field==='weight')updatePlateCorner(ei);
-  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  saveInProgress();
   // Persist abs reps on every input change so typed numbers stick even without toggling done
   const ex=currentWorkout.exercises[ei];
   if(currentDay==='ABS'&&ex.muscle==='abs'&&field==='reps'){
@@ -3968,8 +4034,17 @@ function toggleSet(ei,si){
   }
 
 
-  // PRs are only recorded on finish workout — not mid-workout
-
+  // Clock: activity keeps the workout alive; if Start was tapped long before the first
+  // set (to look at the list), the workout really starts at that first set
+  const now=Date.now();
+  currentWorkout.lastActivity=now;
+  if(set.done){
+    if(!currentWorkout.firstSetAt){
+      currentWorkout.firstSetAt=now;
+      if(workoutStartTime&&now-workoutStartTime>15*60000)workoutStartTime=now-3*60000;
+    }
+    currentWorkout.lastSetAt=now;
+  }
 
   // Auto-save progress on every set toggle
   const ex=currentWorkout.exercises[ei];
@@ -3986,7 +4061,7 @@ function toggleSet(ei,si){
       }
     }
   });
-  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
+  saveInProgress();
 
   // Persist abs reps immediately so they're remembered even without Finish
   // Save ALL sets (not just done ones) keyed by set index so prefill aligns correctly
@@ -4020,9 +4095,11 @@ function renameExercise(ei){
   const newId=exId(trimmed);
   // Rename in current workout
   currentWorkout.exercises[ei].name=trimmed;
-  // Rename in all logs
+  // Rename in all logs (and re-upload the ones that changed)
   (data.logs||[]).forEach(log=>{
-    (log.exercises||[]).forEach(ex=>{if(ex.name===oldName)ex.name=trimmed;});
+    let hit=false;
+    (log.exercises||[]).forEach(ex=>{if(ex.name===oldName){ex.name=trimmed;hit=true}});
+    if(hit)markLogDirty(log);
   });
   // Rename PRs
   if(data.prs[oldId]){data.prs[newId]=data.prs[oldId];delete data.prs[oldId];}
@@ -4041,8 +4118,7 @@ function renameExercise(ei){
   }
   saveData();
   // Persist updated in-progress workout
-  localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
-  syncToCloud();
+  saveInProgress();
   renderExerciseCards();
   toast('Renamed to '+trimmed);
 }
@@ -4055,10 +4131,8 @@ function getBestWeight(exName){
   let best=0;
   // Check PR records
   if(pr){for(const r in pr){if(pr[r].weight>best)best=pr[r].weight}}
-  // Also scan workout logs for max weight
-  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>{
-    if(exId(ex.name)===id)(ex.sets||[]).forEach(s=>{if(s.weight>best)best=s.weight});
-  }));
+  // Also the heaviest logged set
+  const logged=logMaxWeights().get(id)||0;if(logged>best)best=logged;
   return best||findATH(exName);
 }
 
@@ -4078,13 +4152,15 @@ function findATH(name){
 
 // ── PR DETECTION ──
 // Shared PR update logic — used by both finishWorkout and autoFinishWorkout
+// Per-rep PRs only count real working sets: weighted, with reps typed in, not timed holds
+function isPRSet(s){return s.type==='working'&&s.weight>0&&s.reps>0&&!s.timed}
 function updatePRsFromLog(logEntry){
   const newPRs=[];
   logEntry.exercises.forEach(ex=>{
     const id=exId(ex.name);
     if(!data.prs[id])data.prs[id]={};
     // Per-rep PRs (working sets only)
-    ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
+    ex.sets.filter(isPRSet).forEach(s=>{
       const current=data.prs[id][s.reps];
       if(!current||s.weight>current.weight){
         data.prs[id][s.reps]={weight:s.weight,date:logEntry.date,program:logEntry.program};
@@ -4106,6 +4182,27 @@ function updatePRsFromLog(logEntry){
   return newPRs;
 }
 
+// Recompute the log-derived PRs of some exercises (after a session is deleted).
+// Manual PRs / ATH overrides and the static ATH seeds are kept.
+function rebuildPRsFor(ids){
+  ids=new Set(ids);if(!ids.size)return;
+  const tomb=new Set(data.deletedPRs||[]);
+  ids.forEach(id=>{
+    const keep={};const cur=data.prs[id]||{};
+    for(const r in cur)if(_isManualPR(cur[r]))keep[r]=cur[r];
+    if(tomb.has(id))delete data.prs[id];else data.prs[id]=keep;
+  });
+  data.logs.forEach(log=>{
+    const part=(log.exercises||[]).filter(ex=>ids.has(exId(ex.name))&&!tomb.has(exId(ex.name)));
+    if(part.length)updatePRsFromLog({date:log.date,program:log.program,exercises:part});
+  });
+  for(const name in ATH_DATA){
+    const id=exId(name);if(!ids.has(id)||tomb.has(id))continue;
+    if(!data.prs[id])data.prs[id]={};
+    if(!data.prs[id]['ath']||ATH_DATA[name]>data.prs[id]['ath'].weight)data.prs[id]['ath']={weight:ATH_DATA[name],date:'',program:'STATIC'};
+  }
+}
+
 function checkPR(ei,exName,weight,reps){
   const id=exId(exName);
   if(!data.prs[id])data.prs[id]={};
@@ -4121,9 +4218,12 @@ function checkPR(ei,exName,weight,reps){
 }
 
 function calcE1RM(weight,reps){
-  if(reps<=0||reps>30)return 0;
+  if(!(reps>0))return 0;
   if(reps===1)return weight;
-  return Math.round(weight*36/(37-reps)*10)/10;
+  // Brzycki up to 10 reps. Past that it runs away (x2.1 at 20 reps, x5 at 30), so switch
+  // to Epley, which meets it exactly at 10, and stop counting reps past 15
+  if(reps<=10)return Math.round(weight*36/(37-reps)*10)/10;
+  return Math.round(weight*(1+Math.min(reps,15)/30)*10)/10;
 }
 
 // ── REST TIMER ──
@@ -4163,36 +4263,34 @@ function skipRest(){
 }
 
 // ── FINISH WORKOUT ──
+function logSets(ex){
+  return ex.sets.filter(s=>s.done).map(s=>{const o={weight:s.weight,reps:s.reps,type:s.type};if(s.timed)o.timed=true;return o});
+}
 function autoFinishWorkout(){
-  // Auto-save after 3-hour cap — saves whatever sets were completed
+  // Auto-save after 3 idle hours — saves whatever sets were completed
   if(!currentWorkout)return;
   const hasSets=currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done));
   if(hasSets){
     // Reuse finish logic but skip the DOM flush (cards may not exist)
+    const end=currentWorkout.lastSetAt?currentWorkout.lastSetAt+2*60000:workoutStartTime;
     const logEntry={
       id:'log_'+Date.now(),date:currentWorkout.date,ts:Date.now(),
       program:currentWorkout.program,day:currentWorkout.day,
-      exercises:currentWorkout.exercises.map(ex=>({
-        name:ex.name,
-        sets:ex.sets.filter(s=>s.done).map(s=>({weight:s.weight,reps:s.reps,type:s.type}))
-      })).filter(ex=>ex.sets.length>0),
-      duration:workoutStartTime?Math.round((Date.now()-workoutStartTime)/60000):0
+      exercises:currentWorkout.exercises.map(ex=>({name:ex.name,sets:logSets(ex)})).filter(ex=>ex.sets.length>0),
+      duration:workoutStartTime?Math.max(0,Math.round((end-workoutStartTime)/60000)):0
     };
     data.logs.push(logEntry);
     updatePRsFromLog(logEntry);
     saveData();
-    syncWorkoutToCloud(logEntry);syncConfigToCloud();syncExtraToCloud();
-    toast('Workout auto-saved (3h cap) — '+logEntry.exercises.length+' exercises logged');
+    toast('Workout auto-saved after 3 idle hours — '+logEntry.exercises.length+' exercises logged');
   }
   localStorage.removeItem('workout_in_progress_'+currentDay);
   currentWorkout=null;workoutStartTime=null;
   if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
 }
+let _lastFinished=null; // what "Reopen workout" puts back
 function finishWorkout(){
   if(!currentWorkout)return;
-  if(!currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done))){
-    toast('No sets completed yet!');return;
-  }
   // Save all input values
   currentWorkout.exercises.forEach((ex,ei)=>{
     const card=document.getElementById('ex-'+ei);
@@ -4211,8 +4309,23 @@ function finishWorkout(){
         }
       }
     });
-    // Sync final abs reps so next workout prefills today's numbers, not stale ones
-    if(isAbsEx){
+  });
+  saveInProgress();
+  if(!currentWorkout.exercises.some(ex=>ex.sets.some(s=>s.done))){
+    toast('No sets completed yet!');return;
+  }
+  // Half-done workouts were getting finished by accident, then logged a second time
+  const untouched=currentWorkout.exercises.filter(ex=>!ex.sets.some(s=>s.done)).length;
+  const noReps=currentWorkout.exercises.reduce((n,ex)=>n+ex.sets.filter(s=>s.done&&!(s.reps>0)).length,0);
+  if(untouched||noReps){
+    const why=[];
+    if(untouched)why.push(untouched+' of '+currentWorkout.exercises.length+' exercises have no sets ticked.');
+    if(noReps)why.push(noReps+' ticked set'+(noReps>1?'s have':' has')+' no reps.');
+    if(!confirm('Finish the workout now?\n\n'+why.join('\n')))return;
+  }
+  // Sync final abs reps so next workout prefills today's numbers, not stale ones
+  currentWorkout.exercises.forEach(ex=>{
+    if(currentDay==='ABS'&&ex.muscle==='abs'){
       const absReps=getAbsLastReps();
       absReps[ex.name]=ex.sets.map(s=>parseInt(s.reps)||0);
       saveAbsLastReps(absReps);
@@ -4225,24 +4338,17 @@ function finishWorkout(){
     ts:Date.now(),
     program:currentWorkout.program,
     day:currentWorkout.day,
-    exercises:currentWorkout.exercises.map(ex=>({
-      name:ex.name,
-      sets:ex.sets.filter(s=>s.done).map(s=>({weight:s.weight,reps:s.reps,type:s.type}))
-    })).filter(ex=>ex.sets.length>0),
-    duration:workoutStartTime?Math.round((Date.now()-workoutStartTime)/60000):0
+    exercises:currentWorkout.exercises.map(ex=>({name:ex.name,sets:logSets(ex)})).filter(ex=>ex.sets.length>0),
+    duration:workoutDurationMin()
   };
+  _lastFinished={logId:logEntry.id,workout:JSON.parse(JSON.stringify(currentWorkout)),startTime:workoutStartTime,day:currentDay,
+    absRoutine:localStorage.getItem('abs_routine'),absLastWeek:localStorage.getItem('abs_last_completed_week')};
+  const summary=workoutSummary(logEntry);   // compare against history before this log is added
 
   data.logs.push(logEntry);
-
-  // Auto-detect PRs for all completed sets
-  const newPRs=updatePRsFromLog(logEntry);
-
+  updatePRsFromLog(logEntry);
   saveData();
 
-  // Show PR feedback for each new PR
-  if(newPRs.length>0){
-    newPRs.forEach(pr=>toast('NEW PR! '+pr.name+': '+pr.weight+'lbs x '+pr.reps));
-  }
   // Advance abs routine only when a new week starts (stay on same routine all week)
   if(currentDay==='ABS'){
     const lastAbsWeek=localStorage.getItem('abs_last_completed_week')||'';
@@ -4254,16 +4360,139 @@ function finishWorkout(){
     }
     localStorage.setItem('abs_last_completed_week',thisWeek);
   }
-  syncWorkoutToCloud(logEntry);
-  syncConfigToCloud();
-  syncExtraToCloud();
   localStorage.removeItem('workout_in_progress_'+currentDay);
   currentWorkout=null;
   workoutStartTime=null;
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
   skipRest();
-  toast('Workout saved! '+logEntry.exercises.length+' exercises logged');
   currentDay=getNextDay();
   showView('workout',document.querySelectorAll('.nav-btn')[0]);
+  showWorkoutSummary(logEntry,summary);
+}
+
+// ── END-OF-WORKOUT SUMMARY ──
+function _setsVolume(sets){return sets.reduce((v,s)=>v+(s.type!=='warmup'&&!s.timed&&s.weight>0&&s.reps>0?s.weight*s.reps:0),0)}
+function _bestE1RM(sets){let best=null;sets.filter(isPRSet).forEach(s=>{const e=calcE1RM(s.weight,+s.reps);if(!best||e>best.e)best={e,s}});return best}
+function workoutSummary(logEntry){
+  const prev=data.logs.filter(l=>l.id!==logEntry.id);
+  const sets=logEntry.exercises.reduce((n,ex)=>n+ex.sets.filter(s=>s.type!=='warmup').length,0);
+  const volume=logEntry.exercises.reduce((v,ex)=>v+_setsVolume(ex.sets),0);
+  // Last time this same day of this program was trained
+  let lastSame=null;
+  for(let i=prev.length-1;i>=0;i--){const l=prev[i];if(l.program===logEntry.program&&l.day===logEntry.day&&!(l.id||'').startsWith('seed_')){lastSame=l;break}}
+  const lastVolume=lastSame?lastSame.exercises.reduce((v,ex)=>v+_setsVolume(ex.sets),0):0;
+  const prs=[],rows=[];
+  logEntry.exercises.forEach(ex=>{
+    const id=exId(ex.name);
+    const now=_bestE1RM(ex.sets);
+    let prevE=0,prevW=0,seen=false,lastEx=null;
+    prev.forEach(l=>(l.exercises||[]).forEach(e=>{
+      if(exId(e.name)!==id)return;
+      seen=true;lastEx=e;
+      e.sets.forEach(s=>{if(isPRSet(s)){const v=calcE1RM(s.weight,+s.reps);if(v>prevE)prevE=v}if(s.type!=='warmup'&&s.weight>prevW)prevW=s.weight});
+    }));
+    const pr=data.prs[id]||{};
+    for(const r in pr){if(+r>0&&pr[r].weight>0){const v=calcE1RM(pr[r].weight,+r);if(v>prevE)prevE=v}}
+    const topW=Math.max(0,...ex.sets.filter(s=>s.type!=='warmup').map(s=>s.weight||0));
+    if(now&&seen&&now.e>prevE+0.05)prs.push({name:ex.name,text:fmt(now.s.weight)+' × '+now.s.reps+' — e1RM '+fmt(now.e)+(prevE?' (was '+fmt(prevE)+')':'')});
+    else if(seen&&topW>0&&topW>prevW)prs.push({name:ex.name,text:'Heaviest set ever: '+fmt(topW)+' lbs (was '+fmt(prevW)+')'});
+    if(lastEx){
+      const was=_bestE1RM(lastEx.sets);
+      let dir='same';
+      if(now&&was){if(now.e>was.e+0.05)dir='up';else if(now.e<was.e-0.05)dir='down'}
+      const fmtSet=b=>b?fmt(b.s.weight)+'×'+b.s.reps:'—';
+      rows.push({name:ex.name,dir,now:fmtSet(now),was:fmtSet(was)});
+    }
+  });
+  return{sets,volume,lastVolume,lastSame,prs,rows};
+}
+function showWorkoutSummary(logEntry,sm){
+  const prog=getProgram(logEntry.program);
+  const dayData=prog&&prog.days[logEntry.day];
+  const dayLabel=(logEntry.day==='ABS'?'Abs':'Day '+logEntry.day)+(dayData?' — '+escHtml(dayData.labelEn||dayData.label):'');
+  const volPct=sm.lastVolume>0?Math.round((sm.volume-sm.lastVolume)/sm.lastVolume*100):null;
+  const arrow={up:'&#9650;',down:'&#9660;',same:'&#9654;'};
+  let html=`<div class="modal-header"><div class="modal-title">Workout Complete</div><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="ws-day">${dayLabel} · ${escHtml(logEntry.program)}</div>
+    <div class="ws-stats">
+      <div class="ws-stat"><div class="v">${logEntry.duration||'&lt;1'}</div><div class="l">minutes</div></div>
+      <div class="ws-stat"><div class="v">${sm.sets}</div><div class="l">work sets</div></div>
+      <div class="ws-stat"><div class="v">${Math.round(sm.volume).toLocaleString()}</div><div class="l">lbs moved</div></div>
+    </div>`;
+  if(volPct!==null)html+=`<div class="ws-vs ${volPct>0?'up':volPct<0?'down':''}">${volPct>0?'+':''}${volPct}% volume vs last ${logEntry.day==='ABS'?'abs day':'Day '+escHtml(logEntry.day)} (${fmtDateShort(sm.lastSame.date)})</div>`;
+  if(sm.prs.length){
+    html+=`<div class="ws-section">&#9733; ${sm.prs.length} PR${sm.prs.length>1?'s':''}</div>`;
+    sm.prs.forEach(p=>{html+=`<div class="ws-pr"><div class="n">${escHtml(p.name)}</div><div class="t">${p.text}</div></div>`});
+  }
+  if(sm.rows.length){
+    html+=`<div class="ws-section">Vs last time</div>`;
+    sm.rows.forEach(r=>{html+=`<div class="ws-row ${r.dir}"><span class="a">${arrow[r.dir]}</span><span class="n">${escHtml(r.name)}</span><span class="s">${r.now} <em>was ${r.was}</em></span></div>`});
+  }
+  html+=`<button class="edit-save-btn" onclick="closeModal()">Done</button>
+    <button class="edit-reset-btn" onclick="reopenLastWorkout()">Finished by mistake? Reopen workout</button>`;
+  openModal(html);
+}
+// Undo Finish: delete the log and put the workout back exactly as it was
+function reopenLastWorkout(){
+  const lf=_lastFinished;if(!lf)return;
+  deleteLog(lf.logId);
+  try{
+    if(lf.absRoutine!==null){localStorage.setItem('abs_routine',lf.absRoutine);currentAbsRoutine=parseInt(lf.absRoutine)||currentAbsRoutine}
+    if(lf.absLastWeek!==null)localStorage.setItem('abs_last_completed_week',lf.absLastWeek);else localStorage.removeItem('abs_last_completed_week');
+  }catch(e){}
+  _lastFinished=null;
+  currentDay=lf.day;currentWorkout=lf.workout;workoutStartTime=lf.startTime;
+  currentWorkout.lastActivity=Date.now();
+  saveInProgress();
+  if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
+  window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
+  closeModal();
+  showView('workout',document.querySelectorAll('.nav-btn')[0]);
+  toast('Workout reopened');
+}
+
+// ── WORKOUT HISTORY (delete a session) ──
+function deleteLog(id){
+  const log=data.logs.find(l=>l.id===id);if(!log)return false;
+  data.logs=data.logs.filter(l=>l.id!==id);
+  if(!data.deletedLogIds)data.deletedLogIds=[];
+  if(!data.deletedLogIds.includes(id))data.deletedLogIds.push(id);
+  data.dirtyLogIds=(data.dirtyLogIds||[]).filter(x=>x!==id);
+  rebuildPRsFor((log.exercises||[]).map(ex=>exId(ex.name)));
+  saveData();
+  return true;
+}
+function openHistory(){
+  const key=l=>l.date+'|'+l.program+'|'+l.day;
+  const counts={};data.logs.forEach(l=>{counts[key(l)]=(counts[key(l)]||0)+1});
+  const logs=data.logs.filter(l=>!(l.id||'').startsWith('seed_')).slice().sort((a,b)=>b.date.localeCompare(a.date)||(b.ts||0)-(a.ts||0)).slice(0,100);
+  const dups=Object.values(counts).filter(n=>n>1).length;
+  let html=`<div class="modal-header"><div class="modal-title">Workout History</div><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px">Tap a session to see its sets. Deleted sessions are archived in the cloud sheet, not destroyed.${dups?' <span style="color:var(--gold)">'+dups+' day'+(dups>1?'s have':' has')+' the same workout logged twice.</span>':''}</div>`;
+  logs.forEach(l=>{
+    const d=new Date(l.date+'T00:00:00');
+    const when=d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})+(l.ts?' · '+new Date(l.ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'');
+    const nSets=(l.exercises||[]).reduce((n,ex)=>n+ex.sets.filter(s=>s.type!=='warmup').length,0);
+    const dur=l.duration>0&&l.duration<=300?' · '+l.duration+' min':'';
+    const dup=counts[key(l)]>1;
+    const detail=(l.exercises||[]).map(ex=>`<div class="hx-ex"><b>${escHtml(ex.name)}</b> ${ex.sets.filter(s=>s.type!=='warmup').map(s=>(s.weight?fmt(s.weight)+'×':'')+(s.reps||0)+(s.timed?'s':'')).join(' / ')}</div>`).join('');
+    html+=`<div class="hx-item" onclick="this.classList.toggle('open')">
+      <div class="hx-top"><div><div class="hx-when">${when}${dup?' <span class="hx-dup">same day twice</span>':''}</div>
+      <div class="hx-what">${escHtml(l.program||'')} · ${l.day==='ABS'?'Abs':'Day '+escHtml(l.day||'')} · ${(l.exercises||[]).length} ex · ${nSets} sets${dur}</div></div>
+      <button class="hx-del" onclick="event.stopPropagation();confirmDeleteLog('${escJs(l.id)}')">Delete</button></div>
+      <div class="hx-detail">${detail}</div>
+    </div>`;
+  });
+  if(!logs.length)html+='<div style="color:var(--text-dim);text-align:center;padding:30px">No workouts logged yet</div>';
+  openModal(html);
+}
+function confirmDeleteLog(id){
+  const l=data.logs.find(x=>x.id===id);if(!l)return;
+  const when=fmtDateShort(l.date)+(l.ts?' at '+new Date(l.ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'');
+  if(!confirm('Delete the '+(l.day==='ABS'?'Abs':'Day '+l.day)+' session from '+when+'? ('+(l.exercises||[]).length+' exercises)\n\nPRs are recalculated without it.'))return;
+  deleteLog(id);
+  toast('Session deleted');
+  openHistory();
 }
 
 // ── PROGRESS VIEW (unified PR + chart) ──
@@ -4281,70 +4510,48 @@ var ssRange=4;
 var ssPlateauDismissed=false;
 
 function calcStrengthScore(){
-  // Walk logs chronologically, build running best e1RM per exercise, compute score at each date
+  // Walk logs chronologically keeping each exercise's best e1RM; the score on a date is
+  // the sum over muscle groups of the best e1RM in that group. Everything only goes up,
+  // so it is updated incrementally (one pass) instead of rescanning all logs per date.
   const sorted=[...data.logs].sort((a,b)=>a.date.localeCompare(b.date));
-  const runningBest={}; // exId -> {[reps]: weight}
-  const series=[]; // [{date, score, muscles:{chest:180, back:210, ...}}]
-  const seenDates=new Set();
-
-  sorted.forEach(log=>{
+  const runningBest={},bestE={},nameOf={},muscleMax={};
+  const series=[];
+  sorted.forEach((log,i)=>{
     (log.exercises||[]).forEach(ex=>{
       const id=exId(ex.name);
+      if(!nameOf[id])nameOf[id]=ex.name;
       if(!runningBest[id])runningBest[id]={};
-      (ex.sets||[]).filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
-        if(!runningBest[id][s.reps]||s.weight>runningBest[id][s.reps])
-          runningBest[id][s.reps]=s.weight;
+      (ex.sets||[]).filter(isPRSet).forEach(s=>{
+        if(runningBest[id][s.reps]&&s.weight<=runningBest[id][s.reps])return;
+        runningBest[id][s.reps]=s.weight;
+        const v=calcE1RM(s.weight,+s.reps);
+        if(v>(bestE[id]||0)){
+          bestE[id]=v;
+          const m=getExerciseMuscle(nameOf[id])||'other';
+          if(!muscleMax[m]||v>muscleMax[m])muscleMax[m]=v;
+        }
       });
     });
-
-    // Compute score at this date: best e1RM per muscle group
-    const muscleMax={};
-    const loggedNames=new Set();
-    sorted.filter(l=>l.date<=log.date).forEach(l=>(l.exercises||[]).forEach(e=>loggedNames.add(e.name)));
-    loggedNames.forEach(name=>{
-      const id=exId(name);
-      const best=runningBest[id];
-      if(!best)return;
-      let e1rm=0;
-      for(const r in best){const v=calcE1RM(best[r],+r);if(v>e1rm)e1rm=v;}
-      if(e1rm<=0)return;
-      const muscle=getExerciseMuscle(name)||'other';
-      if(!muscleMax[muscle]||e1rm>muscleMax[muscle])muscleMax[muscle]=e1rm;
-    });
-    const score=Object.values(muscleMax).reduce((s,v)=>s+v,0);
-    // Only add one data point per date
-    if(!seenDates.has(log.date)){
-      seenDates.add(log.date);
-      series.push({date:log.date,score:Math.round(score),muscles:{...muscleMax}});
-    } else {
-      // Update existing date entry with latest score
-      const entry=series.find(s=>s.date===log.date);
-      if(entry){entry.score=Math.round(score);entry.muscles={...muscleMax};}
+    const next=sorted[i+1];
+    if(!next||next.date!==log.date){
+      series.push({date:log.date,score:Math.round(Object.values(muscleMax).reduce((s,v)=>s+v,0)),muscles:{...muscleMax}});
     }
   });
 
-  // Current score: use runningBest (same source as chart) merged with data.prs
-  // This ensures the displayed number always matches the chart line
+  // Current score: the same log bests plus manual per-rep PRs ('ath' has unknown reps)
   const currentMuscles={};
-  const allLoggedNames=new Set();
-  (data.logs||[]).forEach(log=>(log.exercises||[]).forEach(ex=>allLoggedNames.add(ex.name)));
-  allLoggedNames.forEach(name=>{
-    const id=exId(name);
-    // Start with runningBest from logs (same data the chart uses)
-    let e1rm=0;
-    const best=runningBest[id];
-    if(best){for(const r in best){const v=calcE1RM(best[r],+r);if(v>e1rm)e1rm=v;}}
-    // Also check data.prs for manual PRs (skip 'ath' key — unknown reps)
+  for(const id in nameOf){
+    let e1rm=bestE[id]||0;
     const prs=data.prs[id]||{};
     for(const r in prs){
-      if(r==='ath'||isNaN(+r))continue;
+      if(r==='ath'||isNaN(+r)||!(+r>0))continue;
       const w=typeof prs[r]==='object'?prs[r].weight:prs[r];
       if(w>0){const v=calcE1RM(w,+r);if(v>e1rm)e1rm=v;}
     }
-    if(e1rm<=0)return;
-    const muscle=getExerciseMuscle(name)||'other';
+    if(e1rm<=0)continue;
+    const muscle=getExerciseMuscle(nameOf[id])||'other';
     if(!currentMuscles[muscle]||e1rm>currentMuscles[muscle])currentMuscles[muscle]=e1rm;
-  });
+  }
   const currentScore=Math.round(Object.values(currentMuscles).reduce((s,v)=>s+v,0));
 
   return{current:currentScore,muscles:currentMuscles,series};
@@ -4939,7 +5146,7 @@ function renderLibCard(name){
   const isFav=favExercises.has(name);
   const muscle=getExerciseMuscle(name);
   const esc=escJs(name);
-  return `<div class="lib-card" onclick="openEditExercise('${esc}')" ontouchstart="libLongStart('${esc}',event)" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')"  style="cursor:pointer">
+  return `<div class="lib-card" onclick="openEditExercise('${esc}')" ontouchstart="libLongStart('${esc}',event)" ontouchmove="libLongEnd()" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')"  style="cursor:pointer">
     <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${escHtml(name)}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="event.stopPropagation();toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
     <div class="lib-name-en">${getExerciseEnglish(name)}</div>
     <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
@@ -5003,6 +5210,9 @@ function renderLibrary(){
 }
 
 function setLibMuscle(m){currentLibMuscle=m;renderLibrary()}
+const renderLibrarySoon=debounce(()=>renderLibrary(),200);
+const renderSubsSoon=debounce(()=>renderSubs(),200);
+const renderProgressSoon=debounce(()=>renderProgress(),200);
 var _libLongTimer=null;
 function libLongStart(name,e){_libLongTimer=setTimeout(()=>{_libLongTimer=null;libDelete(name)},600)}
 function libLongEnd(){if(_libLongTimer){clearTimeout(_libLongTimer);_libLongTimer=null}}
@@ -5033,7 +5243,9 @@ function deleteExercise(name){
   if(data.prs[id])delete data.prs[id];
   // Remove from historical logs to prevent bootstrap resurrection
   (data.logs||[]).forEach(log=>{
+    const before=(log.exercises||[]).length;
     log.exercises=(log.exercises||[]).filter(ex=>ex.name!==name);
+    if(log.exercises.length!==before)markLogDirty(log);
   });
   // Remove from customExercises
   data.customExercises=(data.customExercises||[]).filter(e=>e[0]!==name);
@@ -5448,7 +5660,7 @@ function openAddSub(){
       <label style="font-size:0.75rem;color:var(--text-dim);display:block;margin-bottom:4px">Link (optional)</label>
       <input id="subLinkInput" class="search-bar" placeholder="https://youtube.com/..." style="margin-bottom:0">
     </div>
-    <button class="modal-btn" onclick="saveSub()">Save</button>
+    <button class="edit-save-btn" onclick="saveSub()">Save</button>
   `);
 }
 
@@ -5551,6 +5763,11 @@ function doSwap(ei,name,nameEn,muscle){
     ex.sets.forEach((s,i)=>{
       if(lastLog.sets[i])s.weight=lastLog.sets[i].weight;
     });
+  }
+  if(day==='ABS'){
+    saveAlt(pid,day,ex._origName||name,name,nameEn,muscle);ex._isAlt=true;
+    closeModal();renderExerciseCards();toast('Swapped to '+name+' (saved for this abs slot)');
+    return;
   }
   // Save swap permanently to customPrograms (always against the original, never the PB overlay)
   const prog=getProgram(pid,true);
@@ -5777,7 +5994,7 @@ function renderEditorExercises(){
       <div class="edit-ex-top">
         <span class="drag-handle" onclick="tapHandle(${i})">&#9776;</span>
         <span class="edit-num">${i+1}</span>
-        <input class="edit-name-input" value="${e[0]}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
+        <input class="edit-name-input" value="${escAttr(e[0])}" onchange="editorExercises[${i}][0]=this.value" placeholder="Exercise name">
         <div class="edit-ex-actions">
           <button class="edit-swap" onclick="openExPicker(${i})" title="Replace">&#8644;</button>
           <button onclick="toggleEditorPlate(${i})" title="Plate calc" style="${showPlateForEx(e[0])?'color:var(--gold);border-color:rgba(160,148,106,0.4)':''}">&#8960;</button>
@@ -5787,11 +6004,11 @@ function renderEditorExercises(){
       <div class="edit-ex-grid">
         <div class="edit-field-group full">
           <label>English Name</label>
-          <input value="${e[1]}" onchange="editorExercises[${i}][1]=this.value" placeholder="English name">
+          <input value="${escAttr(e[1]||'')}" onchange="editorExercises[${i}][1]=this.value" placeholder="English name">
         </div>
         <div class="edit-field-group">
           <label>Sets / Reps</label>
-          <input value="${e[4]}" onchange="editorExercises[${i}][4]=this.value" placeholder="e.g. 4x8-12">
+          <input value="${escAttr(e[4]||'')}" onchange="editorExercises[${i}][4]=this.value" placeholder="e.g. 4x8-12">
         </div>
         <div class="edit-field-group">
           <label>Rest (sec)</label>
@@ -5800,13 +6017,13 @@ function renderEditorExercises(){
         <div class="edit-field-group">
           <label>Technique</label>
           <select onchange="editorExercises[${i}][3]=this.value">
-            ${Object.keys(TECH_LABELS).map(t=>`<option value="${t}"${e[3]===t?' selected':''}>${t}</option>`).join('')}
+            ${[...new Set([...Object.keys(TECH_LABELS),e[3]||'S'])].map(t=>`<option value="${escAttr(t)}"${(e[3]||'S')===t?' selected':''}>${escHtml(t)}</option>`).join('')}
           </select>
         </div>
         <div class="edit-field-group">
           <label>Muscle</label>
           <select onchange="editorExercises[${i}][2]=this.value">
-            ${MUSCLE_GROUPS.map(m=>`<option value="${m}"${e[2]===m?' selected':''}>${MUSCLE_LABELS[m]}</option>`).join('')}
+            ${[...new Set([...MUSCLE_GROUPS,e[2]||'chest'])].map(m=>`<option value="${escAttr(m)}"${e[2]===m?' selected':''}>${escHtml(MUSCLE_LABELS[m]||m)}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -6031,9 +6248,11 @@ function addEditorEx(){
 
 function migrateExRename(oldName,newName){
   if(!oldName||!newName||oldName===newName)return;
-  // Migrate logs
+  // Migrate logs (and re-upload the ones that changed)
   (data.logs||[]).forEach(log=>{
-    (log.exercises||[]).forEach(ex=>{if(ex.name===oldName)ex.name=newName});
+    let hit=false;
+    (log.exercises||[]).forEach(ex=>{if(ex.name===oldName){ex.name=newName;hit=true}});
+    if(hit)markLogDirty(log);
   });
   // Migrate PRs
   const oldId=exId(oldName),newId=exId(newName);
@@ -6185,8 +6404,10 @@ function openSettings(){
   <div class="card" style="margin-bottom:8px">
     <div class="card-title">Data</div>
     <div style="font-size:0.8rem;color:var(--text-dim)">${data.logs.length} sessions &middot; ${Object.keys(data.prs).length} exercises with PRs</div>
+    <div style="font-size:0.78rem;margin-top:4px;color:${_syncStatus.state==='error'?'var(--red-bright)':'var(--green-bright)'}">${backupStatusText()}</div>
+    <button class="ex-action-btn" onclick="openHistory()" style="margin-top:8px;width:100%">Workout History</button>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="ex-action-btn" onclick="fullSync()" style="flex:1">Full Sync</button>
+      <button class="ex-action-btn" onclick="fullSync()" style="flex:1">Sync Now</button>
       <button class="ex-action-btn" onclick="exportData()" style="flex:1">Export</button>
       <button class="ex-action-btn" onclick="showImport()" style="flex:1">Import</button>
     </div>
@@ -6199,6 +6420,11 @@ function openSettings(){
   openModal(html);
 }
 
+function backupStatusText(){
+  if(_syncStatus.state==='error')return'Cloud backup failing: '+escHtml(_syncStatus.msg);
+  const last=localStorage.getItem('zercher_lastSyncedAt');
+  return last?'Backed up to the cloud '+new Date(last).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Not backed up yet';
+}
 function clearAllData(){
   if(!confirm('Clear ALL data? This removes workouts, PRs, settings, and all personalized state.'))return;
   if(!confirm('This cannot be undone. Cloud data may also repopulate. Are you sure?'))return;
@@ -6206,7 +6432,7 @@ function clearAllData(){
   const keysToRemove=[SK_CORE,SK_LOGS,STORAGE_KEY,'zercher_holds','zercher_notes','zercher_starts',
     'fav_exercises','zercher_platepref','zercher_noplate','zercher_singleend','zercher_abs_reps',
     'abs_routine','abs_routine_week','abs_last_completed_week','zercher_lastSyncedAt',
-    'zercher_alt_memory'];
+    'zercher_alts',SK_BASE_CFG,SK_BASE_EXTRA];
   keysToRemove.forEach(k=>localStorage.removeItem(k));
   // Remove all workout_in_progress_* keys
   const allKeys=Object.keys(localStorage);
@@ -6229,6 +6455,7 @@ function exportData(){
       noPlate:getNoPlate(),
       singleEnd:getSingleEnd(),
       absReps:getAbsLastReps(),
+      alts:getAltMemory(),
       absRoutine:localStorage.getItem('abs_routine')||'',
       absRoutineWeek:localStorage.getItem('abs_routine_week')||'',
       absLastWeek:localStorage.getItem('abs_last_completed_week')||''
@@ -6279,6 +6506,7 @@ function importData(){
       if(importedAux.noPlate)saveNoPlate(importedAux.noPlate);
       if(importedAux.singleEnd)saveSingleEnd(importedAux.singleEnd);
       if(importedAux.absReps)saveAbsLastReps(importedAux.absReps);
+      if(importedAux.alts)saveAltMemory(importedAux.alts);
       if(importedAux.absRoutine)localStorage.setItem('abs_routine',importedAux.absRoutine);
       if(importedAux.absRoutineWeek)localStorage.setItem('abs_routine_week',importedAux.absRoutineWeek);
       if(importedAux.absLastWeek)localStorage.setItem('abs_last_completed_week',importedAux.absLastWeek);
@@ -6320,7 +6548,7 @@ const _tombstones=new Set(data.deletedPRs||[]);
   (log.exercises||[]).forEach(ex=>{
     const id=exId(ex.name);
     if(_tombstones.has(id))return; // skip tombstoned exercises
-    ex.sets.filter(s=>s.type==='working'&&s.weight>0).forEach(s=>{
+    ex.sets.filter(isPRSet).forEach(s=>{
       if(!data.prs[id])data.prs[id]={};
       const current=data.prs[id][s.reps];
       if(!current||s.weight>current.weight){
@@ -6329,6 +6557,8 @@ const _tombstones=new Set(data.deletedPRs||[]);
     });
   });
 });
+// Sets logged with no reps used to create "0 reps" PR rows
+for(const id in data.prs){if(data.prs[id]&&data.prs[id]['0'])delete data.prs[id]['0']}
 // ABS days exist in some programs — they show as tabs but aren't in ABCD rotation
 // Load custom exercises into hidden program
 if(data.customExercises&&data.customExercises.length){
@@ -6358,7 +6588,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v282 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v290 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
@@ -6375,33 +6605,22 @@ try{
   }
 }catch(e){}
 showView('workout',document.querySelector('.nav-btn'));
-// Startup pull — set syncReady after cloud pull completes
-loadFromCloud(function(ok){
-  if(!ok&&_isFreshInstall){console.warn('[SYNC] Initial cloud pull failed on fresh device — syncing remains disabled');return;}
-  _cloudInitialLoadDone=true;
-  syncReady=true;
-  if(ok){autoSyncUnsyncedLogs();syncConfigToCloud();}
-},false,true);
-// Dual visibilitychange: visible=pull, hidden=push
+// Startup: pull, merge, push. syncReady (and the Start button) flip as soon as the pull lands.
+setSyncDot('busy');
+startSync();
+// Leaving the app pushes pending changes; coming back pulls
 document.addEventListener('visibilitychange',function(){
   if(!syncReady)return;
-  if(document.visibilityState==='visible'){
-    mergeFromCloud(true);
-  }else{
-    clearTimeout(_syncDebounce);
-    mergeFromCloud(false,function(ok){if(ok)_doCloudSave();},true);
-  }
+  clearTimeout(_syncDebounce);
+  syncCycle({});
 });
-// Save on app kill (swipe away)
-document.addEventListener('pagehide',function(){beaconSave()});
-// Sync when reconnecting after going offline
 window.addEventListener('online',function(){
-  if(syncReady)setTimeout(function(){mergeFromCloud(false,function(ok){if(ok)_doCloudSave();},true);},1000);
+  if(syncReady)setTimeout(function(){syncCycle({})},1000);
 });
-// 30s periodic poll for cross-device changes
+// Poll for changes from other devices (light: log ids only, bodies fetched when new)
 setInterval(function(){
-  if(syncReady&&document.visibilityState==='visible')mergeFromCloud(false);
-},30000);
+  if(syncReady&&document.visibilityState==='visible')syncCycle({});
+},60000);
 if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js')}
 
 </script>
