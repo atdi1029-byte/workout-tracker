@@ -2147,6 +2147,7 @@ function escJs(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").rep
 function weekStart(d){const dt=new Date(d||Date.now());const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));return dateStr(dt)}
 // Exercise ID: normalize for lookups but preserve enough to avoid collisions.
 // Parentheses become 'p' to distinguish "Rosca Scott Polia" from "Rosca Scott (Polia)"
+function stripAccents(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function exId(name){return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\(/g,'p_').replace(/\)/g,'_p').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
 // Migration map for old IDs that collided under the previous scheme
 const _exIdMigMap={};
@@ -3082,7 +3083,8 @@ function _exerciseMuscleUncached(name){
     }
   }
   for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[2]}
-  for(const g of SUBS_DATA){for(const c of g.subs){if(c.ex.includes(name))return g.muscle.toLowerCase()}}
+  // (the substitutions list files split squats etc. under "Legs (Full)": count those as quads)
+  for(const g of SUBS_DATA){for(const c of g.subs){if(c.ex.includes(name)){const m=g.muscle.toLowerCase();return m==='legs (full)'?'quads':m}}}
   // Also check custom programs
   for(const pid in data.customPrograms||{}){
     const cp=data.customPrograms[pid];
@@ -3091,20 +3093,25 @@ function _exerciseMuscleUncached(name){
       if(ex)return ex[2];
     }
   }
-  // Infer from exercise name keywords (specific patterns first)
-  const n=name.toLowerCase();
-  if(n.includes('calf')||n.includes('calves'))return'calves';
-  if(n.includes('shoulder')||n.includes('ombro')||n.includes('delt')||n.includes('lateral raise')||n.includes('upright row')||n.includes('rotacao'))return'shoulders';
-  if(n.includes('bicep')||n.includes('curl')||n.includes('rosca')||n.includes('scott'))return'biceps';
-  if(n.includes('tricep')||n.includes('jm press')||n.includes('pushdown')||n.includes('frances')||n.includes('pulley barra'))return'triceps';
-  if(n.includes('chest')||n.includes('bench')||n.includes('supino')||n.includes('fly')||n.includes('pec')||n.includes('dumbell fly'))return'chest';
-  if(n.includes('row')||n.includes('pulldown')||n.includes('lat ')||n.includes('pull-in')||n.includes('pullover')||n.includes('pull over')||n.includes('pull up')||n.includes('pull-up')||n.includes('chin up')||n.includes('tbar')||n.includes('t-bar')||n.includes('reeves'))return'back';
-  if(n.includes('squat')||n.includes('quad')||n.includes('leg press')||n.includes('lunge')||n.includes('leg ext'))return'quads';
-  if(n.includes('hamstring')||n.includes('leg curl')||n.includes('rdl')||n.includes('stiff'))return'hamstrings';
-  if(n.includes('glute')||n.includes('hip thrust'))return'glutes';
-  if(n.includes('ab ')||n.includes('abs')||n.includes('crunch')||n.includes('plank')||n.includes('abdominal')||n.includes('sit-up'))return'abs';
-  if(n.includes('forearm')||n.includes('wrist')||n.includes('grip'))return'forearms';
-  if(n.includes('shrug')||n.includes('trap'))return'traps';
+  // Infer from the name (and English name), accents ignored. Order matters:
+  // "wrist curl" is forearms and "leg curl" hamstrings, not biceps.
+  const n=stripAccents(name+' '+(_exerciseEnglishUncached(name)||''));
+  const MUSCLE_KEYWORDS=[
+    ['calves',/calf|calves|panturrilha/],
+    ['forearms',/forearm|wrist|antebraco|finger|pronat|supinat|gripper|grip (strength|training)|radial|ulnar/],
+    ['abs',/\bab\b|\babs\b|abdominal|abdomen|crunch|plank|prancha|sit-?up|leg raise|dragon flag|canivete|jackknife|obliqu|\binfra\b|tronco|stomach/],
+    ['neck',/\bneck\b(?! press)|pescoco/],
+    ['traps',/shrug|trapezio|\btraps?\b(?! bar)/],
+    ['glutes',/glute(?! ?builder)|hip thrust|abdutora|abductor|hip extension|frog pump/],
+    ['hamstrings',/hamstring|leg curl|flexora|nordic|\brdl\b|romanian|stiff|good morning/],
+    ['shoulders',/shoulder|ombro|delt|lateral raise|front raise|elevacao|upright row|remada alta|rotacao|rotation|face ?pull|desenvolvimento|overhead press|military|viking|klokov|reverse fly|crucifixo inverso|y raise|cuban|z press|push press/],
+    ['triceps',/tricep|jm press|pushdown|frances|french press|skull|testa|kickback|coice/],
+    ['biceps',/bicep|curl|rosca|scott|preacher/],
+    ['chest',/chest|bench|supino|\bfly|flye|crucifixo|\bpec|peito|push[- ]?up|flexao|\bapoio\b|paralela|\bdips?\b|guillotine/],
+    ['back',/\brow\b|rows|remada|pulldown|puxada|\blat |pull-in|pullover|pull over|pull[- ]?ups?|chin[- ]?ups?|t[- ]?bar|reeves|\bbarra\b|rack pull|deadlift|terra|hyperextension/],
+    ['quads',/squat|agachamento|\bquad|leg press|leg 45|lunge|afundo|passada|avanco|leg ext|extensora|step up|sissy|hack|bulgar/],
+  ];
+  for(const[m,re]of MUSCLE_KEYWORDS)if(re.test(n))return m;
   return'other';
 }
 function getExerciseEnglish(name){
@@ -3125,16 +3132,29 @@ function _exerciseEnglishUncached(name){
   for(const ak in ABS_ROUTINES){const ex=ABS_ROUTINES[ak].ex.find(e=>e[0]===name);if(ex)return ex[1]}
   return name;
 }
+// Equipment for the Progress sub-groups. Pass 1: the name says it outright ("com Halteres",
+// "Polia", "Smith"). Pass 2: known exercises and patterns, Portuguese and English.
+const EQUIP_ORDER=['Barbell','Dumbbell','Machine','Smith Machine','Cable','Bodyweight','Kettlebell','Trap Bar','Other'];
+const EQUIP_EXPLICIT=[
+  ['Smith Machine',/\bsmith\b/],
+  ['Trap Bar',/trap bar|hex bar/],
+  ['Kettlebell',/kettlebell/],
+  ['Cable',/polia|pulley|\bcable|\bcabo\b|\bcorda\b|\brope\b/],
+  ['Machine',/maquina|machine/],
+  ['Dumbbell',/halter|dumbbell|dumbell|\bdb\b/],
+  ['Barbell',/barbell|\bez\b|barra ez/],
+];
+const EQUIP_PATTERNS=[
+  ['Cable',/face ?pull|pulldown|pull-down|puxada|lat pull|remada( unilateral)? baixa|seated (cable )?row|crossover|cross over|\bgvs\b|pull-in|pushdown|lat pullover/],
+  ['Machine',/hammer (chest|press)|supino maquina|cadeira|mesa flexora|leg press|leg 45|agachamento hack|hack squat|voador|pec deck|crucifixo inverso|reverse (fly|pec)|extensora|flexora|abdutora|adutora|pendulum|glute ?builder|calf press|panturrilha (press|sentado|donkey)|seated calf|t[- ]?bar|cavalinho|witches|belt squat|ab machine|leg curl|leg extension|chest press|shoulder press/],
+  ['Bodyweight',/flexao|\bapoio\b|push[- ]?ups?|paralela|\bdips?\b|barra fixa|^barra$|barra pegada|pull[- ]?ups?|chin[- ]?ups?|prancha|plank|dragon flag|crunch|abdominal|abdomen|leg raise|\binfra\b|sit[- ]?ups?|sissy|nordic|escalador|mountain|canivete|jackknife|bosu|ab wheel|carrinho|hanging|pistol|inverted row|rotacao de tronco|alongamento|stretch|mobility|cossack|jefferson|finger plate|dip ?belt/],
+  ['Dumbbell',/arnold|rosca alternada|rosca martelo|hammer curl|concentrad|concentration|kroc|lu lateral|jayme|meadows|zottman|spider|goblet|bulgar|rosca 45|incline (dumbbell )?curl|elevacao (lateral|frontal|unilateral)|lateral raise|front raise|pull ?over|circles|rolling|helms|kickback|coice|wrist curl|pronation|supination|rotacao (interna|externa)|(internal|external) (shoulder )?rotation|afundo|passada|lunge|french press|frances|rosca com|scott(?! maquina)|preacher/],
+  ['Barbell',/\bbarra\b|supino (reto|inclinado|declinado)|bench press|agachamento livre|back squat|front squat|zercher|levantamento terra|deadlift|\bstiff\b|\brdl\b|romanian|rack pull|good morning|remada curvada|bent over|yates|reeves|jm press|skull|testa|rosca direta|biceps direto|landmine|hip thrust|viking|klokov|overhead press|military|upright row|remada alta|cheat curl|pin press|floor press|clean|snatch|jerk|shrug/],
+];
 function getExerciseEquip(name){
-  for(const g of SUBS_DATA){for(const c of g.subs){if(c.ex.includes(name))return c.cat}}
-  const n=name.toLowerCase();
-  if(n.includes('cable')||n.includes('pulldown')||n.includes('facepull'))return'Cable';
-  if(n.includes('dumbbell')||n.includes('db '))return'Dumbbell';
-  if(n.includes('barbell')||n.includes('ez bar'))return'Barbell / EZ Bar';
-  if(n.includes('machine')||n.includes('smith'))return'Machine';
-  if(n.includes('t-bar')||n.includes('t bar')||n.includes('landmine'))return'T-Bar';
-  if(n.includes('trap bar'))return'Trap Bar';
-  if(n.includes('kettlebell'))return'Kettlebell';
+  const en=getExerciseEnglish(name);
+  const n=stripAccents(name),e=en&&en!==name?stripAccents(en):'';
+  for(const list of[EQUIP_EXPLICIT,EQUIP_PATTERNS])for(const txt of[n,e]){if(!txt)continue;for(const[label,re]of list)if(re.test(txt))return label}
   return'Other';
 }
 function getUsedInPrograms(exName){
@@ -4843,7 +4863,7 @@ function renderProgress(){
       // Sub-group by equipment
       const equipGroups={};
       exercises.forEach(ex=>{if(!equipGroups[ex.equip])equipGroups[ex.equip]=[];equipGroups[ex.equip].push(ex)});
-      const equipOrder=Object.keys(equipGroups).sort();
+      const equipOrder=Object.keys(equipGroups).sort((a,b)=>EQUIP_ORDER.indexOf(a)-EQUIP_ORDER.indexOf(b));
       equipOrder.forEach(equip=>{
         if(equipOrder.length>1)html+=`<div class="pc-equip-label">${equip}</div>`;
         html+=`<div class="pc-grid">`;
@@ -6588,7 +6608,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v290 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v291 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
