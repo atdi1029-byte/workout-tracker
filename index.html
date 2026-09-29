@@ -2741,7 +2741,7 @@ function pbTM(type){
 function pbLiftSets(type){
   const pb=getPB();const wi=pbWeekInfo();const tm=pbTM(type);const lift=pbLift(type);
   const bw=lift.bw?(+pb.bw||0):0;const sets=[];
-  const mk=(pct,reps,t,amrap,base)=>{const total=pbRound(base*pct/100);return{weight:tm?(lift.bw?Math.max(0,total-bw):total):'',reps:reps,type:t,done:false,pct:pct,amrap:!!amrap,total:total}};
+  const mk=(pct,reps,t,amrap,base)=>{const total=pbRound(base*pct/100);return{weight:tm?(lift.bw?Math.max(0,total-bw):total):'',reps:reps,tr:reps,type:t,done:false,pct:pct,amrap:!!amrap,total:total}};
   if(pb.scheme==='331'){
     const m=tm/0.85;
     [[40,5],[55,3],[70,2],[80,1]].forEach(a=>sets.push(mk(a[0],a[1],'warmup',false,m)));
@@ -3447,7 +3447,7 @@ function initWorkout(){
           return;
         }
         currentWorkout=saved.workout;workoutStartTime=saved.startTime;
-        (currentWorkout.exercises||[]).forEach(ex=>_sanitizeLogWeights(ex));
+        (currentWorkout.exercises||[]).forEach(ex=>{_sanitizeLogWeights(ex);_backfillTargets(ex)});
         if(window._workoutTimerInt)clearInterval(window._workoutTimerInt);
         window._workoutTimerInt=setInterval(updateWorkoutTimer,1000);
         return;
@@ -3523,7 +3523,7 @@ function initWorkout(){
               if(lastLog.sets[i]&&lastLog.sets[i].reps>0)prefillReps=lastLog.sets[i].reps;
             }
           }
-          const live={weight:prefillWeight,reps:isAbsEx?prefillReps:s.reps,type:s.type,done:false};
+          const live={weight:prefillWeight,reps:isAbsEx?prefillReps:s.reps,tr:s.reps,type:s.type,done:false};
           if(s.timed)live.timed=true;
           return live;
         })
@@ -3566,6 +3566,11 @@ function initWorkout(){
   // Don't auto-start timer — wait for user to click Start Workout
 }
 
+function _backfillTargets(ex){
+  if(!ex||!ex.sets||ex.sets.every(s=>s.tr!=null))return;
+  const ref=ex._pb?pbLiftSets(ex._pb):parseSets(ex.targetSets);
+  ex.sets.forEach((s,i)=>{if(s.tr==null&&ref[i]&&ref[i].type===s.type)s.tr=ref[i].reps});
+}
 function _sanitizeLogWeights(ex){
   if(ex&&ex.sets)ex.sets.forEach(s=>{if(typeof s.weight==='object'){s.weight=parseFloat(s.weight&&(s.weight.s1||s.weight.wu)||0)||0;}});
   return ex;
@@ -3667,10 +3672,14 @@ function getSuggestion(lastLog, targetReps, exName){
 // A pyramid is anchored on its TOP set (fewest reps, heaviest weight). The lower
 // rungs are ramps: ~75/82/90% of the top for 12/10/8. Progress is decided by the
 // top set only; when it moves, the whole ladder moves with it.
+// Prescribed reps for a set. Live sets carry them in tr because typing overwrites
+// reps (3x12 logged as 12/10/9 would otherwise read as a pyramid).
+function setTarget(s){return s.tr!=null?s.tr:s.reps}
+function exTargetReps(ex){const w=ex.sets.find(s=>s.type==='working');return w?setTarget(w):10}
 function pyramidInfo(sets){
   const wIdx=[];sets.forEach((s,i)=>{if(s.type==='working')wIdx.push(i)});
   if(wIdx.length<3)return null;
-  const reps=wIdx.map(i=>+sets[i].reps||0);
+  const reps=wIdx.map(i=>+setTarget(sets[i])||0);
   if(reps.some(r=>r<=0))return null;
   let L=1;while(L<reps.length&&reps[L]<=reps[L-1])L++;
   if(L<3||reps[L-1]>=reps[0])return null;
@@ -3691,7 +3700,7 @@ function pyramidLadder(topW,sets){
   const out={};
   const rTop=pi.topReps;
   pi.lower.forEach(si=>{
-    const r=+sets[si].reps;
+    const r=+setTarget(sets[si]);
     // Epley ratio between rep maxes, then discounted so lower rungs stay submaximal
     const ratio=Math.pow((1+rTop/30)/(1+r/30),1.5);
     out[si]=pyRound(topW*ratio);
@@ -3745,7 +3754,7 @@ function getPyramidSuggestion(lastLog,ex,ei,exName){
   const target=pi.topReps;
   const topMin=Math.min(...topSets.map(s=>+s.reps||0));
   const topHit=topMin>=target;
-  const lowerMissed=pi.lower.some(si=>{const l=at(si);return l&&(+l.reps||0)<(+ex.sets[si].reps||0)});
+  const lowerMissed=pi.lower.some(si=>{const l=at(si);return l&&(+l.reps||0)<(+setTarget(ex.sets[si])||0)});
   const usedW=lw.map(s=>+s.weight||0).filter(w=>w>0);
   const flat=usedW.length>=3&&usedW.every(w=>w===usedW[0]);
   const step=pyramidStep(topW,ex.muscle);
@@ -3817,7 +3826,7 @@ function updateLastLine(ex,ei,card){
       lastHtml=`<div class="ex-last">Last: ${reps} ${repsUnit(ex,lastLog)}</div>`;
     } else {
       const pyL=pyramidInfo(ex.sets);
-      const tgtR=pyL?pyL.topReps:(ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10);
+      const tgtR=pyL?pyL.topReps:exTargetReps(ex);
       const repPr=getRepPR(ex.name,tgtR);
       const athW=getBestWeight(ex.name);
       let prStr=`<span class="pr-badge">ATH: ${athW} lbs</span>`;
@@ -3829,7 +3838,7 @@ function updateLastLine(ex,ei,card){
       const pyH=pyramidInfo(ex.sets);const topH=pyH&&ws[wsIdxTop(ex,pyH)]?ws[wsIdxTop(ex,pyH)].weight:0;
       sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div>${pyH?ladderHtml(ei,pyramidLadder(topH,ex.sets)):''}</div>`;
     } else {
-      const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+      const targetReps=exTargetReps(ex);
       const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
       if(sug)sugHtml=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
     }
@@ -3935,7 +3944,7 @@ function renderExerciseCards(){
         html+=`<div class="ex-last">Last: ${reps} ${repsUnit(ex,lastLog)}</div>`;
       } else {
         const pyL2=pyramidInfo(ex.sets);
-        const tgtR2=pyL2?pyL2.topReps:(ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10);
+        const tgtR2=pyL2?pyL2.topReps:exTargetReps(ex);
         const repPr2=getRepPR(ex.name,tgtR2);
         const athW2=getBestWeight(ex.name);
         let prStr2=`<span class="pr-badge">ATH: ${athW2} lbs</span>`;
@@ -3949,7 +3958,7 @@ function renderExerciseCards(){
         const pyH2=pyramidInfo(ex.sets);const topH2=pyH2&&workingSets[wsIdxTop(ex,pyH2)]?workingSets[wsIdxTop(ex,pyH2)].weight:0;
         html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div>${pyH2?ladderHtml(ei,pyramidLadder(topH2,ex.sets)):''}</div>`;
       } else {
-        const targetReps=ex.sets.find(s=>s.type==='working')?ex.sets.find(s=>s.type==='working').reps:10;
+        const targetReps=exTargetReps(ex);
         const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
         if(sug){
           html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
@@ -6608,7 +6617,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v291 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v292 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
