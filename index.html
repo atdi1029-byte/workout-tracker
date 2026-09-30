@@ -2019,8 +2019,9 @@ function getExPlates(exName){return getPlatePref()[exName]||ALL_PLATES.slice()}
 function setExPlates(exName,plates){const p=getPlatePref();p[exName]=plates;savePlatePref(p)}
 function getSingleEnd(){try{return JSON.parse(localStorage.getItem('zercher_singleend')||'{}')}catch(e){return{}}}
 function saveSingleEnd(s){localStorage.setItem('zercher_singleend',JSON.stringify(s))}
-function isSingleEnd(exName){return!!getSingleEnd()[exName]}
-function toggleSingleEnd(exName){const s=getSingleEnd();s[exName]=!s[exName];saveSingleEnd(s)}
+// T-bar lifts load one end of the bar, so they default to single-end plates
+function isSingleEnd(exName){const v=getSingleEnd()[exName];return v===undefined?/t-?bar/i.test(exName):!!v}
+function toggleSingleEnd(exName){const s=getSingleEnd();s[exName]=!isSingleEnd(exName);saveSingleEnd(s)}
 
 function calcPlates(totalWeight,usePlates,singleEnd){
   const plates=usePlates||ALL_PLATES;
@@ -6569,6 +6570,12 @@ migrateData();
 initCustomABCD09();
 initCustomABCD10();
 initCustomABCD11();
+// One-time: T-Bar Forearm Curl had plates hidden; show them in single-end mode (v293)
+if(!localStorage.getItem('zercher_tbarfc_v293')){
+  const np=getNoPlate();np['T-Bar Forearm Curl']=false;saveNoPlate(np);
+  const se=getSingleEnd();se['T-Bar Forearm Curl']=true;saveSingleEnd(se);
+  localStorage.setItem('zercher_tbarfc_v293','1');
+}
 // Migrate exercise IDs that changed due to collision fix (parentheses preservation)
 _migrateExIds();
 // Bootstrap PRs from all logs (seed logs don't call finishWorkout so PRs are missing)
@@ -6617,7 +6624,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v292 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v293 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
