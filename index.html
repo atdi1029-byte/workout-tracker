@@ -841,6 +841,50 @@ ABC_D3:{name:'ABC+D3',phase:'spe',type:'ABCD',weeks:10,days:{
     ['Rosca Scott Polia','Cable Preacher Curl','biceps','DS','4x8-10+Drop',60]
   ]}
 }},
+ABC_D4:{name:'ABC+D4',phase:'rea',type:'ABCD',weeks:10,days:{
+  A:{label:'Push (Peito + Ombros + Tríceps + Abs)',labelEn:'Push (Chest + Shoulders + Triceps + Abs)',ex:[
+    ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
+    ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
+    ['Abdominal com Carrinho (Com Peso)','Weighted Ab Wheel','abs','S','3x8-10',60],
+    ['Weighted Push Ups','Weighted Push Ups','chest','S','2x10wu+4x6-8',80],
+    ['Supino Inclinado com Halteres','Incline DB Press','chest','S','1x8wu+4x6-8',80],
+    ['Crucifixo (Voador)','Chest Fly Machine','chest','DS','4x8-12+2xDrop',60],
+    ['Desenvolvimento Arnold','Arnold Press','shoulders','S','1x8wu+4x10-12',60],
+    ['Tríceps Pulley (Facing Away)','Triceps Pushdown Facing Away','triceps','TP','2x15-20/2x10-12/2x6-8',60],
+    ['Rolling Dumbbell Tricep Extension','Rolling DB Tricep Extension','triceps','S','4x8-12',60]
+  ]},
+  B:{label:'Pull (Costas + Ombros + Bíceps + Antebraços)',labelEn:'Pull (Back + Shoulders + Biceps + Forearms)',ex:[
+    ['Rotação Externa Ombro','External Shoulder Rotation','shoulders','S','1x10',60],
+    ['Rotação Interna Ombro','Internal Shoulder Rotation','shoulders','S','1x10',60],
+    ['Abdominal Infra No Banco (Com Peso)','Weighted Reverse Crunch','abs','S','3x12-15',60],
+    ['Weighted Chin Ups','Weighted Chin Ups','back','S','2x10wu+4x6-8',80],
+    ['Puxada Frente Triângulo','V-Bar Pulldown','back','S','1x8wu+4x6-8',80],
+    ['Smith Machine Row','Smith Machine Row','back','DS','4x8-12+2xDrop',60],
+    ['Jayme Lateral Raise','Jayme Lateral Raise','shoulders','S','4x10-12',60],
+    ['Bíceps Pulley (Barra Reta)','Straight Bar Cable Curl','biceps','TP','2x15-20/2x10-12/2x6-8',60],
+    ['Deadstop Single Arm Preacher Curl','Deadstop Single Arm Preacher Curl','biceps','S','4x8-12',60],
+    ['Cable Finger Curl','Cable Finger Curl','forearms','S','3x12-15',40]
+  ]},
+  C:{label:'Pernas',labelEn:'Legs',ex:[
+    ['Deficit Trap Bar Deadlift','Deficit Trap Bar Deadlift','hamstrings','S','3x10-15wu+4x8-12',90],
+    ['Agachamento Smith (Calcanhares Juntos, Pés Para Fora)','Smith Machine Squat (Heels Together, Toes Out)','quads','S','1x8wu+4x8-12',80],
+    ['Cadeira Extensora','Leg Extension','quads','S','4x10',60],
+    ['Passada com Halteres','Dumbbell Lunges','quads','S','4x20',60],
+    ['Wrapped Barbell Romanian Deadlift','Wrapped Barbell RDL','hamstrings','TP','12-15/10-12/8-10/5-8',90],
+    ['Hip Thruster (Glute Builder)','Glute Builder Hip Thrust','glutes','S','4x6-8',60],
+    ['Calves On Glutebuilder (Toes Inward)','Calves On Glutebuilder (Toes Inward)','calves','S','3x12-15',30],
+    ['Russian Twist','Russian Twist','abs','S','3x12-15',45]
+  ]},
+  D:{label:'Upper Body Completo',labelEn:'Full Upper Body',ex:[
+    ['Dumbell Circles','Dumbbell Circles','chest','S','2x15',60],
+    ['Overhead Press Barbell (Standing)','Standing Barbell Overhead Press','shoulders','S','2x10wu+4x6-8',80],
+    ['Guillotine Press','Guillotine Bench Press','chest','S','1x8wu+4x6-8',80],
+    ['Tríceps Francês Corda','Rope French Press','triceps','TP','2x15-20/2x10-12/2x6-8',60],
+    ['Tbar Row','T-Bar Row','back','S','1x8wu+4x6-8',80],
+    ['Single Arm Deadlift','Single Arm Deadlift','hamstrings','TP','8/6/4/3+6-10',90],
+    ['Dead Stop Barbell Curl','Dead Stop Barbell Curl','biceps','TP','2x15-20/2x10-12/2x6-8',60]
+  ]}
+}},
 ABC02:{name:'ABC02',phase:'int',type:'ABC',weeks:10,days:{
   A:{label:'Peito + Ombros + Tríceps + Abs',labelEn:'Chest + Shoulders + Triceps + Abs',ex:[
     ['Supino Reto','Barbell Bench Press','chest','AP','2x10wu+12-15/10-12/8-10/5-8',80],
@@ -3707,7 +3751,12 @@ function pyramidLadder(topW,sets){
     out[si]=pyRound(topW*ratio);
   });
   pi.top.forEach(si=>out[si]=topW);
-  pi.backoff.forEach(si=>out[si]=pyRound(topW*0.55));
+  // Back-off: 6-10 rep strength back-off rides the same rep-max ratio (~75-80% of top);
+  // a 12+ rep burnout (calves 12/10/8+15) stays a light 55% pump set
+  pi.backoff.forEach(si=>{
+    const r=+setTarget(sets[si]);
+    out[si]=r<=10?pyRound(topW*Math.pow((1+rTop/30)/(1+r/30),1.5)):pyRound(topW*0.55);
+  });
   return out;
 }
 function ladderStr(ladder){
@@ -3906,12 +3955,13 @@ function renderExerciseCards(){
 
     // Set rows
     let wNum=0;let wuCount=0;let dsNum=0;let rpNum=0;
+    const boSets=(pyramidInfo(ex.sets)||{backoff:[]}).backoff;
     ex.sets.forEach((set,si)=>{
       if(set.type==='warmup'){wuCount++;}
       if(set.type==='drop'){dsNum++;}
       if(set.type==='rp'){rpNum++;}
       if(set.type!=='warmup'&&set.type!=='drop'&&set.type!=='rp')wNum++;
-      const label=(set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:set.type==='rp'?'RP'+rpNum:'S'+wNum)+(set.amrap?'+':'');
+      const label=(set.type==='warmup'?'WU'+wuCount:set.type==='drop'?'DS'+dsNum:set.type==='rp'?'RP'+rpNum:boSets.includes(si)?'BO':'S'+wNum)+(set.amrap?'+':'');
       const pbPct=ex._pb&&set.pct?`<span class="pb-pct">${set.pct}%</span>`:'';
       html+=`<div class="set-row" style="${isAbs?'grid-template-columns:auto 1fr auto':''}">
         <span class="set-label${set.type==='warmup'?' warmup':set.type==='drop'?' drop':set.type==='rp'?' rp':''}">${label}${pbPct}${ex.name==='Paralela'||ex.name==='Weighted Chin Ups'?` <button onclick="flipSign(this.closest('.set-row').querySelector('.set-input'))" style="background:none;border:none;color:var(--text-dim);font-size:0.65rem;padding:0 2px;cursor:pointer;vertical-align:middle">&#177;</button>`:''}</span>
@@ -6624,7 +6674,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v293 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v294 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
