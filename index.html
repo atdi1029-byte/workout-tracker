@@ -2016,7 +2016,7 @@ function promptStartWeight(exName,ei){
   const current=getStartWeight(exName);
   const main=current[key];
   const currentStr=current.wu&&main?current.wu+' / '+main:main?main:current.wu?current.wu+' / ':'';
-  const val=prompt(pi?'Top set weight ('+pi.topReps+' reps), other sets fill in by % (WU / TS):':'Start weights (WU / S1):',currentStr);
+  const val=prompt(pi?'NEXT workout top set ('+pi.topReps+' reps) — today is not changed, other sets fill in by % (WU / TS):':'NEXT workout start weights — today is not changed (WU / S1):',currentStr);
   if(val===null)return;
   const s=getStartWeights();
   const trimmed=val.trim();
@@ -2031,13 +2031,10 @@ function promptStartWeight(exName,ei){
   saveStartWeights(s);
   syncExtraToCloud();
   flushInputs();
-  // TS fills today's ladder right away
-  if(pi){
-    const ladder=startLadder(exName,ex.sets);
-    if(ladder)Object.keys(ladder).forEach(si=>{if(ex.sets[si]&&!ex.sets[si].done)ex.sets[si].weight=ladder[si]});
-    if(obj.wu)ex.sets.forEach(st=>{if(st.type==='warmup'&&!st.done)st.weight=obj.wu});
-    localStorage.setItem('workout_in_progress_'+currentDay,JSON.stringify({workout:currentWorkout,startTime:workoutStartTime,program:data.activeProgram,day:currentDay}));
-  }
+  // TS/ST is a plan for the NEXT workout only — today's sets are never touched (v296).
+  // Alex sets it after a PR to remind next week's top set; filling today's sets
+  // overwrote the weight he had actually lifted and logged the plan as a PR.
+  // To fill today's ladder use the suggestion's "Top set…" button (promptTopSet).
   renderExerciseCards();
 }
 
