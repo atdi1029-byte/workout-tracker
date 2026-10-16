@@ -881,7 +881,7 @@ ABC_D4:{name:'ABC+D4',phase:'rea',type:'ABCD',weeks:10,days:{
     ['Guillotine Press','Guillotine Bench Press','chest','S','1x8wu+4x6-8',80],
     ['Tríceps Francês Corda','Rope French Press','triceps','TP','2x15-20/2x10-12/2x6-8',60],
     ['Tbar Row','T-Bar Row','back','S','1x8wu+4x6-8',80],
-    ['Single Arm Deadlift','Single Arm Deadlift','hamstrings','TP','8/6/4/3+6-10',90],
+    ['Single Arm Deadlift','Single Arm Deadlift','hamstrings','TP','8/6/4/3',90],
     ['Dead Stop Barbell Curl','Dead Stop Barbell Curl','biceps','TP','2x15-20/2x10-12/2x6-8',60]
   ]}
 }},
@@ -2535,6 +2535,25 @@ function migrateData(){
     delete data.customPrograms.ABC_D2;
     if(!data.schemaVersion||data.schemaVersion<271)data.schemaVersion=271;
     localStorage.setItem('zr_migrate_v271','1');
+  }
+  // v295: Single Arm Deadlift (ABC+D4 Day D) drops its 6-10 back-off set — also in a saved
+  // custom override and in an in-progress Day D workout (only if that set isn't done yet)
+  if(!localStorage.getItem('zr_migrate_v295')){
+    const cp=data.customPrograms&&data.customPrograms.ABC_D4;
+    if(cp&&cp.days&&cp.days.D&&cp.days.D.ex){cp.days.D.ex.forEach(e=>{if(e[0]==='Single Arm Deadlift'&&e[4]==='8/6/4/3+6-10')e[4]='8/6/4/3';});}
+    try{
+      const k='workout_in_progress_D',sv=JSON.parse(localStorage.getItem(k));
+      if(sv&&sv.program==='ABC_D4'&&sv.workout&&sv.workout.exercises){
+        let ch=false;
+        sv.workout.exercises.forEach(ex=>{
+          if((ex._origName||ex.name)!=='Single Arm Deadlift'||ex.targetSets!=='8/6/4/3+6-10')return;
+          const wi=[];(ex.sets||[]).forEach((st,i)=>{if(st.type==='working')wi.push(i)});
+          if(wi.length===5&&!ex.sets[wi[4]].done){ex.sets.splice(wi[4],1);ex.targetSets='8/6/4/3';ch=true}
+        });
+        if(ch)localStorage.setItem(k,JSON.stringify(sv));
+      }
+    }catch(e){}
+    localStorage.setItem('zr_migrate_v295','1');
   }
   saveData();
 }
