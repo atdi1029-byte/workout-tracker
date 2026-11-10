@@ -1,11 +1,16 @@
-const CACHE_NAME = 'zercher-v296';
+const CACHE_NAME = 'zercher-v297';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './bg-sandow.jpg'
+  './photos/saxon.jpg',
+  './photos/gorner.jpg',
+  './photos/hackenschmidt.jpg',
+  './photos/sandow.jpg',
+  './photos/maxick.jpg',
+  './atlas/atlas.json'
 ];
 
 self.addEventListener('install', event => {
@@ -29,6 +34,20 @@ self.addEventListener('fetch', event => {
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         return resp;
       }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  // Exercise Atlas plates are not downloaded up front (3.8 MB): each one is kept the first
+  // time it is opened, so it is there the next time without a connection.
+  if (event.request.url.includes('/atlas/img/')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request).then(resp => {
+        if (resp.ok) {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return resp;
+      }))
     );
     return;
   }
