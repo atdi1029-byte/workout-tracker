@@ -673,9 +673,20 @@ body.cover-on .app-header{position:absolute;left:0;right:0;top:0;background:line
 /* horizontal chip rows scroll without a visible bar */
 .muscle-tabs{scrollbar-width:none}
 .muscle-tabs::-webkit-scrollbar{display:none}
+
+/* a dim photograph behind the screens that are all cards (v298): the day's old-timer while a
+   workout is running, Sandow behind Library and Programs. Cards go slightly see-through there. */
+#dayBackdrop{position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;display:none;background:#000 no-repeat center top;background-size:cover;filter:grayscale(1) sepia(.15) contrast(1.05) brightness(var(--bd,.7))}
+#dayBackdrop::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(11,13,18,.5) 0%,rgba(11,13,18,.1) 26%,rgba(11,13,18,.28) 70%,rgba(11,13,18,.78) 100%)}
+body.backdrop-on #dayBackdrop{display:block}
+body.backdrop-on .ex-card,body.backdrop-on .card,body.backdrop-on .lib-card,body.backdrop-on .sub-group,body.backdrop-on .prog-overview,body.backdrop-on .zc-day,body.backdrop-on .workout-week-banner{background-color:rgba(15,18,24,.78)}
+body.backdrop-on .zc-day.on{background-color:rgba(46,40,24,.86)}
+body.backdrop-on .workout-timer{text-shadow:0 1px 6px rgba(0,0,0,.9)}
+body.backdrop-on .pb-card{background-color:rgba(15,18,24,.8)}
 </style>
 </head>
 <body>
+<div id="dayBackdrop"></div>
 
 <!-- HEADER -->
 <header class="app-header">
@@ -3430,6 +3441,7 @@ function showView(name,btn){
   if(name==='progress')renderProgress();
   if(name==='library')renderLibrary();
   if(name==='programs')renderPrograms();
+  updateBackdrop();
 }
 
 function getNextDay(){
@@ -3539,15 +3551,15 @@ function setActiveProgram(pid){
 // Public-domain photographs from Wikimedia Commons (credits in Settings). The kind of day
 // picks the man who owned that kind of lift.
 const OLD_TIMERS={
-  push:{img:'photos/saxon.jpg',name:'Arthur Saxon',years:'1878–1921',line:'Bent press, 370 lb with one arm. Still the record.',pos:'50% 18%',medal:[.55,.40,.27],
+  push:{img:'photos/saxon.jpg',name:'Arthur Saxon',years:'1878–1921',line:'Bent press, 370 lb with one arm. Still the record.',pos:'50% 18%',dim:.8,medal:[.55,.40,.27],
     credit:'Arthur Saxon, bent press. Photographer unknown.',src:'https://commons.wikimedia.org/wiki/File:EarlyBarbell.png'},
-  pull:{img:'photos/gorner.jpg',name:'Hermann Görner',years:'1891–1956',line:'One-hand deadlift, 727½ lb, in 1920.',pos:'50% 3%',medal:[.52,.12,.33],
+  pull:{img:'photos/gorner.jpg',name:'Hermann Görner',years:'1891–1956',line:'One-hand deadlift, 727½ lb, in 1920.',pos:'50% 3%',dim:.9,medal:[.52,.12,.33],
     credit:'Hermann Görner in Sport im Bild, 1920. Photo: Max Schirner.',src:'https://commons.wikimedia.org/wiki/File:Goerner-hermann-in-sport-im-bild-1920-heft05-s152.jpg'},
-  legs:{img:'photos/hackenschmidt.jpg',name:'George Hackenschmidt',years:'1877–1968',line:'The Russian Lion. The hack squat carries his name.',pos:'50% 2%',medal:[.50,.15,.30],
+  legs:{img:'photos/hackenschmidt.jpg',name:'George Hackenschmidt',years:'1877–1968',line:'The Russian Lion. The hack squat carries his name.',pos:'50% 2%',dim:.5,medal:[.50,.15,.30],
     credit:'George Hackenschmidt, c. 1905. Photographer unknown.',src:'https://commons.wikimedia.org/wiki/File:Georg_Hackenschmidt_ca._1905.jpg'},
-  upper:{img:'photos/sandow.jpg',name:'Eugen Sandow',years:'1867–1925',line:'The father of modern bodybuilding.',pos:'50% 4%',medal:[.50,.22,.27],
+  upper:{img:'photos/sandow.jpg',name:'Eugen Sandow',years:'1867–1925',line:'The father of modern bodybuilding.',pos:'50% 4%',dim:.7,medal:[.50,.22,.27],
     credit:'Eugen Sandow. Photo: Benjamin J. Falk.',src:'https://commons.wikimedia.org/wiki/File:Falk,_Benjamin_J._(1853-1925)_-_Eugen_Sandow_(1867-1925).jpg'},
-  abs:{img:'photos/maxick.jpg',name:'Maxick',years:'1882–1961',line:'Pioneer of muscle control.',pos:'50% 0%',medal:[.51,.20,.33],
+  abs:{img:'photos/maxick.jpg',name:'Maxick',years:'1882–1961',line:'Pioneer of muscle control.',pos:'50% 0%',dim:.5,medal:[.51,.20,.33],
     credit:'Max Sick (Maxick), 1910. Photographer unknown.',src:'https://commons.wikimedia.org/wiki/File:Max_Sick_1910.jpg'}
 };
 const DAY_KIND_LABEL={push:'Push',pull:'Pull',legs:'Legs',upper:'Upper',abs:'Core'};
@@ -3621,6 +3633,27 @@ function lastTopSet(name){
   return(w?fmt(w)+' × ':'× ')+top.reps+(top.timed?'s':'');
 }
 
+// A dim photograph behind the screens that are all cards: the day's old-timer while a workout
+// is running, Sandow behind Library and Programs. The cover has its own photo and Progress
+// puts text straight on the page, so neither gets one.
+function updateBackdrop(){
+  const el=document.getElementById('dayBackdrop');if(!el)return;
+  let img='',pos='50% 0%',dim=.6;   // dim = how bright the photo stays; light photos need less
+  if(currentView==='workout'){
+    if(workoutStartTime){
+      const prog=getProgram(data.activeProgram);
+      const ot=OLD_TIMERS[prog?dayKind(prog,currentDay):'upper']||OLD_TIMERS.upper;
+      img=ot.img;pos=ot.pos;dim=ot.dim||.7;
+    }
+  }else if(currentView==='library'||currentView==='programs')img='bg-sandow.jpg';
+  document.body.classList.toggle('backdrop-on',!!img);
+  if(img){
+    if(el.dataset.img!==img){el.style.backgroundImage='url("'+img+'")';el.dataset.img=img}
+    el.style.backgroundPosition=pos;
+    el.style.setProperty('--bd',dim);
+  }
+}
+
 function renderWorkout(){
   const prog=getProgram(data.activeProgram);if(!prog)return;
   const days=Object.keys(prog.days);
@@ -3632,6 +3665,7 @@ function renderWorkout(){
   }
   const started=!!workoutStartTime;
   document.body.classList.toggle('cover-on',!started&&currentView==='workout');
+  updateBackdrop();
 
   // Week progress banner (while training) / block card (on the cover)
   const wInfo=getProgramWeekInfo(data.activeProgram);
@@ -7455,7 +7489,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v297 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v298 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{

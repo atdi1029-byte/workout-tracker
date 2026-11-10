@@ -1,10 +1,11 @@
-const CACHE_NAME = 'zercher-v297';
+const CACHE_NAME = 'zercher-v298';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './bg-sandow.jpg',
   './photos/saxon.jpg',
   './photos/gorner.jpg',
   './photos/hackenschmidt.jpg',
