@@ -636,7 +636,8 @@ body.cover-on .app-header{position:absolute;left:0;right:0;top:0;background:line
 .zl-atlas-btn span:last-child{color:var(--gold-glow)}
 
 /* exercise atlas sheet */
-.ex-info{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;border:1px solid var(--border-light);color:var(--iron);font-size:.66rem;font-family:var(--serif);font-style:italic;font-weight:700;margin-left:8px;vertical-align:2px;cursor:pointer;text-transform:none;letter-spacing:0}
+.ex-actions{flex-wrap:wrap;align-items:center}
+.ex-action-btn.atlas{color:var(--gold-glow);border-color:rgba(194,168,104,.5)}
 .za-title{font-weight:600;font-size:1.2rem;letter-spacing:.05em;text-transform:uppercase;color:var(--text-bright);line-height:1.15}
 .za-sub{font-size:.78rem;color:var(--text-dim);margin-top:2px}
 .za-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -4275,7 +4276,7 @@ function renderExerciseCards(){
     html+=`<div class="ex-card${allDone?' all-done':''}${ex._pb?' pb-lift':''}" id="ex-${ei}" ${allDone?'onclick="this.classList.toggle(\'expanded\')"':''}>
       <div class="ex-header">
         <div>
-          <div class="ex-name">${ex.name}<span class="ex-info" onclick="event.stopPropagation();openAtlas('${escJs(ex.name)}')">i</span>${ex._isAlt?'<span class="alt-badge">ALT</span>':''}${ex._pb?'<span class="pb-badge">PB</span>':''}<span class="ex-done-label">&#10003; DONE</span></div>
+          <div class="ex-name">${ex.name}${ex._isAlt?'<span class="alt-badge">ALT</span>':''}${ex._pb?'<span class="pb-badge">PB</span>':''}<span class="ex-done-label">&#10003; DONE</span></div>
           <div class="ex-name-en">${ex.nameEn}</div>
         </div>
         <div style="text-align:right">
@@ -4388,14 +4389,17 @@ function renderExerciseCards(){
       else if(mainW)startLabel=tag+': '+mainW+'lbs';
       else if(startW.wu)startLabel=tag+': WU '+startW.wu;
     }
+    // The lift's Exercise Atlas entry, one tap from the card (v299: a real button, it was a small "i" by the name)
+    const atlasBtn=`<button class="ex-action-btn atlas" onclick="event.stopPropagation();openAtlas('${escJs(ex.name)}')">Atlas</button>`;
     if(ex._pb){
-      html+=`<div class="ex-actions"><span class="pb-lock">&#128274; Locked by Powerbuilding mode — the lift, scheme and TM are set in Programs</span></div>`;
+      html+=`<div class="ex-actions"><span class="pb-lock">&#128274; Locked by Powerbuilding mode — the lift, scheme and TM are set in Programs</span>${atlasBtn}</div>`;
     } else {
     html+=`<div class="ex-actions">
       ${!isAbs?`<button class="ex-action-btn${hasStart?' start-set':''}" onclick="promptStartWeight('${escJs(ex.name)}',${ei})">${startLabel}</button>`:''}
       <button class="ex-action-btn" onclick="renameExercise(${ei})">Rename</button>
       <button class="ex-action-btn" onclick="openSwapModal(${ei})">Swap</button>
       ${!isAbs?`<button class="ex-action-btn" onclick="openAltModal(${ei})">Alt.</button>`:''}
+      ${atlasBtn}
     </div>`;
     }
 
@@ -7489,7 +7493,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v298 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v299 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
