@@ -5973,8 +5973,11 @@ function renderLibCard(name){
   const esc=escJs(name);
   return `<div class="lib-card" onclick="openEditExercise('${esc}')" ontouchstart="libLongStart('${esc}',event)" ontouchmove="libLongEnd()" ontouchend="libLongEnd()" ontouchcancel="libLongEnd()" oncontextmenu="event.preventDefault();libDelete('${esc}')"  style="cursor:pointer">
     <div class="lib-name" style="display:flex;align-items:center;gap:6px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${escHtml(name)}</span>${athVal?`<span class="lib-ath" style="flex-shrink:0">${athVal} lbs ATH</span>`:''}<span style="flex-shrink:0;cursor:pointer;font-size:0.85rem;color:var(--text-dim);padding:2px 4px" onclick="event.stopPropagation();openEditExercise('${esc}')">&#9998;</span><span style="flex-shrink:0;cursor:pointer;font-size:1.1rem;color:${isFav?'var(--gold)':'var(--text-dim)'}" onclick="event.stopPropagation();toggleFav('${esc}')">${isFav?'&#9733;':'&#9734;'}</span></div>
-    <div class="lib-name-en">${getExerciseEnglish(name)}</div>
-    <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="min-width:0"><div class="lib-name-en">${getExerciseEnglish(name)}</div>
+      <div class="lib-equip">${MUSCLE_LABELS[muscle]||muscle}</div></div>
+      <button class="ex-action-btn atlas" style="flex-shrink:0" ontouchstart="event.stopPropagation()" onclick="event.stopPropagation();openAtlas('${esc}')">Atlas</button>
+    </div>
   </div>`;
 }
 function renderLibrary(){
@@ -7493,7 +7496,7 @@ for(const name in ATH_DATA){
   }
 }
 saveData();
-console.log('[Zercher] v299 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
+console.log('[Zercher] v300 loaded, activeProgram='+data.activeProgram+', schema='+data.schemaVersion+', ABC_D2 custom='+(data.customPrograms.ABC_D2?'YES':'no')+', fresh='+_isFreshInstall);
 currentDay=getNextDay();
 // Resume in-progress workout (including ABS) if one exists
 try{
