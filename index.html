@@ -4163,8 +4163,10 @@ function pyramidLadder(topW,sets){
 function ladderStr(ladder){
   return Object.keys(ladder).map(k=>+k).sort((a,b)=>a-b).map(si=>fmt(ladder[si])).join(' / ');
 }
+function topSetCalcHtml(ei){return`<div class="sug-ladder"><button class="sug-apply" onclick="event.stopPropagation();promptTopSet(${ei})">Top set&hellip;</button></div>`}
 function ladderHtml(ei,ladder){
-  if(!ladder)return'';
+  // No ladder to suggest (no usable weight yet): still offer the top-set calculator
+  if(!ladder)return topSetCalcHtml(ei);
   const json=escAttr(JSON.stringify(ladder));
   return`<div class="sug-ladder">Ladder: <b>${ladderStr(ladder)}</b><button class="sug-apply" onclick="event.stopPropagation();applyLadder(${ei},'${json}')">Apply</button><button class="sug-apply" onclick="event.stopPropagation();promptTopSet(${ei})">Top set&hellip;</button></div>`;
 }
@@ -4286,12 +4288,13 @@ function updateLastLine(ex,ei,card){
     }
     if(isHeld(ex.name)){
       const s1w=ws[0]?ws[0].weight:'?';
-      const pyH=pyramidInfo(ex.sets);const topH=pyH&&ws[wsIdxTop(ex,pyH)]?ws[wsIdxTop(ex,pyH)].weight:0;
+      const pyH=pyramidInfo(ex.sets);const topH=pyH?((ws[wsIdxTop(ex,pyH)]&&+ws[wsIdxTop(ex,pyH)].weight)||Math.max(0,...ws.map(s=>+s.weight||0))):0;
       sugHtml=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div>${pyH?ladderHtml(ei,pyramidLadder(topH,ex.sets)):''}</div>`;
     } else {
       const targetReps=exTargetReps(ex);
       const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
       if(sug)sugHtml=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
+      else if(pyramidInfo(ex.sets))sugHtml=`<div class="ex-suggest stay">${topSetCalcHtml(ei)}</div>`;
     }
   } else if(!isAbs){
     const bestW=getBestWeight(ex.name);
@@ -4299,6 +4302,8 @@ function updateLastLine(ex,ei,card){
       lastHtml=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
       const pyB=pyramidInfo(ex.sets)?pyramidLadder(bestW,ex.sets):null;
       sugHtml=pyB?`<div class="ex-suggest stay"><div class="sug-main">&#9654; Top set ${bestW} lbs (based on ATH) — ramp into it</div>${ladderHtml(ei,pyB)}</div>`:`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
+    } else if(pyramidInfo(ex.sets)){
+      sugHtml=`<div class="ex-suggest stay">${topSetCalcHtml(ei)}</div>`;
     }
   }
   const oldLast=card.querySelector('.ex-last');
@@ -4407,13 +4412,15 @@ function renderExerciseCards(){
         // PB lifts: percentages drive the weights; no auto-suggestion
       } else if(isHeld(ex.name)){
         const s1w=workingSets[0]?workingSets[0].weight:'?';
-        const pyH2=pyramidInfo(ex.sets);const topH2=pyH2&&workingSets[wsIdxTop(ex,pyH2)]?workingSets[wsIdxTop(ex,pyH2)].weight:0;
+        const pyH2=pyramidInfo(ex.sets);const topH2=pyH2?((workingSets[wsIdxTop(ex,pyH2)]&&+workingSets[wsIdxTop(ex,pyH2)].weight)||Math.max(0,...workingSets.map(s=>+s.weight||0))):0;
         html+=`<div class="ex-suggest stay"><div class="sug-main">&#9654; Hold at ${weights} lbs &middot; Start S1 at ${s1w} lbs</div>${pyH2?ladderHtml(ei,pyramidLadder(topH2,ex.sets)):''}</div>`;
       } else {
         const targetReps=exTargetReps(ex);
         const sug=pyramidInfo(ex.sets)?getPyramidSuggestion(lastLog,ex,ei,ex.name):getSuggestion(lastLog,targetReps,ex.name);
         if(sug){
           html+=`<div class="ex-suggest ${sug.type}">${sug.text}</div>`;
+        } else if(pyramidInfo(ex.sets)){
+          html+=`<div class="ex-suggest stay">${topSetCalcHtml(ei)}</div>`;
         }
       }
     } else if(!isAbs&&!ex._pb){
@@ -4422,6 +4429,8 @@ function renderExerciseCards(){
         html+=`<div class="ex-last">No log yet &middot; <span class="pr-badge">ATH: ${bestW} lbs</span></div>`;
         const pyB2=pyramidInfo(ex.sets)?pyramidLadder(bestW,ex.sets):null;
         html+=pyB2?`<div class="ex-suggest stay"><div class="sug-main">&#9654; Top set ${bestW} lbs (based on ATH) — ramp into it</div>${ladderHtml(ei,pyB2)}</div>`:`<div class="ex-suggest stay"><div class="sug-main">&#9654; Start at ${bestW} lbs (based on ATH)</div></div>`;
+      } else if(pyramidInfo(ex.sets)){
+        html+=`<div class="ex-suggest stay">${topSetCalcHtml(ei)}</div>`;
       }
     }
     const startW=isAbs?null:getStartWeight(ex.name);
